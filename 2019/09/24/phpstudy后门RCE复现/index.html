@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="命令执行,">
 
 
 
@@ -79,22 +79,23 @@
 
 
 
-<meta name="description" content="phpstudy后门RCE复现事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户 9月20日杭州公安微信公众账号发布了“杭州警方通报打击涉网违法犯罪暨“净网20">
+<meta name="description" content="事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户">
+<meta name="keywords" content="命令执行">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Guko&#39;s Blog">
+<meta property="og:title" content="phpstudy后门RCE复现">
 <meta property="og:url" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/index.html">
 <meta property="og:site_name" content="Guko&#39;s Blog">
-<meta property="og:description" content="phpstudy后门RCE复现事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户 9月20日杭州公安微信公众账号发布了“杭州警方通报打击涉网违法犯罪暨“净网20">
+<meta property="og:description" content="事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/1.png">
 <meta property="og:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/2.png">
 <meta property="og:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/3.png">
 <meta property="og:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/4.png">
 <meta property="og:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/5.png">
-<meta property="og:updated_time" content="2019-09-24T09:09:29.534Z">
+<meta property="og:updated_time" content="2019-09-24T09:16:38.498Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Guko&#39;s Blog">
-<meta name="twitter:description" content="phpstudy后门RCE复现事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户 9月20日杭州公安微信公众账号发布了“杭州警方通报打击涉网违法犯罪暨“净网20">
+<meta name="twitter:title" content="phpstudy后门RCE复现">
+<meta name="twitter:description" content="事件背景Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户">
 <meta name="twitter:image" content="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/1.png">
 
 
@@ -131,7 +132,7 @@
 
 
 
-  <title> | Guko's Blog</title>
+  <title>phpstudy后门RCE复现 | Guko's Blog</title>
   
 
 
@@ -285,7 +286,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">phpstudy后门RCE复现</h1>
         
 
         <div class="post-meta">
@@ -297,7 +298,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-24T15:42:55+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-24T17:14:39+08:00">
                 2019-09-24
               </time>
             
@@ -329,7 +330,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  701 字
+                  697 字
                 </span>
               
 
@@ -366,7 +367,9 @@
       
 
       
-        <h2 id="phpstudy后门RCE复现"><a href="#phpstudy后门RCE复现" class="headerlink" title="phpstudy后门RCE复现"></a>phpstudy后门RCE复现</h2><h4 id="事件背景"><a href="#事件背景" class="headerlink" title="事件背景"></a>事件背景</h4><p>Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户</p>
+        <h4 id="事件背景"><a href="#事件背景" class="headerlink" title="事件背景"></a>事件背景</h4><p>Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户</p>
+<a id="more"></a>
+
 <p>9月20日杭州公安微信公众账号发布了“杭州警方通报打击涉网违法犯罪暨“净网2019”专项行动战果”的文章，文章里说明phpstudy存在“后门”</p>
 <h4 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h4><p>软件作者声明phpstudy 2016版PHP5.4存在后门。</p>
 <p>实际测试官网下载phpstudy2018版php-5.2.17和php-5.4.45也同样存在后门</p>
@@ -415,6 +418,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/命令执行/" rel="tag"># 命令执行</a>
+          
+        </div>
       
 
       
@@ -532,7 +541,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -579,7 +588,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#phpstudy后门RCE复现"><span class="nav-number">1.</span> <span class="nav-text">phpstudy后门RCE复现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#事件背景"><span class="nav-number">1.0.1.</span> <span class="nav-text">事件背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#影响版本"><span class="nav-number">1.0.2.</span> <span class="nav-text">影响版本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后门检测方法"><span class="nav-number">1.0.3.</span> <span class="nav-text">后门检测方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RCE复现"><span class="nav-number">1.0.4.</span> <span class="nav-text">RCE复现</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#事件背景"><span class="nav-number">1.</span> <span class="nav-text">事件背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#影响版本"><span class="nav-number">2.</span> <span class="nav-text">影响版本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后门检测方法"><span class="nav-number">3.</span> <span class="nav-text">后门检测方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RCE复现"><span class="nav-number">4.</span> <span class="nav-text">RCE复现</span></a></li></ol></div>
             
 
           </div>
