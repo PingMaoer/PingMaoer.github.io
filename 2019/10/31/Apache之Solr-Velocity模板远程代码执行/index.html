@@ -93,7 +93,7 @@
 <meta property="og:image" content="http://yoursite.com/2019/10/31/Apache之Solr-Velocity模板远程代码执行/3.png">
 <meta property="og:image" content="http://yoursite.com/2019/10/31/Apache之Solr-Velocity模板远程代码执行/4.png">
 <meta property="og:image" content="http://yoursite.com/2019/10/31/Apache之Solr-Velocity模板远程代码执行/5.png">
-<meta property="og:updated_time" content="2019-10-31T15:00:29.999Z">
+<meta property="og:updated_time" content="2019-10-31T15:14:18.386Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Apache之Solr-Velocity模板远程代码执行">
 <meta name="twitter:description" content="漏洞简介Apache Solr是美国阿帕奇（Apache）软件基金会的一款基于Lucene（一款全文搜索引擎）的搜索服务器。Apache Velocity是一个提供HTML页面模板、email模板和通用开源代码生成器模板的模板引擎。在Apache Solr 的多个版本中，Apache Solr的VelocityResponseWriter功能的配置参数可通过HTTP请求指定，导致用户可通过设置特定">
@@ -391,6 +391,7 @@
 
       
         <h4 id="漏洞简介"><a href="#漏洞简介" class="headerlink" title="漏洞简介"></a>漏洞简介</h4><p>Apache Solr是美国阿帕奇（Apache）软件基金会的一款基于Lucene（一款全文搜索引擎）的搜索服务器。Apache Velocity是一个提供HTML页面模板、email模板和通用开源代码生成器模板的模板引擎。在Apache Solr 的多个版本中，Apache Solr的VelocityResponseWriter功能的配置参数可通过HTTP请求指定，导致用户可通过设置特定参数后，通过注入任意Velocity模板造成任意命令执行。</p>
+<a id="more"></a>
 <h4 id="漏洞影响"><a href="#漏洞影响" class="headerlink" title="漏洞影响"></a>漏洞影响</h4><p>version &gt; 5的版本都受影响。经测试6.2.1，7.3.1，7.4.0，以及最新版8.2.0均存在此漏洞。其他版本暂未测试.</p>
 <h4 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h4><p>想要利用此漏洞，其中solrconfig.xml配置文件至少需要以下内容</p>
 <p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/6.png" alt></p>

