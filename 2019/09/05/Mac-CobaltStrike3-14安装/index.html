@@ -2,32 +2,32 @@
 <a id="more"></a>
 <p>Cobalt Strike集成了端口转发、服务扫描，自动化溢出，多模式端口监听，win exe木马生成，win dll木马生成，java木马生成，office宏病毒生成，木马捆绑；钓鱼攻击包括：站点克隆，目标信息获取，java执行，浏览器自动攻击等等</p>
 <p>#<!--more--></p>
-<h4 id="Cobalt-Strike架构"><a href="#Cobalt-Strike架构" class="headerlink" title="Cobalt Strike架构"></a>Cobalt Strike架构</h4><p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/10.png" alt="10"></p>
+<h4 id="Cobalt-Strike架构"><a href="#Cobalt-Strike架构" class="headerlink" title="Cobalt Strike架构"></a>Cobalt Strike架构</h4><p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/10.png" alt></p>
 <h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><blockquote>
 <p>│  agscript 拓展应用的脚本<br>│  c2lint  检查profile的错误异常<br>│  cobaltstrike<br>│  cobaltstrike.jar 客户端程序<br>│  icon.jpg<br>│  license.pdf<br>│  readme.txt<br>│  releasenotes.txt<br>│  teamserver  服务端程序<br>│  update<br>│  update.jar<br>│<br>└─third-party 第三方工具<br>        README.vncdll.txt<br>        vncdll.x64.dll<br>        vncdll.x86.dll</p>
 </blockquote>
 <h4 id="Mac-上安装CobaltStrike"><a href="#Mac-上安装CobaltStrike" class="headerlink" title="Mac 上安装CobaltStrike"></a>Mac 上安装CobaltStrike</h4><h5 id="Team-Server"><a href="#Team-Server" class="headerlink" title="Team Server"></a>Team Server</h5><p>Cobalt Strike 分为客户端和服务器端。该服务器端被称为团队服务器，是 Beacon 有效负载的控制器，同时 Cobalt Strike 也具有社会工程学功能。团队 服务器还存储 Cobalt Strike 收集的数据，并管理日志记录。 </p>
 <p>首先我们需要把Cobalt Strike上传到VPS上,这里用的是<a href="http://www.hostbuf.com/" target="_blank" rel="noopener">FinalShell</a> 在Mac上非常方便</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/1.png" alt="2"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/1.png" alt></p>
 <p>Cobalt Strike 团队服务器必须以 root 身份运行在所支持的操作系统上。启动 Cobalt Strike 团队服务器，可以使用 Cobalt Strike Linux 软件包附带的 teamserver 脚本</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x teamserver</span><br><span class="line">./teamserver vps-ip password</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/2.png" alt="2"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/2.png" alt></p>
 <p>团队服务器有两个必要参数和两个可选参数。第一个是团队服务器的 IP 地址。 Cobalt Strike 使用此值作为其默认的服务器主机。第二个是您的团队成员用于 将 Cobalt Strike 客户端连接到团队服务器的密码</p>
 <h5 id="Cobalt-Strike-Client"><a href="#Cobalt-Strike-Client" class="headerlink" title="Cobalt Strike Client"></a>Cobalt Strike Client</h5><p>Cobalt Strike 客户端连接到团队服务器.要启动 Cobalt Strike 客户端,在此之前我们需要先安装Cobalt Strike Client，直接点击基于Mac的Cobalt Strike Client,然后弹出如下界面</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/3.png" alt="3"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/3.png" alt></p>
 <p>按照正常安装软件的方式直接点击继续，几次之后安装完成</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/4.png" alt="4"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/4.png" alt></p>
 <p>安装完成之后我们启动Cobalt Strike Client，之后将会看到一个连接对话框,如下图，在“host”字段中指定团队服务器的 ip 地址。团队服务器的默认端口是 50050. 很少修改用默认的就好。“user”字段是团队服务器上的用户名称。这里也就用默认的就好。“password”字段是团队服务器的密码，就是我们之前设置的服务器密码</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/5.png" alt="5"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/5.png" alt></p>
 <p>点击 Connect 连接到 Cobalt Strike 团队服务器，如果这是与团队服务器的第一次连接，Cobalt Strike 将询问是否识别此团队服务器的 SSL 证书的 SHA256 哈希值。如果需要，请 点击 OK，Cobalt Strike 客户端将连接到服务器。Cobalt Strike 还会记住这个 SHA256 哈希，以便以后方便连接</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/6.png" alt="6"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/6.png" alt></p>
 <p>点击是连接到 Cobalt Strike 团队服务器</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/7.png" alt="7"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/7.png" alt></p>
 <p>可以通过 Cobalt Strike - &gt; Preferences - &gt; Fingerprints 管理这些哈希值</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/8.png" alt="8"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/8.png" alt></p>
 <p>Cobalt Strike 会跟踪您连接的团队服务器并记住信息。从连接对话框的左 侧选择其中一个团队服务器配置文件，以使用其信息自动填充连接对话框。也可以通过 Cobalt Strike - &gt; Preferences - &gt; Team Servers 修改此连接</p>
-<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/9.png" alt="9"></p>
+<p><img src="/2019/09/05/Mac-CobaltStrike3-14安装/9.png" alt></p>
 <p>参考链接<br><a href="https://github.com/aleenzz/Cobalt_Strike_wiki/" target="_blank" rel="noopener">404Cobalt_Strike_wiki</a></p>
 </div><!--文章标签--><div class="tags"><a href="/tags/Cobalt-Strike/">Cobalt Strike</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/02/05/shell实现ping检测存活/">shell实现ping检测存活</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/">DLL注入&DLL劫持DLL&the-backdoor-factory</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/">Apache之Solr-Velocity模板远程代码执行</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/21/CVE-2019-14287-sudo-权限绕过漏洞复现/">CVE-2019-14287- sudo-权限绕过漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/10/Joomla-3-4-6-RCE漏洞复现/">Joomla 3.4.6-RCE漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/24/phpstudy后门RCE复现/">phpstudy后门RCE复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/10/phpcms9-6-1任意文件下载poc编写/">phpcms9.6.1任意文件下载poc编写</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/">CVE-2019-0708远程桌面代码执行漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/06/Cobalt-Strike基本使用/">Cobalt Strike基本使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/05/Mac-CobaltStrike3-14安装/">Mac CobaltStrike3.14安装</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
   if($(".highlight").length != 0){
