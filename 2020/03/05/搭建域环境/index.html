@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>搭建域环境 - Guko's Blog</title><meta name="description" content="在学习内网渗透测试中，需要构建一个内网环境并搭建相关的攻击机，通过去练习每一种漏洞去理解漏洞的工作原理。在搭建域渗透测试环境，在windows活动目录环境下进行一系列操作，理解并掌握其操作方法和运行机制，会对内网渗透有几大裨益0x00 搭建域环境如下实验，将创建一个域环境。配置一台windows s"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">搭建域环境</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">搭建域环境</h1><div class="post-meta">2020-03-05<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>在学习内网渗透测试中，需要构建一个内网环境并搭建相关的攻击机，通过去练习每一种漏洞去理解漏洞的工作原理。在搭建域渗透测试环境，在windows活动目录环境下进行一系列操作，理解并掌握其操作方法和运行机制，会对内网渗透有几大裨益</p>
+<a id="more"></a>
+<h3 id="0x00-搭建域环境"><a href="#0x00-搭建域环境" class="headerlink" title="0x00 搭建域环境"></a>0x00 搭建域环境</h3><p>如下实验，将创建一个域环境。配置一台windows server2012 R2服务器，将其升级为域控制器，然后将window server 2008 R2计算机和window7计算机加入该域。</p>
+<p>Windows server 2012 R2:192.168.1.1</p>
+<p>Windows server 2012 R2:192.168.1.2</p>
+<p>Windows7:192.168.1.3</p>
+<h5 id="Windows-server-2012-R2服务器"><a href="#Windows-server-2012-R2服务器" class="headerlink" title="Windows server 2012 R2服务器"></a>Windows server 2012 R2服务器</h5><p><strong>1、设置服务器</strong></p>
+<p>在虚拟机中安装windows server 2012 R2操作系统，设置其IP地址192.168.1.1、子网掩码为255.255.255.0，DNS指向本机IP地址。</p>
+<p><img src="/2020/03/05/搭建域环境/1.png" alt></p>
+<p><strong>2、更改计算机名</strong></p>
+<p>使用本地管理员账户登陆，将计算机改为<code>DC</code>(可随意取你想去的名)，在将本机升级为域控制器后，机器全名会自动变成<code>DC.hacke.testlab</code>,更改后，需要重启服务器。</p>
+<p><img src="/2020/03/05/搭建域环境/2.png" alt></p>
+<p><strong>3、安装域控制器和DNS服务</strong></p>
+<p>接下里，在windows servers 2012 R2服务器上安装域控制器和DNS服务。</p>
+<p>登陆window servers 2012 R2服务器，可以看到<code>服务器管理器</code>窗口，如下图</p>
+<p><img src="/2020/03/05/搭建域环境/3.png" alt></p>
+<p>单击<code>添加角色和功能</code>选项，进入<code>添加角色和功能向导</code>界面。在<code>开始之前</code>部分，保持默认设置。单价<code>下一步</code>按钮，进入<code>安装类型</code>部分，选择<code>基于角色或基于功能的安装</code>选项。单击<code>下一步</code>按钮，进入<code>服务器选项</code>部分。目前，服务器池中只有当前这台机器，保持默认设置。单击<code>下一步</code>按钮，在<code>服务器角色</code>部分勾选<code>Active Directory域服务</code>和<code>DNS服务器</code>复选框，如下图</p>
+<p><img src="/2020/03/05/搭建域环境/4.png" alt></p>
+<p>在<code>功能</code>界面保持默认是这，单击<code>下一步</code>按钮，进入<code>确认</code>部分。确认需要安装的组件，勾选<code>如果需要，自动重新启动目标服务器</code>复选框，如下图</p>
+<p><img src="/2020/03/05/搭建域环境/5.png" alt></p>
+<p>点击安装</p>
+<p><img src="/2020/03/05/搭建域环境/6.png" alt></p>
+<p><strong>4、升级服务器</strong></p>
+<p>安装Activee Directory域服务后，需要将此服务器提升为域控制器。单击<code>将此服务器提升为域控制器</code>选项（如果不慎单击了<code>关闭</code>按钮，可以打开<code>服务器管理器</code>界面进行操作），在界面右上角可以看到一个中间有<code>！</code>的三角形按钮。单击该按钮。</p>
+<p><img src="/2020/03/05/搭建域环境/7.png" alt></p>
+<p>接着，进入<code>Active Directory域服务配置向导</code>界面，在<code>部署配置</code>部分单击选中<code>添加新林（F）</code>单选按钮，然后输入根域名<code>hacker.testlab</code>(必须使用符合DNS命名约定的根域名)，如下图</p>
+<p><img src="/2020/03/05/搭建域环境/8.png" alt></p>
+<p>在<code>域控制器选项</code>部分，将林功能级别、域功能级别都设置为<code>windows servers 2012 R2</code>,如图所示。创建域林时，在默认情况下应选择DNS服务器，林中的第一个域控制器必须是全局目录服务器且不能是只读域控制器（RODC）。然后，设置目录服务还原模式的密码（在开机进入安全模式修复活动目录数据库时将使用此密码）</p>
+<p><img src="/2020/03/05/搭建域环境/9.png" alt></p>
+<p>在<code>DNS选项</code>部分会出现关于DNS的警告。不用不理会该警告，保持默认设置。</p>
+<p>单击<code>下一步</code>按钮，进入<code>其他选项</code>部分。在<code>NetBIOS域名</code>（不支持DNS域名的旧版本操作系统，例如widows98、NT,需要通过NetBIOS域名进行通信）部分保持默认设置。单击<code>下一步</code>按钮，进入<code>路径</code>部分，制定数据库、日志、SYSYVOL文件夹的位置，其他选项保持默认设置。单击<code>洗一步</code>按钮，保持默认设置。单击<code>下一步</code>按钮，最后单击<code>安装</code>按钮。安装好后，需要重新启动服务器。</p>
+<p><img src="/2020/03/05/搭建域环境/10.png" alt></p>
+<p>服务器重新启动后，需要使用域管理员账户账户（HACKE\Administrator）登陆。此时，在<code>服务器管理器</code>界面中就可以看到AD DS、DNS服务了，如下图所示</p>
+<p><img src="/2020/03/05/搭建域环境/11.png" alt></p>
+<p><strong>5、创建Active Directory用户</strong></p>
+<p>为windows server 2008 R2和windows7用户创建域控制账户，如下图所示，在<code>Active Directory用户和计算机</code>界面中选择<code>Users</code>目录并单击右键，使用弹出的快捷菜单添加用户。</p>
+<p><img src="/2020/03/05/搭建域环境/12.png" alt></p>
+<p><img src="/2020/03/05/搭建域环境/13.png" alt></p>
+<p>创建testuser账户，如下图所示</p>
+<p><img src="/2020/03/05/搭建域环境/14.png" alt></p>
+<h3 id="0x01-Windows7计算机"><a href="#0x01-Windows7计算机" class="headerlink" title="0x01 Windows7计算机"></a>0x01 Windows7计算机</h3><p>将windows7计算机添加到该域中。设置IP地址为<code>192.168.1.3</code>,设置DNS地址为<code>192.168.1.1</code>,然后运行<code>ping hacke.testlab</code>命令进行连通性测试</p>
+<p><img src="/2020/03/05/搭建域环境/15.png" alt></p>
+<p>接下来，将主机添加到域中，将计算机名改为<code>win7-X64-test</code>将域名改为<code>hacke.testlab</code>。单击<code>确定</code>按钮，会弹出要求输入拥有权限的域账户名和密码的对话框。在本实验中，输入域管理员的账号和密码，之后会出现重新启动计算机的提示。</p>
+<p><img src="/2020/03/05/搭建域环境/16.png" alt></p>
+<p><img src="/2020/03/05/搭建域环境/17.png" alt></p>
+<p>计算机重启后，使用刚才创建的<code>testuser</code>用户登陆,密码为<code>Admin!@#$1234</code></p>
+<p><img src="/2020/03/05/搭建域环境/18.png" alt></p>
+<h3 id="0x02-Windows-Server-2008-R2计算机"><a href="#0x02-Windows-Server-2008-R2计算机" class="headerlink" title="0x02 Windows Server 2008 R2计算机"></a>0x02 Windows Server 2008 R2计算机</h3><p>加入流程同win7一样</p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/远程代码执行/" style="font-size: 15px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/metasploit/" style="font-size: 18px;">metasploit</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/05/搭建域环境/">搭建域环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/03/Ngrok-MSF/">Ngrok&MSF</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/28/Virt-Manager制作并克隆QCOW2镜像/">Virt-Manager制作并克隆QCOW2镜像</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/24/Tomcat-Ajp漏洞复现-CVE-2020-1938/">Tomcat_Ajp漏洞复现(CVE-2020-1938)</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/18/metasploit之meterpreter/">metasploit之meterpreter</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/14/Metasploit基本使用和控制台命令/">Metasploit基本使用和控制台命令</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/13/Metasploit信息收集/">Metasploit信息收集</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/12/metasploit基础/">metasploit基础</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/05/shell实现ping检测存活/">shell实现ping检测存活</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/01/14/DLL注入-DLL劫持DLL-the-backdoor-factory/">DLL注入&DLL劫持DLL&the-backdoor-factory</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
