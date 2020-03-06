@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>免杀初探 - Guko's Blog</title><meta name="description" content="在进行渗透测试的时候，由于目标机器往往存在相关的防护软件，如果没有进行免杀处理，那么渗透测试将会举步维艰。（本文大量引用重剑无锋总结的文字，感谢，我对其总结的方式进行实践，然后记录下实践过程，已跟本人沟通过）0x01 面杀概念免杀，也就是反病毒（AntiVirus）与反间谍（AntiSpyware）"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">免杀初探</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">免杀初探</h1><div class="post-meta">2020-03-06<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>在进行渗透测试的时候，由于目标机器往往存在相关的防护软件，如果没有进行免杀处理，那么渗透测试将会举步维艰。（本文大量引用<code>重剑无锋</code>总结的文字，感谢，我对其总结的方式进行实践，然后记录下实践过程，已跟本人沟通过）</p>
+<a id="more"></a>
+
+<p><img src="/2020/03/06/免杀初探/1.png" alt></p>
+<h4 id="0x01-面杀概念"><a href="#0x01-面杀概念" class="headerlink" title="0x01 面杀概念"></a>0x01 面杀概念</h4><p>免杀，也就是反病毒（AntiVirus）与反间谍（AntiSpyware）的对立面，英文为Anti-AntiVirus（简写Virus AV）逐字翻译为“反-反病毒”，翻译为“反杀毒技术”。</p>
+<h4 id="0x02-杀毒软件检测方式"><a href="#0x02-杀毒软件检测方式" class="headerlink" title="0x02 杀毒软件检测方式"></a>0x02 杀毒软件检测方式</h4><h5 id="扫描技术"><a href="#扫描技术" class="headerlink" title="扫描技术"></a>扫描技术</h5><p>1、扫描压缩包技术：既对压缩包和对封装文件作分析检查的技术。<br>2、程序篡改防护：既是避免恶意程序借由删除杀毒侦测程序而大肆破坏电脑。<br>3、修复技术：既是对恶意程序所破坏的文件进行还原。<br>4、急救盘杀毒：利用空白U盘制作急救启动盘，来检测电脑病毒。<br>5、智能扫描：扫描最常用的磁盘，系统关键位置，耗时较短。<br>6、全盘扫描：扫描电脑全部磁盘，耗时较长。<br>7、勒索软件防护：保护电脑中的文件不被黑客恶意加密。<br>8、开机扫描：当电脑开机时，自动进行扫描，可以扫描压缩文档和可能不需要的程序。</p>
+<h5 id="监控技术"><a href="#监控技术" class="headerlink" title="监控技术"></a>监控技术</h5><p>1、内存监控：当发现内存中存在病毒的时候，就会主动报警；监控所有进行；监控读取到内存中的文件；监控读取到内存的网络数据。<br>2、文件监控：当发现写到磁盘上的文件中存在病毒，或是被病毒感染，就会主动报警。<br>3、邮件监控：当发现电子邮件的附件中存在病毒时进行拦截。<br>4、网页防护：阻止网络攻击和不安全下载。<br>5、行为防护：提醒用户可疑的应用程序行为。</p>
+<h4 id="0x03-扫描引擎"><a href="#0x03-扫描引擎" class="headerlink" title="0x03 扫描引擎"></a>0x03 扫描引擎</h4><h5 id="特征码扫描"><a href="#特征码扫描" class="headerlink" title="特征码扫描"></a>特征码扫描</h5><p>机制：将扫描信息与病毒数据库，既<code>病毒特征库</code>进行对照，如果信息中有与其中的任何一个特征符合，杀毒软件就会判断此文件被病毒感染。杀毒软件进行查杀的时候，会挑选文件内部的一段或者几段代码来作为他识别病毒的方式，这种代码，既病毒特征码。特征码扫描是传统杀毒软件的主要利器，用来区分一个文件是否是病毒。与此相对的技术是主动防御。</p>
+<p><strong>特征码类别</strong></p>
+<ul>
+<li><p>文件特征码：对付病毒在文件中存在方式，单一文件特征码特征码、复合文件特征码（通过多处特征进行判断）；</p>
+</li>
+<li><p>内存特征码：对付病毒在内存中的存在方式，单一内存特征码、复合内存特征码</p>
+</li>
+</ul>
+<p>优点：速度快、准确率相对高、误杀相对少、少用户参与</p>
+<p>缺点：需持续更新病毒库本本，老化则失去价值，无法检测未见过新病毒</p>
+<p><strong>文件校验和法</strong></p>
+<p>对文件进行扫描后，可以将正常文件的内容，计算其校验和，将该校验和写入文件中或写入别的文件中保存；在文件使用过程中，定期地或每次使用文件前，检查文件现在内容算出的校验和与原来保存的校验和是否一致，以此来发现文件是否感染病毒。</p>
+<p><strong>进程行为监测法（沙盒模式）</strong></p>
+<p>机制：通过对病毒多年的研究、观察，发现其一些行为是病毒的共同行为，且这些行为跟正常程序存在罕见的不同。当其运行时，监控其进程的各种行为，如果发现了异常且有危害的行为，及时报警。</p>
+<p>优点：可发现未知新病毒，相对准确预报未知病毒</p>
+<p>缺点：存在无恶报、不能识别病毒名称、需要用户参与判断</p>
+<p><strong>云查杀</strong></p>
+<p>云查杀特点可概括为特征查杀，杀软会将较为可疑但特征库并没有响应特征的程序传回杀软公司服务器上，进而判断该程序是否为恶意程序，然后作出响应。因此存在云查杀的情况下，可能当时没有报警，但过一段时间就会提示病毒。</p>
+<p><strong>主动防御技术</strong></p>
+<p>主动防御并不需要病毒特征支持，只要杀毒软件能分析并扫描到目标程序的行为，并根据预先设定的规则，判断是否应该进行清除操作，主动防御设想领先于病毒，让杀毒软件编程病毒分析工程师一样自己分析病毒。</p>
+<p><strong>机器学习识别技术</strong></p>
+<p>机器学习识别激素即可做静态样本的二进制分析，又可以运用在沙箱动态行为分析当中，是内容/行为+算法模式。目前各大厂商均在尝试运用深度学习技术来识别病毒特征，如瀚思科技的基于深度学习的二进制恶意样本检测。</p>
+<h4 id="0x04-免杀技术介绍"><a href="#0x04-免杀技术介绍" class="headerlink" title="0x04 免杀技术介绍"></a>0x04 免杀技术介绍</h4><p><strong>修改特征码</strong></p>
+<p>免杀的最基本思想是破坏特征，这个特征可能是特征码，也可能是行为特征，主要破坏来病毒与木马所固有的特征，并保证其原有功能么有改变，免杀即可完成。</p>
+<p><code>特征码：能识别一个程序是一个病毒的一段不大于64字节的特征串</code></p>
+<p>反病毒技术，更改特征码达到免杀效果的两种方式</p>
+<p>一种是改特征码。改掉其中表明它是木马的特征，如无关紧要，可删除。</p>
+<p>第二种是针对目前的校验和查杀技术的免杀思想，原理虽然依旧是特征码，但已脱离存粹意义上的特征码。其校验和依旧是根据病毒文件中与众不同的区块计算出来的，如果一个文件某个特定区域的校验和符合病毒库中的特征，那么反病毒软件就会报警。如要免杀，只要对病毒的特定区域进行一定的更改，这样会使这一区域校验和改变，从而达到欺骗反病毒软件的目的。</p>
+<p>修改特征码重要的是定位特征码，由于各个杀入厂商的特征不同，效果一般，有时可以一用。</p>
+<p><strong>花指令免杀</strong></p>
+<p>花指令是程序中一些无意义的指令,花指令是否存在对程序的执行结果没有影响，由设计者特别构思,希望使反汇编的时候出错,让破解者无法清楚正确地反汇编程序的内容,迷失方向。</p>
+<p>大多数反病毒软件是靠特征码来判断文件是否有毒，其为了提高精度，特征码都是在一定偏移量限制之内的，否则会对反病毒软件的效率产生严重影响。攻击者为一个程序添加一段花指令后，程序的部分偏移会受到影响，如果反病毒不能识别这段花指令，那么它检测特征码的偏移量会整体位移一段位置，则无法正常检测木马。</p>
+<p><strong>加壳免杀</strong></p>
+<p>软件加壳可成为软件加密（或软件压缩），只是加密（或压缩）的方式与目的不一样。壳是软件所增加的保护，不会破坏里面的程序结构。当运行这个加壳软件的时候，系统首先会运行程序里的壳，然后由壳将加密的程序逐步还原到内存中，最后运行程序。</p>
+<p>使软件达到加密的目的，就是壳的作用。</p>
+<p>加壳虽然对于特征码绕过有很好效果，因加密壳基本可以把特征码全部掩盖，但缺点明显，壳也有自己的特征。一些杀软会把主流的壳如VMP, Themida直接划为有问题。在某些情况下，有的常见版本壳会被直接脱掉分析。</p>
+<p>在这种情况下，可以考虑一切冷门的加密壳。可以基于开源的压缩壳改一些源码，可能效果不错。加壳的方式用来免杀较为实用，特别是针对不开源的PE文件，通过加壳可绕过很多特征码识别。</p>
+<p><strong>内存免杀</strong></p>
+<p>CPU不案件可能为某一款加壳软件而特别设计，某个软件被加壳后的可执行代码CPU是读不懂。这就要求在执行外壳代码时，先对原软件解密，放入内存里，然后再通过CPU执行。</p>
+<p>因杀毒软件的内存扫描原理与硬盘上的文件扫描原理一样，均通过特征码对比实现，不过为了制造迷惑性，大多数杀毒软件公司的内存扫描与文件扫描采用的不是同一套特征码，这导致一个病毒木马同时拥有两套特征码，必须将它们同时破坏掉才能躲过杀毒软件的查杀。</p>
+<p>因此，除加壳外，只要加一个会混淆程序原有代码的<code>猛</code>壳，即可躲过查杀</p>
+<p><strong>二次编译</strong></p>
+<p>metasploit和msfvenom提供的各种payload和encoder，生成的shellcode被各大厂商盯的太死，基本报废。因此对shellcode进行进一步修改编译成了msf免杀的主流，多借助于C、C#、python等语言对shellcode进行二次编译从而达到免杀</p>
+<p><strong>分离免杀</strong></p>
+<p>侯亮和倾璇分别提过payload分离免杀和webshell分离免杀，采用分离，既将shellCode和加载器分离。网上有各种加载器代码，各种语言实现的均有，效果不错。如侯亮提到过的<code>shellcode_launcher</code>加载c代码</p>
+<p><strong>资源修改</strong></p>
+<p>部分杀软会设置白名单，如之前把程序图标替换为360安全卫士能过360的查杀</p>
+<p>加资源</p>
+<ul>
+<li>使用ResHacker对文件进行资源操作，找来多个正常软件，将它们的资源加入到自己软件，如图片，版本信息，对话框等</li>
+</ul>
+<p>替换资源</p>
+<ul>
+<li>使用ResHacker替换无用的资源（Version等）</li>
+</ul>
+<p>加签名</p>
+<ul>
+<li>使用签名伪造工具，将正常软件的签名信息加入到自己的软件中</li>
+</ul>
+<p>参考链接</p>
+<p>远控免杀专题文章(1)-基础篇：<a href="https://mp.weixin.qq.com/s/3LZ_cj2gDC1bQATxqBfweg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/3LZ_cj2gDC1bQATxqBfweg</a></p>
+<p>免杀技术有一套:<a href="https://anhkgg.com/aanti-virus/" target="_blank" rel="noopener">https://anhkgg.com/aanti-virus/</a></p>
+</div><!--文章标签--><div class="tags"><a href="/tags/免杀/">免杀</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 15px;">远程代码执行</a> <a href="/tags/metasploit/" style="font-size: 18px;">metasploit</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/免杀/" style="font-size: 12px;">免杀</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/06/免杀初探/">免杀初探</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/06/利用msfvenom生成木马/">利用msfvenom生成木马</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/05/搭建域环境/">搭建域环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/03/Ngrok-MSF/">Ngrok&MSF</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/28/Virt-Manager制作并克隆QCOW2镜像/">Virt-Manager制作并克隆QCOW2镜像</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/24/Tomcat-Ajp漏洞复现-CVE-2020-1938/">Tomcat_Ajp漏洞复现(CVE-2020-1938)</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/18/metasploit之meterpreter/">metasploit之meterpreter</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/14/Metasploit基本使用和控制台命令/">Metasploit基本使用和控制台命令</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/13/Metasploit信息收集/">Metasploit信息收集</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/12/metasploit基础/">metasploit基础</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
