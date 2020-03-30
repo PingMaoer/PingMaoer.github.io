@@ -1,0 +1,603 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>内网信息收集一 - Guko's Blog</title><meta name="description" content="渗透的本质是信息收集，当我们拿到webshell或者通过鱼叉攻击拿到内网终端控制权限的时，在我们对内网展开渗透之前，首先要做的是详细的信息收集，信息收集的程度直接决定着之后的渗透是否顺利0x01 收集本机信息简介不管是内网还是内网中，信息收集都是重要的第一步。对内网中一台机器，其所处内网的结构是什么"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">内网信息收集一</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">内网信息收集一</h1><div class="post-meta">2020-03-30<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>渗透的本质是信息收集，当我们拿到webshell或者通过鱼叉攻击拿到内网终端控制权限的时，在我们对内网展开渗透之前，首先要做的是详细的信息收集，信息收集的程度直接决定着之后的渗透是否顺利</p>
+<a id="more"></a>
+
+<p><img src="/2020/03/30/内网信息收集一/39.png" alt></p>
+<h4 id="0x01-收集本机信息简介"><a href="#0x01-收集本机信息简介" class="headerlink" title="0x01 收集本机信息简介"></a>0x01 收集本机信息简介</h4><p>不管是内网还是内网中，信息收集都是重要的第一步。对内网中一台机器，其所处内网的结构是什么、其角色是什么、使用这台机器的人的角色是什么，以及这台机器上安装了什么杀毒软件、这台机器是通过什么方式上网的、这台机器是笔记本电脑还是台式机器等问题，都需要通过信息收集来科大</p>
+<h4 id="0x02-手动信息收集"><a href="#0x02-手动信息收集" class="headerlink" title="0x02 手动信息收集"></a>0x02 手动信息收集</h4><p>本机信息包括操作系统、权限、内网IP地址段、杀毒软件、端口、服务、补丁更新频率、网络连接、共享、会话等。如果是域内主机，操作系统、应用软件、补丁、服务、杀毒软件一般为批量安装。</p>
+<p>通过本机相关细腻，可以进一步了解整个域的操作系统版本、软件及补丁安装情况、用户命令方式等</p>
+<p><strong>1、查询网络配置信息</strong></p>
+<p>获取本机网络配置信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ifconfig /all</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/1.png" alt></p>
+<p><strong>2、查询操作系统及软件的信息</strong></p>
+<p>（1）查询操作系统和版本信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo | findstr /B /C:&quot;OS Name&quot; /C:&quot;OS Version&quot;</span><br></pre></td></tr></table></figure>
+
+<p>如果是中文版操作系统，输入则输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo | findstr /B /C:&quot;OS 名称&quot; /C:&quot;OS 版本&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/2.png" alt></p>
+<p>(2)查看系统体系结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo %PROCESSOR_ARCHITECTURE%</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/3.png" alt></p>
+<p>(3)查看安装的软件及版本、路径等</p>
+<p>利用wmic命令，将结果输出到文本文件中。如下具体命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic product get name,version</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/4.png" alt></p>
+<p>利用powershell命令，收集软件的版本信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell &quot;Get-WmiObject -class Win32_Product |Select-Object -Property name,version&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/5.png" alt></p>
+<p><strong>3、查询本机服务信息</strong></p>
+<p>查询本机服务信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic service list brief</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/6.png" alt></p>
+<p><strong>4、查询进程列表</strong></p>
+<p>查看当前进程列表和进程用户，分析软件、邮件客户端、VPN和杀毒软件等进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tasklist</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/7.png" alt></p>
+<p>执行如下命令，查看进程信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic process list brief</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/8.png" alt></p>
+<p>常见杀毒软件的进程</p>
+<table>
+<thead>
+<tr>
+<th>进程</th>
+<th align="center">软件名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>360sd.exe</td>
+<td align="center">360杀毒</td>
+</tr>
+<tr>
+<td>360tray.exe</td>
+<td align="center">360实时保护</td>
+</tr>
+<tr>
+<td>ZhuDongFangYu.exe</td>
+<td align="center">360主动防御</td>
+</tr>
+<tr>
+<td>KSafeTray.exe</td>
+<td align="center">金山卫士</td>
+</tr>
+<tr>
+<td>SafeDogUpdateCenter.exe</td>
+<td align="center">服务器安全狗</td>
+</tr>
+<tr>
+<td>McAfee McShield.exe</td>
+<td align="center">McAfee</td>
+</tr>
+<tr>
+<td>Egui.exe</td>
+<td align="center">NOD32</td>
+</tr>
+<tr>
+<td>AVP.EXE</td>
+<td align="center">卡巴斯基</td>
+</tr>
+<tr>
+<td>Avguard.exe</td>
+<td align="center">小红伞</td>
+</tr>
+<tr>
+<td>Bdagent.exe</td>
+<td align="center">BitDefender</td>
+</tr>
+</tbody></table>
+<p><strong>5、查看启动程序信息</strong></p>
+<p>查看启动程序信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic startup get command,caption</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/9.png" alt></p>
+<p><strong>6、查看计划任务</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks /query /fo LIST /v</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/10.png" alt></p>
+<p><strong>7、查看主机开机时间</strong></p>
+<p>查看主机开机时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net statistics workstation</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/11.png" alt></p>
+<p><strong>8、查询用户列表</strong></p>
+<p>查看本机用户列表,通过分析本机用户列表，可以找出内网机器的命令规则。个人机器的名字，可用来推测整个域的用户命令方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/12.png" alt></p>
+<p>获取本地管理员（通常包含用户）信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net localgroup administrators</span><br></pre></td></tr></table></figure>
+
+<p>本地管理员有一个用户和一个组，默认的Domain Admins组中为域内机器的本地管理员用户，在实际的环境中，会有域用户被添加为域机器的本地管理员用户</p>
+<p><img src="/2020/03/30/内网信息收集一/13.png" alt></p>
+<p>查看当前在线用户</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">query user || qwinsta</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/14.png" alt></p>
+<p><strong>9、列出或断开本地计算机与所连接的客户端之间的会话</strong></p>
+<p>列出或断开本地计算机与所连接可客户端之间的会话                           </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net session</span><br></pre></td></tr></table></figure>
+
+<p><strong>10、查询端口列表</strong></p>
+<p>查看端口列表、本机开放的端口所对应的服务和应用程序</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -ano</span><br></pre></td></tr></table></figure>
+
+<p>这里可以根据当前机器和哪些主机建立来连接、以及TCP、UDP等端口的使用和监听情况，从而通过网络连接进行初步的判断（如在代理服务器中可能会有很多机器开放来代理端口、更新服务器可能开放来更新端口8530，DNS服务器可能开放了53端口）</p>
+<p><img src="/2020/03/30/内网信息收集一/15.png" alt></p>
+<p><strong>11、查看补丁列表</strong></p>
+<p>查看系统的详细信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo</span><br></pre></td></tr></table></figure>
+
+<p>关注系统的版本、位数、域、补丁信息及更新频率等。域内主机基本批量安装，通过查看本机补丁列表从而找到未打补丁的漏洞，这里可以看到只打了两个补丁</p>
+<p><img src="/2020/03/30/内网信息收集一/16.png" alt></p>
+<p>使用wmic命令查看安装在系统中的补丁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic qfe get Caption,Description,HotFixID,InstalledOn</span><br></pre></td></tr></table></figure>
+
+<p>补丁的名称、描述、ID、安装时间等信息<br><img src="/2020/03/30/内网信息收集一/17.png" alt></p>
+<p><strong>12、查询本机共享列表</strong></p>
+<p>查看本机共享列表和可访问的域共享列表（域共享在很多时候是相同的）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net share</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/18.png" alt></p>
+<p>利用wmic命令查找共享列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic share get name,path,status</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/19.png" alt></p>
+<p><strong>13、查询路由表及所有可用借口的ARP缓存表</strong></p>
+<p>查询路由表及所有可用借口的ARP(地址解析协议)缓存表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">route print</span><br><span class="line">arp -a</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/20.png" alt></p>
+<p><strong>14、查询防火墙相关配置</strong></p>
+<p>（1）关闭防火墙</p>
+<p>windwos server 2003及之前的版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh firewall set opmode disable</span><br></pre></td></tr></table></figure>
+
+<p>Windows server 2003之后的版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh advfirewall set allprofiles state off</span><br></pre></td></tr></table></figure>
+
+<p>(2)查看防火墙配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh firewall show config</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/21.png" alt></p>
+<p>(3)修改防火墙配置</p>
+<p>windwos server 2003及之前的版本，允许指定程序全部连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh firewall add allowedprogram c:\nc.exe &quot;allow nc&quot; enable</span><br></pre></td></tr></table></figure>
+
+<p>Windows server 2003之后的版本</p>
+<ul>
+<li>允许指定程序进入</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh advfirewall firewall add rule name=&quot;pass nc&quot; dir=in action=allow program=&quot;C: \nc.exe&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>允许指定程序退出</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh advfirewall firewall add rule name=&quot;Allow nc&quot; dir=out action=allow program=&quot;C: \nc.exe&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>允许3389端口放行</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh advfirewall firewall add rule name=&quot;Rmote Desktop&quot; protocol=TCP dir=in localport=3389 action=allow</span><br></pre></td></tr></table></figure>
+
+<p>(4)自定义防火墙日志存储位置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netsh advfirewall set currentprofile logging filename &quot;C:\windows\temp\fw.log&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>15、查看代理配置情况</strong></p>
+<p>可以看到服务器代理配置信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg query &quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/22.png" alt></p>
+<p><strong>16、查询并开启远程连接服务</strong></p>
+<p>（1）查看远程连接端口</p>
+<p>在命令行环境中执行注册表查询语句，如下命令，连接的端口未<code>0xd3d</code>转换后为<code>3389</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REG QUERY &quot;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp&quot; /V PortNumber</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/23.png" alt></p>
+<p>(2) 在windwos server 2003中开启3389端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic path win32_terminalservicesetting where (__CLASS != &quot;&quot;) call setallowtsconnections 1</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f</span><br></pre></td></tr></table></figure>
+
+<p>(3）在windwos server 2008和windows server 2012中开启3389端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic /namespace:\\root\cimv2\terminalservices path win32_terminal servicesetting where (__CLASS !=&quot;&quot;) call setallowtsconnections 1 //2008不成功</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f  //2008 管理员cmd执行</span><br></pre></td></tr></table></figure>
+
+<p>以下为2012开启方式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REG ADD &quot;HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server&quot; /v fSingleSessionPerUser /t REG_DWORD /d 0 /f</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 0 /f</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-自动收集信息"><a href="#0x03-自动收集信息" class="headerlink" title="0x03 自动收集信息"></a>0x03 自动收集信息</h4><p>为了简化操作，可以创建一个脚本，在目标机器上完成流程、服务、用户账号、用户组、网络接口、硬盘信息、网络共享信息、操作系统、安装的补丁、安装的软件、启动时运行的程序、时区等信息的查询工作。网上有相关的脚本，我们也可以自己定制一个，如下是一个利用WMIC收集目标机器信息的脚本</p>
+<p>WMIC（windows管理工具命令行），默认请款修改，任何版本的windows xp的低权限用户不能访问WMIC,windows7以上本本的低权限用户允许访问WMIC并执行相关查询操作，<a href="http://www.fuzzysecurity.com/scripts/files/wmic_info.rar" target="_blank" rel="noopener">下载地址</a></p>
+<p><img src="/2020/03/30/内网信息收集一/24.png" alt></p>
+<h4 id="0x04-Empire下的主机信息收集"><a href="#0x04-Empire下的主机信息收集" class="headerlink" title="0x04 Empire下的主机信息收集"></a>0x04 Empire下的主机信息收集</h4><p>Empire提供了用于收集主机信息的模块。输入命令<code>usemodule situational_awareness/host/winenum</code>即可查看本机用户、域组成员、密码设置时间、剪贴板内容、系统基本信息、网络适配器信息、共享信等。</p>
+<p><img src="/2020/03/30/内网信息收集一/36.png" alt></p>
+<p><code>situational_awareness/host/computerdetails</code>模块几乎包含了系统中所有用的信息，如目标主机事件日志、应用程序控制策略日志、RDP信息、powershell脚本运行和保存信息等，这个模块需要管理员权限运行</p>
+<h4 id="0x05-查询当前权限"><a href="#0x05-查询当前权限" class="headerlink" title="0x05 查询当前权限"></a>0x05 查询当前权限</h4><p><strong>1、查看当前权限</strong></p>
+<p>查看当前权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whoami</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/25.png" alt></p>
+<p>在获取一台主机权限后，有如下三种情况</p>
+<ul>
+<li>本地普通用户：当前为win-2008本机的user用户</li>
+<li>本地管理员用户：当前为win7-x64-test本机的administrator用户</li>
+<li>域内用户：当前为hacke域内的</li>
+</ul>
+<p><img src="/2020/03/30/内网信息收集一/26.png" alt></p>
+<p>在这三种情况喜爱，如果当前内网中存在域，那么本地普通用户只能查询本机相关信息，不能查询域内信息，而本地管理员用户和域内用户可以查选域内信息。原理是：域内的所有查询都是通过域控制器来实现的（基于LDAP协议），而这个查询需要经过权限认证，所以只有域内用户才拥有这个权限；当域用户执行查询命令时，会自动使用Kerberos协议进行认证，无需额外输入账号和密码</p>
+<p>本地管理员Administrator权限可以直接提升为<code>Ntauthority</code>或<code>System</code>权限,所以，在域中除普通用户外，所有机器都有一个机器用户（用户名是机器名机上“$”）本质上，机器的system用户对应的是域里面的机器用户，因此使用system权限可以运行域内查询命令</p>
+<p><strong>2、获取域SID</strong></p>
+<p>获取域SID,当前域hacke的SID为S-1-5-21-3125703835-992822856-3564750058，域用户testuser的SID为S-1-5-21-3125703835-992822856-3564750058-1105</p>
+<p><img src="/2020/03/30/内网信息收集一/27.png" alt></p>
+<p><strong>3、查询指定用户的详细信息</strong></p>
+<p>查询指定用户的信息信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user testuser /domain</span><br></pre></td></tr></table></figure>
+
+<p>看到当前用户在本地组中没有本地管理员权限，在域中属于Domain Users组</p>
+<p><img src="/2020/03/30/内网信息收集一/28.png" alt></p>
+<h4 id="0x06-判断是否存在域"><a href="#0x06-判断是否存在域" class="headerlink" title="0x06 判断是否存在域"></a>0x06 判断是否存在域</h4><p>在获取了本机相关性信息后，要判断当前内网中是否存在域。如果当前内网中存在域，就需要判断所控主机是否在域内</p>
+<p><strong>1、使用ipconfig命令</strong></p>
+<p>使用ipconifg /all可以查看网管IP地址、DNS的IP地址、域名、本机是否和DNS服务器出域同一网段等信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipconfig /all</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/29.png" alt></p>
+<p>通过反向解析查询命令nslookup来解析域名的IP地址。用解析得到的IP地址进行对比，判断域控制器和DNS服务器是否在同一台服务器上</p>
+<p><img src="/2020/03/30/内网信息收集一/30.png" alt></p>
+<p><strong>2、查看系统详细信息</strong></p>
+<p>“域”既域名（当前hacke.testlab）”登录服务器”为域控制器。如果“域”为“WORKGROUP”表示当前服务器不在域内</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systeminfo</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/31.png" alt></p>
+<p><strong>3、查询当前登录域及登录用户信息</strong></p>
+<p>“工作站域DNS名称”为域名（如果“WORKGROUP”表示当前为非域环境），“登录域”用于表示当前登录用户是域用户还是本地用户，此时显示为当前登录的用户的域用户</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net config workstation</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/32.png" alt></p>
+<p><strong>4、判断主域</strong></p>
+<p>判断主域（域服务器通常会同时作为时间服务器使用）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net time /domain</span><br></pre></td></tr></table></figure>
+
+<p>执行命令后会有如下三种情况</p>
+<ul>
+<li>存在域，但当前用户不是域用户，会出现“发生系统错误，拒绝访问”</li>
+<li>存在域，且当前用户是域用户，会有如下提示</li>
+</ul>
+<p><img src="/2020/03/30/内网信息收集一/33.png" alt></p>
+<ul>
+<li>当前网络环境为工作组，不存在域，会出现“找不到域WORKGROUP的域控制器”</li>
+</ul>
+<h4 id="0x07-探测域内存活主机"><a href="#0x07-探测域内存活主机" class="headerlink" title="0x07 探测域内存活主机"></a>0x07 探测域内存活主机</h4><p>内网存活主机探测是内网渗透测试中不可或缺的一个环节。可分为白天晚上分别进行探测，以对比分析存活主机和对应的IP地址</p>
+<p><strong>1、利用NetBIOS快速探测内网</strong></p>
+<p>NetBIOS是局域网程序使用的一种应用程序编程接口（API）为程序提供了请求低级别服务的统一命令集，为局域网提供了网络及其他特殊功能。几乎所有局域网都是在NetBIOS协议的基础上工作的。NetBlos也是计算机的标示名，主要用于局域网中计算机的互访。工作流程为正常的机器名解析查询应答过程。</p>
+<p>nbtscan是一个命令行工具，用于扫描本地或远程TCP/IP网络上的开放NetBIOS名称服务器。nbtscan有windows和linux两个版本，上传到目标服务器后输入IP地址范围运行就好</p>
+<p><img src="/2020/03/30/内网信息收集一/34.png" alt></p>
+<p>第一列显示为IP地址，第二列尾及其名称和所在域的名称，最后一列是机器所开启的服务列表</p>
+<p>输入<code>nbt.exe</code>不输入任何参数，即可查看帮助文件，获取更多的使用细节</p>
+<p><strong>2、利用ICMP协议快速探测内网</strong></p>
+<p>除了利用NetBIOS探测内网，还可以利用ICMP协议探测内网</p>
+<p>依次对内网中的每个IP地址执行ping命令，可以快速找出内网中所有存活的主机。在渗透测试中，可以使用如下命令快速探测整个C段</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">for /L %I in (1,1,254) DO @ping -w 1 -n 1 192.168.1.%I | findstr &quot;TTL=&quot;</span><br></pre></td></tr></table></figure>
+
+<p>B段查找</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">for /l %i in (1,1,255) do @ping -a 192.0.%i.1 -w 1 -n 1 | find /i &quot;Ping&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/35.png" alt></p>
+<p><strong>3、通过ARP扫描探测内网</strong></p>
+<p>（1）arp-scan工具</p>
+<p>上传arp.exe后运行，可自定义掩码、指定扫描范围等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arp.exe -t 192.168.1.0/20</span><br></pre></td></tr></table></figure>
+
+<p>arpscan.exe下载地址：<a href="https://www.2cto.com/soft/201001/16987.html#download" target="_blank" rel="noopener">https://www.2cto.com/soft/201001/16987.html#download</a></p>
+<p>所需dll文件：<a href="https://cn.dll-files.com/" target="_blank" rel="noopener">https://cn.dll-files.com</a></p>
+<p>(2) Empire中的arpscan模块</p>
+<p>Empire内置了arpscan模块，该模块用于局域网内发送ARP数据包，收集活跃主机IP地址和MAC地址信息</p>
+<p>在Empire 中输入命令<code>usemodule situational_awareness/network/arpscan</code>可使用其内置的arpscan模块</p>
+<p><img src="/2020/03/30/内网信息收集一/37.png" alt></p>
+<p>（3） Nishang中的Invoke-ARPScan.ps1脚本</p>
+<p>使用Nishang中的Invoke-ARPScan.ps1脚本，可以将脚本上传到目标主机上运行，也可以直接远程加载脚本、自定义掩码和扫描范围</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell.exe -exec bypass -Command &quot;&quot;</span><br></pre></td></tr></table></figure>
+
+<p><strong>4、通过常规TCP/UDP端口扫描探测内网</strong></p>
+<p>ScanLine是一款经典的端口扫描工具，可以在所有本本的Widnows操作系统中使用，支持TCP/UDP端口扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scanline -h -t 22,80,110,389,445,3389,1099,1433,2049,6379,7001,8080,1521,3306,3389,5432 -u 53,161,137,139 -O c:\\windows\temp\log.txt -p 192.168.1.1-254</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x08-扫描域内端口"><a href="#0x08-扫描域内端口" class="headerlink" title="0x08 扫描域内端口"></a>0x08 扫描域内端口</h4><p>通过查询目标主机的端口开放信息，可以了解目标主机所开放的服务，找到其所开放服务的漏洞、分析目标网络的拓扑结构等，关注如下三点：</p>
+<ul>
+<li>端口的Banner信息</li>
+<li>端口上运行的服务</li>
+<li>常见应用的默认端口</li>
+</ul>
+<p>在授权的情况下，像nmap masscan都是不错的选择，以及一些自定义的端口扫描脚本</p>
+<p><strong>1、利用telnet命令进行扫描</strong></p>
+<p>telnet协议是TCP/IP协议族的一员，是internet远程登录服务的标准协议和主要方式。它为用户提供了在本地计算机上完成远程主机工作的能力。在目标计算机上使用Telnet协议，可以与目标服务器建立连接</p>
+<p><strong>2、metasploit端口扫描</strong></p>
+<p>使用命令<code>search portscan</code>命令进行搜索，这里使用TCP扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">search portscan</span><br><span class="line">set ports 1-1024</span><br><span class="line">set RHOSTS 192.168.1.3</span><br><span class="line">set THREADS 10</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/03/30/内网信息收集一/38.png" alt></p>
+<p><strong>3、powersploit的invoke-portscan.ps1脚本</strong></p>
+<p>powersploit的invoke-portscan.ps1脚本，建议无文件扫描</p>
+<p><strong>4、Nishang的Invoke-Portscan模块</strong></p>
+<p>Invoke-PortScan是Nishang的端口扫描模块，用于发现主机、解析主机名、扫描端口。输入命令<code>Get-Help Invoke-PortScan -full</code>可查看帮助</p>
+<p><strong>4、端口Banner信息</strong></p>
+<p>在通过扫描发现端口后，可使用客户端连接工具或NC，获取服务器端的Banner信息。在获取Banner后可以在漏洞库中查找对应CVE编号的POC、EXP,在ExploitDB、Seebug等平台上查看相关的漏洞利用工具，从而进行验证漏洞是否存在。</p>
+<ul>
+<li>文件共享服务端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>21、22、69</td>
+<td align="center">FTP/TFTP文件传输协议</td>
+<td align="right">允许匿名的上传、下载、爆破和嗅探操作</td>
+</tr>
+<tr>
+<td>2049</td>
+<td align="center">NFS服务</td>
+<td align="right">配置不当</td>
+</tr>
+<tr>
+<td>389</td>
+<td align="center">LADP</td>
+<td align="right">注入、允许匿名访问、弱口令</td>
+</tr>
+</tbody></table>
+<ul>
+<li>远程连接服务器端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>22</td>
+<td align="center">SSH远程连接</td>
+<td align="right">爆破、SSH隧道及内网代理转发、文件传输</td>
+</tr>
+<tr>
+<td>23</td>
+<td align="center">Telnet远程连接</td>
+<td align="right">爆破、嗅探、弱口令</td>
+</tr>
+<tr>
+<td>3389</td>
+<td align="center">RDP远程桌面连接</td>
+<td align="right">Shift后门（Windows server2003以下版本）、爆破</td>
+</tr>
+<tr>
+<td>5900</td>
+<td align="center">VNC</td>
+<td align="right">弱口令爆破</td>
+</tr>
+<tr>
+<td>5632</td>
+<td align="center">PcAnywhere服务</td>
+<td align="right">抓取密码、代码执行</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Web应用服务端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>80、443、8080</td>
+<td align="center">常见的Web服务端口</td>
+<td align="right">Web攻击、爆破、对应服务器版本漏洞</td>
+</tr>
+<tr>
+<td>7001、7002</td>
+<td align="center">weblogic控制台</td>
+<td align="right">java反序列化、弱口令</td>
+</tr>
+<tr>
+<td>8080、8090</td>
+<td align="center">JBoss、Resin、Jetty、Jenkins</td>
+<td align="right">反序列化、控制台弱口令</td>
+</tr>
+<tr>
+<td>9090</td>
+<td align="center">WebSphere控制台</td>
+<td align="right">java反序列化、弱口令</td>
+</tr>
+<tr>
+<td>4848</td>
+<td align="center">GlassFish控制台</td>
+<td align="right">弱口令</td>
+</tr>
+<tr>
+<td>1352</td>
+<td align="center">Lotus Domino邮件服务</td>
+<td align="right">弱口令、信息泄露、爆破</td>
+</tr>
+<tr>
+<td>10000</td>
+<td align="center">webmin控制面板</td>
+<td align="right">弱口令</td>
+</tr>
+</tbody></table>
+<ul>
+<li>数据库服务端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3306</td>
+<td align="center">MySQL数据库</td>
+<td align="right">注入、提权、爆破</td>
+</tr>
+<tr>
+<td>1433</td>
+<td align="center">MSSQL数据库</td>
+<td align="right">注入、提权、SA弱口令、爆破</td>
+</tr>
+<tr>
+<td>5432</td>
+<td align="center">Orace数据库</td>
+<td align="right">TNS爆破、注入、反弹shell</td>
+</tr>
+<tr>
+<td>27017、27018</td>
+<td align="center">PostgreSQL数据库</td>
+<td align="right">爆破、注入、弱口令</td>
+</tr>
+<tr>
+<td>6379</td>
+<td align="center">Redis数据库</td>
+<td align="right">可尝试未授权访问、弱口令爆破</td>
+</tr>
+<tr>
+<td>5000</td>
+<td align="center">Sysbase/DB2数据库</td>
+<td align="right">爆破、注入</td>
+</tr>
+</tbody></table>
+<ul>
+<li>邮件服务端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>25</td>
+<td align="center">SMTP邮件服务</td>
+<td align="right">邮件伪造</td>
+</tr>
+<tr>
+<td>110</td>
+<td align="center">POP3协议</td>
+<td align="right">爆破、嗅探</td>
+</tr>
+<tr>
+<td>143</td>
+<td align="center">IMAP协议</td>
+<td align="right">爆破</td>
+</tr>
+</tbody></table>
+<ul>
+<li>网络常见协议端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>53</td>
+<td align="center">DNS域名系统</td>
+<td align="right">允许区域传送、DNS劫持、缓存投毒、欺骗</td>
+</tr>
+<tr>
+<td>67、68</td>
+<td align="center">DHCP服务</td>
+<td align="right">劫持、欺骗</td>
+</tr>
+<tr>
+<td>161</td>
+<td align="center">SNMP协议</td>
+<td align="right">爆破、搜集目标内网信息</td>
+</tr>
+</tbody></table>
+<ul>
+<li>特殊服务端口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>端口号</th>
+<th align="center">端口说明</th>
+<th align="right">使用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2181</td>
+<td align="center">ZooKeeper服务</td>
+<td align="right">未授权访问</td>
+</tr>
+<tr>
+<td>8069</td>
+<td align="center">Zabbix服务</td>
+<td align="right">远程执行、SQL注入</td>
+</tr>
+<tr>
+<td>9200、9300</td>
+<td align="center">Elasticsearch服务</td>
+<td align="right">远程执行</td>
+</tr>
+<tr>
+<td>11211</td>
+<td align="center">Mencached服务</td>
+<td align="right">未授权访问</td>
+</tr>
+<tr>
+<td>512、513、514</td>
+<td align="center">Linux rexec服务</td>
+<td align="right">爆破、远程登录</td>
+</tr>
+<tr>
+<td>873</td>
+<td align="center">Rsync服务</td>
+<td align="right">匿名访问、文件上传</td>
+</tr>
+<tr>
+<td>3690</td>
+<td align="center">SVN服务</td>
+<td align="right">SVN泄露、未授权访问</td>
+</tr>
+<tr>
+<td>50000</td>
+<td align="center">SAP Management Console</td>
+<td align="right">远程执行</td>
+</tr>
+</tbody></table>
+</div><!--文章标签--><div class="tags"><a href="/tags/域信息收集/">域信息收集</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/PowerShell/" style="font-size: 15px;">PowerShell</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/远程代码执行/" style="font-size: 15px;">远程代码执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/metasploit/" style="font-size: 18px;">metasploit</a> <a href="/tags/免杀/" style="font-size: 18px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 12px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/03/30/内网信息收集一/">内网信息收集一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/18/PowerShell-Empire/">PowerShell-Empire</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/17/免杀初探-Veil/">免杀初探-Veil</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/13/PowerShell基础/">PowerShell基础</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/12/免杀初探-msf自免杀/">免杀初探-msf自免杀</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/07/免杀初探/">免杀初探</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/06/利用msfvenom生成木马/">利用msfvenom生成木马</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/05/搭建域环境/">搭建域环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/03/Ngrok-MSF/">Ngrok&MSF</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/02/28/Virt-Manager制作并克隆QCOW2镜像/">Virt-Manager制作并克隆QCOW2镜像</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
