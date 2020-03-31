@@ -2,7 +2,7 @@
 <a id="more"></a>
 
 <p><img src="/2020/03/31/内网信息收集二/46.png" alt></p>
-<h4 id="0x01-收集域内基础信息"><a href="#0x01-收集域内基础信息" class="headerlink" title="0x01 收集域内基础信息"></a>0x01 收集域内基础信息</h4><p>本节的查询命令本质是通过LDAP协议到域控制器上进行查询的，因此查询需要权限认证。只有域用户有此权限，本地用户无法运行其命令（除<code>system）在域中，除普通用户外，所有的机器都有一个机器用户，其用户名为机器名加上</code>$`system权限用户对应的是域内的机器用户，因此system权限用户可以运行</p>
+<h4 id="0x01-收集域内基础信息"><a href="#0x01-收集域内基础信息" class="headerlink" title="0x01 收集域内基础信息"></a>0x01 收集域内基础信息</h4><p>本节的查询命令本质是通过LDAP协议到域控制器上进行查询的，因此查询需要权限认证。只有域用户有此权限，本地用户无法运行其命令（除<code>system</code>）在域中，除普通用户外，所有的机器都有一个机器用户，其用户名为机器名加上<code>$</code>system权限用户对应的是域内的机器用户，因此system权限用户可以运行</p>
 <p><strong>1、查询域</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net view /domain</span><br></pre></td></tr></table></figure>
 
