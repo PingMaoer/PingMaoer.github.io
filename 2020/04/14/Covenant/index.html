@@ -1,0 +1,140 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>Covenant - Guko's Blog</title><meta name="description" content="Covenant是一个.NET命令和控制框架，旨在突出.NET的攻击面，在Covenant的帮助下，研究人员可以更加轻松地去利用.NET的攻击面，而且它还可以作为红队研究人员的协作命令和控制平台0x01 Covenant安装项目地址:1https://github.com/cobbr/Covenan"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Covenant</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Covenant</h1><div class="post-meta">2020-04-14<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>Covenant是一个.NET命令和控制框架，旨在突出.NET的攻击面，在Covenant的帮助下，研究人员可以更加轻松地去利用.NET的攻击面，而且它还可以作为红队研究人员的协作命令和控制平台</p>
+<a id="more"></a>
+
+<h4 id="0x01-Covenant安装"><a href="#0x01-Covenant安装" class="headerlink" title="0x01 Covenant安装"></a>0x01 Covenant安装</h4><p>项目地址:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/cobbr/Covenant</span><br></pre></td></tr></table></figure>
+
+<p>Covenant提供了两种安装方法：<a href="https://github.com/cobbr/Covenant/wiki/Installation-And-Startup，这里采用Docker安装方式。" target="_blank" rel="noopener">https://github.com/cobbr/Covenant/wiki/Installation-And-Startup，这里采用Docker安装方式。</a></p>
+<p>构建Docker镜像:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git clone --recurse-submodules https://github.com/cobbr/Covenant</span><br><span class="line"></span><br><span class="line">cd Covenant/Covenant</span><br><span class="line"></span><br><span class="line">docker build -t covenant .</span><br></pre></td></tr></table></figure>
+
+<p>接下来，在Docker容器中运行Covenant，确保已经将”&lt;/absolute/path/to/Covenant/Covenant/Data&gt;”替换成了我们的绝对路径：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -p 7443:7443 -p 80:80 -p 443:443 --namecovenant -v &lt;/absolute/path/to/Covenant/Covenant/Data&gt;:/app/Data covenant</span><br></pre></td></tr></table></figure>
+
+<p>该<code>-it</code>参数是Docker参数，指示我们应该在交互式tty中开始Covenant，如果您不想附加到tty，可以将其排除。</p>
+<p>这些<code>-p</code>参数将端口公开到Covenant Docker容器。您必须公开端口7443和要启动侦听器的任何其他端口。</p>
+<p>该<code>-v</code>参数在主机和容器之间创建一个共享的数据目录。确保指定数据目录的绝对路径，相对路径将不起作用。</p>
+<p>一定要把Covenant 映射到docker镜像里面对应的目录，如果没有的话，就跑不起来，因为所有的功能模块都在Data目录里面</p>
+<p>注意：如果你是Mac系统那么绝对路径需要去docker Preferences中的File Sharing中添加一下</p>
+<p><img src="/2020/04/14/Covenant/1.png" alt></p>
+<p>运行下列命令即可终止容器运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stop covenant</span><br></pre></td></tr></table></figure>
+
+<p>运行下列命令即可重启容器：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker start covenant –ai</span><br></pre></td></tr></table></figure>
+
+<p>如果你需要移除所有Covenant数据并进行初始化恢复，可以运行下列命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker rm covenant</span><br><span class="line">docker run -it -p 7443:7443 -p 80:80 -p 443:443 --namecovenant -v &lt;/absolute/path/to/Covenant/Covenant/Data&gt;:/app/Data covenant--username AdminUser --computername 0.0.0.0</span><br></pre></td></tr></table></figure>
+
+<p>通过安装，可以看到已经跑起来了</p>
+<p><img src="/2020/04/14/Covenant/2.png" alt></p>
+<p>启动Covenant之后，我们需要通过Web接口完成初始用户注册:</p>
+<p><img src="/2020/04/14/Covenant/3.png" alt></p>
+<h4 id="0x02-配置使用Covenant"><a href="#0x02-配置使用Covenant" class="headerlink" title="0x02 配置使用Covenant"></a>0x02 配置使用Covenant</h4><p>注册用户登录后进入</p>
+<p><img src="/2020/04/14/Covenant/4.png" alt></p>
+<p>接下来说一个各个模块的使用方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Dashboard      #主视图和你登陆时看到的第一个东西。你可以很快地看到你得到的活跃的Grunts，当前活跃的监听器，以及一些最近分配给Grunts的任务。</span><br><span class="line">Listeners      #提供用于管理监听器和监听器配置文件的界面。</span><br><span class="line">Launchers      #提供用于创建，托管和下载启动器的界面，以用于启动新的Grunts。</span><br><span class="line">Grunts         #显示一个表格，以查看所有活动和不活动的Grunts，以及与Grunts进行交互并为其分配新任务。</span><br><span class="line">Templates      #植入模板 可自定义很多payload模板</span><br><span class="line">Tasks          #任务内置Mimikatz等很多模块执行多种任务，也可自行定制</span><br><span class="line">Taskings       #显示一个表格，以查看分配给Grunts的所有任务。</span><br><span class="line">Graph          #提供图形视图以可视化监听器，Grunts和对等图形。</span><br><span class="line">Data           #提供有关在操作过程中从Grunts 收集的数据的视图，例如凭据，指示器和下载的文件。</span><br><span class="line">Users          #提供用于用户管理和创建的界面。</span><br></pre></td></tr></table></figure>
+
+<p><strong>Dashboard：仪表盘</strong></p>
+<p><img src="/2020/04/14/Covenant/5.png" alt></p>
+<p><strong>Listeners：监听器</strong></p>
+<p>单击<code>Create</code>新建一个监听器</p>
+<p><img src="/2020/04/14/Covenant/6.png" alt></p>
+<p><img src="/2020/04/14/Covenant/10.png" alt></p>
+<p>HTTP监听器配置：</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Name   #将在整个接口中使用的监听器的名称。选择一些可识别的东西！</span><br><span class="line">BindAddress   #BindAddress是监听器将绑定到的本地ip地址。通常，这个值是0.0.0.0。</span><br><span class="line">BindPort    #监听器需要绑定的端口</span><br><span class="line">ConnectPort    #ConnectPort是Grunts将直接连接到的回调端口</span><br><span class="line">ConnectAddress    #ConnectAddress是Grunts将直接连接到的回调地址</span><br><span class="line">UseSSL     #是否启动SSL证书</span><br><span class="line">HttpProfile     #HttpProfile决定了Grunt和Listener通信的行为，大家可以自行修改</span><br></pre></td></tr></table></figure>
+
+<p>选择默认配置，直接新建一个</p>
+<p><img src="/2020/04/14/Covenant/11.png" alt></p>
+<p>这里还有一个选项为<code>Profiles</code>这个里面为监听器的配置文件，大家可以自行修改调试。默认现在有四个Profile，选择默认的来看看。</p>
+<p><img src="/2020/04/14/Covenant/7.png" alt></p>
+<p>这里可以定制<code>HttpUrls</code>访问地址，如果url你只定制一个如index.html很容易被发现,定制多个url这样访问的是随机的。</p>
+<p><code>MessageTransform</code>这里的类名称，方法名不用变，里面的内容可以替换。这个就是说你真正要传输的内容，可以自定义进行加解密，比如说你要把mimikatz的结果传回来，那么你可以在这里自定义各类加解密的方式。这里就比CobaltStrike好一点，CobaltStrike它只给你限定了几种方法,就那几种，Covenant就可以想用什么样的加解密都可根据你自己的需求来。</p>
+<p><img src="/2020/04/14/Covenant/8.png" alt></p>
+<p><code>HttpRequestHeaders</code>请求头这里GUID给放在了cookie里面，也可以增加多个头，<code>HttpPostRequest</code>回传，这个Data就是实际的回传内容。</p>
+<p><img src="/2020/04/14/Covenant/9.png" alt></p>
+<p><strong>Launchers：启动器</strong></p>
+<p>启动器用于启动<code>Grunt</code>Covenant支持9种启动方式，大家在web页面上能看见名称和介绍</p>
+<p>这里要说一下<code>Grunt</code>这种都会分是否进行staging,相当于一个shellcode在里面,一般叫Loader, Loader负责与<code>Team server</code>端。相当于一个中间转发端，这个Loder会去Team server端去拉取真正的core dll 把它拉到内存里去执行，为一个stager的过程。 stager一般都是不具备独立运行的，这里需要一个launcher加载器，相当于一个bootstrop引导程序，引导程序是可以运行的。</p>
+<p><img src="/2020/04/14/Covenant/12.png" alt></p>
+<p>具体的各种启动方法，大家可以参照systemino大佬的文章：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://blog.csdn.net/systemino/article/details/102901790</span><br></pre></td></tr></table></figure>
+
+<p><strong>Binary启动方式：</strong></p>
+<p>我们单击<code>Binary</code>名称进入配置页面，Binary默认生成一个.NET的程序集，就是把stager生成成一个Binary，首先先选择我们之前建立的监听器</p>
+<p>下一个是需要选择通信模板，官方提供了三个，一种是HTTP,一种是SMB。如果监听器选择的是走HTTP的，那么模板也选择HTTP的，如果是SMB的那么就选<code>GruntSMB</code>的。SMB在内网用的比较多，用其他机器可以通过另外一个已经运行了这个<code>Grunt</code>的机器，通过它来上网，而不直接外连，走SMB协议。</p>
+<p><img src="/2020/04/14/Covenant/13.png" alt></p>
+<p><code>KillDate</code>在实际渗透当中比较有用，它的意思是会在指定的时间点达到的时候会自动杀掉，比如在实际情况中因为某些网络原因把权限给丢了，连不上了，但这个时候你的<code>Grunt</code>还在目标机器上跑着，这个时候很容易被人发现，这个时候设置一个<code>KillDate</code>可以防止被发现的风险</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Listener      #为监听器</span><br><span class="line">Template     #为通讯模板</span><br><span class="line">Delay        #为延迟 </span><br><span class="line">JitterPercent  #为抖动时间     </span><br><span class="line">ConnectAttempts #为尝试连接时间</span><br><span class="line">KillDate      #为杀死进程时间</span><br><span class="line">DotNetFrameworkVersion   #为.net的版本</span><br></pre></td></tr></table></figure>
+
+<p>这里我就选择默认的配置，监听器选择http的，模板也选http，.net版本为4.0，单击<code>Generate</code>即可成功生成,点击<code>Download</code>即可下载可执行文件</p>
+<p><img src="/2020/04/14/Covenant/14.png" alt></p>
+<p><code>Code</code>可以直接看到生成的代码，对于修改非常方便，是一个特色功能点</p>
+<p><img src="/2020/04/14/Covenant/15.png" alt></p>
+<p>我们可以去靶机里测试即可上线</p>
+<p><img src="/2020/04/14/Covenant/16.png" alt></p>
+<p>可以看到在<code>Grunts</code>已显示成功上线</p>
+<p><img src="/2020/04/14/Covenant/17.png" alt></p>
+<p><strong>Grunts：</strong></p>
+<p><code>Grunts</code>里会显示所有的受控主机，并可以像受控主机发送命令及分配任务。</p>
+<p><img src="/2020/04/14/Covenant/18.png" alt></p>
+<p>我们点击相应的名称即可进入对应主机的控制页面。</p>
+<p><code>Info：</code>info标签页会显示受控主机的所有信息，在底部的Edit按钮可对其进行修改。</p>
+<p><img src="/2020/04/14/Covenant/19.png" alt></p>
+<p><code>Interact：</code>Interact标签内可与主机进行交互，例如执行系统命令：<code>shellcmd ipconfig</code></p>
+<p>Covenant内置了多种命令和工具都可以在此处与主机进行交互（详情见Tasks）</p>
+<p><img src="/2020/04/14/Covenant/23.png" alt></p>
+<p>使用<code>help</code>和查看所有命令的介绍</p>
+<p><img src="/2020/04/14/Covenant/20.png" alt></p>
+<p><code>Task：</code>Task标签主要用来对目标该目标下发任务</p>
+<p>我们可以选取自己所需要的的脚本来执行</p>
+<p><img src="/2020/04/14/Covenant/21.png" alt></p>
+<p>我这里选择一个扫端口的来演示一下，扫描的目标和端口都可以自定义</p>
+<p><img src="/2020/04/14/Covenant/25.png" alt></p>
+<p>点击Task执行，扫描的结果会在弹出的任务页里显示,同时也会在<code>Interact</code>里显示详情</p>
+<p><img src="/2020/04/14/Covenant/26.png" alt></p>
+<p><code>Taskings：</code>Taskings标签主要用来查看该主机任务分配的情况，就是一个记录自己执行过的操作，相当于一个历史记录</p>
+<p><img src="/2020/04/14/Covenant/22.png" alt></p>
+<p>点击各个任务的名称会显示任务详情</p>
+<p><img src="/2020/04/14/Covenant/24.png" alt></p>
+<p><strong>Templates：</strong></p>
+<p>在<code>Templates</code>里会显示现已有的<code>Grunt</code>通讯模板，当然如果有需要的话也可以自己添加和修改。</p>
+<p><img src="/2020/04/14/Covenant/27.png" alt></p>
+<p><img src="/2020/04/14/Covenant/28.png" alt></p>
+<p><strong>Tasks：</strong></p>
+<p>在<code>Tasks</code>里会显示已有的任务，例如绕过UAC、MImikatz等，可以在Grunts里与目标主机直接进行交互发送任务。同时在各个任务名称的右侧会描述出各个任务的作用。</p>
+<p><img src="/2020/04/14/Covenant/29.png" alt></p>
+<p>如果有自己需要的插件可以点击Create进行添加，它的这个扩展功能是非常好的一个特色，你默认只要是按照它的一个要求去写好你的一个C#工程或者说是现有的从github上下载或找到比较好的C#内网渗透的工程或者是红队相关的，可以非常轻松到可以加入到里面</p>
+<p><img src="/2020/04/14/Covenant/30.png" alt></p>
+<p><strong>Taskings：</strong></p>
+<p>在<code>Taskings</code>里会显示所有Grunt里目标主机的任务分配情况，单击名称即可查看任务详情。</p>
+<p><img src="/2020/04/14/Covenant/31.png" alt></p>
+<p><strong>Graph：</strong></p>
+<p>在<code>Graph</code>里用图形化界面展示Grunts目标主机和Listeners监听器的连接关系。</p>
+<p><img src="/2020/04/14/Covenant/32.png" alt></p>
+<p><strong>Data：</strong></p>
+<p>在Data里会显示，凭证、指标、下载、截图</p>
+<p><code>Credentials</code>为已经在目标主机里获取到的账号密码、Hash、票据信息</p>
+<p><img src="/2020/04/14/Covenant/33.png" alt></p>
+<p><code>Indicators</code>为目标指标、网络指标、文件指标</p>
+<p><img src="/2020/04/14/Covenant/34.png" alt></p>
+<p><code>Downloads</code>为已从目标主机上下载的文件</p>
+<p><img src="/2020/04/14/Covenant/35.png" alt></p>
+<p><code>Screenshost</code>为已截取的目标主机桌面图</p>
+<p><img src="/2020/04/14/Covenant/36.png" alt></p>
+<p><strong>User：</strong></p>
+<p>在<code>User</code>里可以添加和管理Covenant账户</p>
+<p><img src="/2020/04/14/Covenant/37.png" alt></p>
+<p>参考链接：</p>
+<p><a href="https://www.freebuf.com/articles/system/213672.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/system/213672.html</a></p>
+<p><a href="https://mp.weixin.qq.com/s/L5MNcYhzgPc6-l7biDf0Sg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/L5MNcYhzgPc6-l7biDf0Sg</a></p>
+</div><!--文章标签--><div class="tags"><a href="/tags/Covenant/">Covenant</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/04/14/Covenant/">Covenant</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/10/CVE-2020-10560-OSSN任意文件读取漏洞复现/">CVE-2020-10560-OSSN任意文件读取漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/08/PowerShell-Nishang/">PowerShell-Nishang</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/04/PowerShell-PowerSploit/">PowerShell-PowerSploit</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/01/SMBv3-1-1-CVE-2020-0796/">SMBv3.1.1_CVE-2020-0796</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/31/内网信息收集二/">内网信息收集二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/30/内网信息收集一/">内网信息收集一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/18/PowerShell-Empire/">PowerShell-Empire</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/17/免杀初探-Veil/">免杀初探-Veil</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/13/PowerShell基础/">PowerShell基础</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
