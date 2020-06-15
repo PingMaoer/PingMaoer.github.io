@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>权限提升分析及防御二 - Guko's Blog</title><meta name="description" content="如果计算机的操作系统版本是Windows Vista或更高，在权限不够的情况下，访问系统磁盘的根目录（例如C:\）、windows目录、program files目录，以及读、写系统登录数据库（Registry）的程序等操作。都需要经过UAC(user account control，用户账户控制)"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">权限提升分析及防御二</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">权限提升分析及防御二</h1><div class="post-meta">2020-06-15<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>如果计算机的操作系统版本是Windows Vista或更高，在权限不够的情况下，访问系统磁盘的根目录（例如C:\）、windows目录、program files目录，以及读、写系统登录数据库（Registry）的程序等操作。都需要经过UAC(<code>user account control，用户账户控制</code>)的认证才能进行</p>
+<a id="more"></a>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/0x.png" alt></p>
+<h5 id="0x01-UAC简介"><a href="#0x01-UAC简介" class="headerlink" title="0x01 UAC简介"></a>0x01 UAC简介</h5><p>UAC是为微软为提高系统安全性在Windows Vista中引入的技术。UAC的要求用户在执行可能影响计算机运行的操作或者在进行可能影响其他用户的设置之前，拥有相应的权限或者管理员密码。UAC在操作启动前对用户身份进行验证，以避免恶意软件和间谍软件在未经许可的情况下在计算机上安装操作或者对计算机设置进行更改。</p>
+<p>在Windows Vista及更高版本的操作系统中，微软设置了安全控制策略，分为<code>高、中、低</code>三个等级。高等级的进程有<code>管理员权限</code>；中等级的进程有<code>普通用户权限</code>；低等级的进程，权限是有限的，以保证在收到安全威胁时造成的损害最小。</p>
+<p>需要UAC的授权才能进行的操作列表如下</p>
+<ul>
+<li>配置Windows Update</li>
+<li>增加/删除账户</li>
+<li>更改账户类型</li>
+<li>更改UAC的设置</li>
+<li>安装ActiveX</li>
+<li>安装/卸载程序</li>
+<li>安装设备驱动程序</li>
+<li>将文件移动/入职到Program Files 或windows嘛目录下</li>
+<li>查看其他用户的文件夹</li>
+</ul>
+<p>UAC有如下四种设置要求</p>
+<ul>
+<li><code>始终通知：</code>这是最养个的设置，没当有程序需要使用高级别的权限时都会提示本地用户。</li>
+<li><code>仅在程序试图更改我的计算机时通知我：</code>这是UAC的默认设置。当本地windows程序要使用高级别的权限时，不会通知用户。但是，当第三方程序要使用高级别的权限时，会提示本地用户。</li>
+<li><code>仅在程序试图更改我的计算机时通知我（不降低桌面的亮度）：</code>与上一条设置的要求相同，但在提示用户时不降低桌面的亮度</li>
+<li><code>从不提示：</code>当用户为管理员时，所有程序会以最高权限运行</li>
+</ul>
+<h5 id="bypassuac模块"><a href="#bypassuac模块" class="headerlink" title="bypassuac模块"></a>bypassuac模块</h5><p>在获取一个普通用户meterpreter权限时，尝试提取到system权限。使用<code>use exploit/windows/local/bypassuac</code>模块，执行<code>getsystem</code>既可获取system权限。这个模块的使用前提是，当前用户在管理员组中，且UAC需为默认设置（既：仅在程序试图更改我的计算机时通知我）</p>
+<p><img src="/2020/06/15/权限提升分析及防御二/1.png" alt></p>
+<h5 id="RunAS模块"><a href="#RunAS模块" class="headerlink" title="RunAS模块"></a>RunAS模块</h5><p>使用<code>use exploit/windows/local/ask</code>模块，创建一个可执行文件，目标机器会运行一个发起提升权限请求的程序，提示用户是否需要继续运行，如果选择运行，就会返回一个高权限的meterpreter shell</p>
+<p>目标机上弹出UAC对话框</p>
+<p><img src="/2020/06/15/权限提升分析及防御二/2.png" alt></p>
+<p>执行<code>getuid</code>命令，查看权限，如果是普通用户权限，执行<code>getsystem</code>命令，再次查看既是system权限</p>
+<p><img src="/2020/06/15/权限提升分析及防御二/3.png" alt></p>
+<p>利用前提，当前用户须在管理员组中或者知道管理员密码，对UAC设置没有要求，在用Ru n As模块时，需要使用EXX::Custom选项创建一个可执行文件，需要进行免杀处理</p>
+<h5 id="Nishang中Invoke-PaUACme模块"><a href="#Nishang中Invoke-PaUACme模块" class="headerlink" title="Nishang中Invoke-PaUACme模块"></a>Nishang中Invoke-PaUACme模块</h5><p>Invoke-PsUACme模块使用赖在UACME项目的DLL绕过UAC</p>
+<h5 id="Empire中的bypassuac模块"><a href="#Empire中的bypassuac模块" class="headerlink" title="Empire中的bypassuac模块"></a>Empire中的bypassuac模块</h5><p><strong>1、bypassuac模块</strong></p>
+<p>输入<code>usemodule privesc/bypassuac</code>命令</p>
+<p><strong>2、bypassuac_wscript模块</strong></p>
+<p>工作原理，使用<code>C:\windows\wscript.exe</code>执行payload，既绕过UAC,以管理员权限执行payload，仅限windows7系统，尚未打补丁的</p>
+<p>以上的这几种方法，在实战环境中基本没啥意义了，仅当作学习</p>
+<h4 id="0x02-令牌窃取"><a href="#0x02-令牌窃取" class="headerlink" title="0x02 令牌窃取"></a>0x02 令牌窃取</h4><p><code>令牌（Token）</code>是指系统中的临时密钥，相当于账号和密码，用于决定是否允许当前请求及判断当前请求是属于哪个用户的。获得了令牌，就可以在不提供密码或其他凭证的情况下访问网络和系统资源。令牌将持续存在于系统中，除非系统重新启动</p>
+<p>令牌的最大特点是随机性和不可预测性。<code>访问令牌（Access Token）</code>代表访问控制操作主题的系统对象。<code>密保令牌（Security Token）</code>也叫作认证令牌或者硬件令牌，是一种实现计算机身份校验的物理设备，入U盾。<code>会话令牌（Session Token）</code>是交互会话中唯一的身份标识符</p>
+<p>伪造令牌的攻击的核心是<code>kerberos</code>协议。kerberos是一种网络认证协议，其设计目标是通过密钥系统为客户机/服务器应用程序提供强大的认真服务。keberos协议工作机制如下</p>
+<p><img src="/2020/06/15/权限提升分析及防御二/12.png" alt></p>
+<p>客户端请求证书的过程如下</p>
+<p>1、客户端向认证服务器发送请求，要求得到证书</p>
+<p>2、认证服务器收到请求后，将包含客户端密钥的加密证书发送给客户端。该证书包含服务器Tickt(包含由服务器密钥加密的客户机身份和一份会话密钥)和一个临时加密密钥（又称为会话密钥，Session Key） 认证服务器也会向服务器发送一份该证书，使服务器能够验证登录的客户端身份</p>
+<p>3、客户端将Ticket传送给服务器。如果服务器确认该客户端身份，就允许它登录服务器。客户端登录服务器后，攻击者就能通过入侵服务器来窃取客户端的令牌。</p>
+<h5 id="令牌窃取"><a href="#令牌窃取" class="headerlink" title="令牌窃取"></a>令牌窃取</h5><p>在已经获取一个meterpreter shell的情况下，输入<code>use incognito</code> 命令，再用<code>list_tokens -u</code> 列出可用的令牌</p>
+<p><img src="/2020/06/15/权限提升分析及防御二/4.png" alt></p>
+<p>有两种类型的令牌：一种是<code>Delegation Tokens</code>是为授权令牌，支持交互式的登录，如可远程登录访问等；另一种是<code>Impersonation Tokens</code>是模拟令牌，支持非交互式的会话。令牌的数量取决于meterpreter shell的访问级别。如果是一个系统管理员的令牌，则可以直接伪造这个令牌，使攻击者拥有它的权限。</p>
+<p>通过上面的信息可知分配的令牌的是<code>HACKE\Administrator</code> 由机器的主机名个登录的用户名组成。接下来使用<code>incognito</code>调用<code>impersonate_token</code>，进行伪造。<code>记得主机名\用户名，需要输入两个反斜杠（\\）</code></p>
+<p><img src="/2020/06/15/权限提升分析及防御二/5.png" alt></p>
+<p>如果不需要该权限的时候，可使用命令<code>rev2self</code>,返回原本的权限</p>
+<p><strong>Rotten Potato本地提权</strong></p>
+<p>RottenPotato（烂土豆）提权的原理</p>
+<ul>
+<li>欺骗<code>NT AUTHORITY\SYSTEM</code>账户通过NTLM认证到我们控制的TCP终端</li>
+<li>对这个认证过程使用中间人攻击（NTLM重放），为<code>NT AUTHORITY\SYSTEM</code>账户本地协商一个安全令牌。这个过程是通过一系列的windows API调用实现的。</li>
+<li>模仿这个令牌，只有具有<code>模仿安全令牌</code>的账户才能去模仿别人的令牌。一般大多数的服务型账户（IIS、MSSQL等）有这个权限，大多数用户级的账户没有这个权限。</li>
+</ul>
+<p>脚本下载地址：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RottonPatato脚本：https://github.com/SecWiki/windows-kernel-exploits/blob/master/MS16-075/potato.exe</span><br><span class="line">https://github.com/breenmachine/RottenPotatoNG/blob/master/RottenPotatoEXE/x64/Release/MSFRottenPotato.exe</span><br><span class="line">https://github.com/foxglovesec/RottenPotato</span><br></pre></td></tr></table></figure>
+
+<p>如果目标系统中存在有效令牌，可以通过<code>Rotten Potato</code>快速模拟用户令牌来实现权限的提升</p>
+<p>在拿到meterpreter shell后，列出可用令牌</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use incognito</span><br><span class="line">list_tokens -u</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/7.png" alt></p>
+<p>先把<code>Potato</code>上传到目标机上，然后运行如下命令，执行烂土豆，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">upload /home/kali/Desktop/ms.exe</span><br><span class="line">execute -cH -f potato.exe</span><br><span class="line">impersonate_token &quot;NT AUTHORITY\SYSTEM&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/6.png" alt></p>
+<p>由此，得到了<code>SYSTEM</code>权限</p>
+<p>在测试的过程中发现，执行报错，卡了很久，之后想着继续执行一下试试，发现虽然执行报错，但是依旧提到system权限了，问了一下其他师傅说里面是有一个小bug，可能是token相关的，可能和双跳有关。</p>
+<p><strong>添加域管理员</strong></p>
+<p>若网络</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net user pentest Admin!@#$1234 /add /domain</span><br><span class="line">net user /domain</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/8.png" alt></p>
+<p>把域用户添加到管理员组， 并查看管理员组</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net group &quot;domain adminis&quot; pentest /add /domain</span><br><span class="line">net group &quot;domain adminis&quot; /domain</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用meterpreter中的incognito来模拟域管理员，通过迭代系统中所有可用的身份验证令牌来添加域管理员</p>
+<p>在meterpreter会话中执行，在域控主机上添加一个账户，将该账户添加到管理员组中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">add_user hacke Admin!@#$1234 -h 192.168.1.1</span><br><span class="line">add_group_user &quot;Domain Admins&quot; hacke -h 192.168.1.1、</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/10.png" alt></p>
+<p><strong>Empire下的令牌窃取</strong></p>
+<p>参考之前的记录文章<a href="https://pingmaoer.github.io/2020/03/18/PowerShell-Empire/" target="_blank" rel="noopener">PowerShell-Empire-0x07部分</a></p>
+<h4 id="0x03-无凭证条件下的权限"><a href="#0x03-无凭证条件下的权限" class="headerlink" title="0x03 无凭证条件下的权限"></a>0x03 无凭证条件下的权限</h4><p>使用<code>LLMNR</code>和<code>NetBIOS</code>欺骗攻击对目标网络进行渗透</p>
+<p><strong>LLMNR和NetBIOS欺骗攻击基本概念</strong></p>
+<ul>
+<li>LLMNR</li>
+</ul>
+<p><code>本地链路多播名称解析（LLMNR）</code>是一种域名系统数据包格式。当局域网中的DNS服务器不可用时，DNS客户端会使用LLMNR解析本地网段中机器的名称，知道DNS解析恢复正常为止。Windows Vista版本开始支持LLMNR,LLMNR支持IPv6</p>
+<p>LLMNR工作流程：</p>
+<p>1、DNS客户端在自己的内部名称缓存中查询名称</p>
+<p>2、如果没有找到，主机将向主DNS发送名称查询请求</p>
+<p>3、如果主DNS没有回应或者收到了错误的信息，主机会向备DNS发送查询请求</p>
+<p>4、如果备DNS没有回应或者收到了错误的信息，将使用LLMNR进行解析</p>
+<p>5、主机通过UDP协议向组播地址224.0.0.252的5355端口发送多播查询请求，以获取主机名所对应的IP地址。查询范围仅限于本地子网。</p>
+<p>6、本地子网中所有支持LLMNR的主机在收到查询请求后，会对比自己的主机名。如果不同就丢弃；如果相同，就向主机发送包含自己IP地址的单播信息</p>
+<ul>
+<li>NetBIOS</li>
+</ul>
+<p><code>NetBIOS</code>是一种网络协议，一般用在由十几台计算机组成的局域网中（根据NetBIOS协议广播获得计算机名称，并将其解析为相应的IP地址）在windows NT以后版本的所有操作系统中均可使用NetBIOS ，NetBIOS不支持IPv6</p>
+<p>NetBIOS提供的三种服务：</p>
+<p>1、<code>NetBIOS-NS(名称服务)：</code>主要用于名称注册和解析，以启动会话和分发数据报。该服务需要使用域名服务器来注册NetBIOS的名称。默认监听UDP 137端口，也可以使用TCP 137端口</p>
+<p>2、<code>Datagram Distribution Service（数据分发服务）：</code>无连接服务。改服务负责进行错误检测和恢复，默认监听UDP 138端口</p>
+<p>3、<code>Session Service（会话服务）：</code>允许两台计算机建立连接，允许电子邮件跨越多个数据包进行传输，提供错误检测和恢复机制。默认使用TCP 139端口</p>
+<ul>
+<li>Net-NTLM Hash</li>
+</ul>
+<p><code>Net-NTLM Hash</code>与<code>NTLM Hash</code>不同</p>
+<p><code>NTLM Hash</code>是指Windows操作系统的Security Account Manager中保存的用户密码散列值。NTLM Hash通常保存在windows的SAM文件或者NTDS.DIT数据库中，用于对访问资源的用户进行身份验证。</p>
+<p><code>Net-NTLM Hash</code>是指在网络环境中经过NTLM认证的散列值。挑战/响应验证中的“响应”就包含Net-NTLM Hash。使用Responder抓取的通常是Net-NTLM Hash。攻击者无法使用该服务进行哈希传递攻击，只能爱使用Hashcat等工具得到明文后进行横向移动攻击</p>
+<p><strong>LLMNR和NetBIOS欺骗攻击</strong></p>
+<p>在目标网络的DNS服务器因发生故障而无法提供服务时，会退回LLMNR和NBT-NS进行计算机名解析。下面使用Responder进行测试</p>
+<p>Responder是监听LLMBNR和NBT-NS协议的工具之一，能够抓取网络中所有的LLMNR和NBT-NS请求并进行响应，获取最初的账户凭证</p>
+<p>Responder可以利用内置SMB认证服务器、MSSQL认证服务器、HTTP认证服务器、HTTPS认证服务器、LDAP认证服务器、DNS服务器、WPAD认证服务器、以及FTP、POP3、IMAP、SMTP等服务器、收集目标网络中计算机凭据、还可以通过Multi-Relay功能在目标系统中执行命令</p>
+<ul>
+<li>下载运行</li>
+</ul>
+<p>下载地址：<a href="https://github.com/SpiderLabs/Responder.git" target="_blank" rel="noopener">https://github.com/SpiderLabs/Responder.git</a></p>
+<ul>
+<li>监听模式</li>
+</ul>
+<p>进入目标网络后，如果没有获得任何目标系统的相关信息和重要凭证，可开启Responder的监听模式。Responder只会对网络中的流量进行分析，不会主动响应任何请求</p>
+<p>使用Responder查看网络时如何在没有主动定位任何主机的情况下运行的，<code>ON</code>代表针对该服务数据包的监听，<code>OFF</code>代表关闭监听。可借此分析出网络中存在的IP地址段、机器名等</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python Responder.py -I eth0</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/15/权限提升分析及防御二/11.png" alt></p>
+<ul>
+<li>渗透测试</li>
+</ul>
+<p>在使用Responder对网络进行分析之后，可利用SMB协议获取目标网络中计算机的NTLMHash。如果用户输入了错误的计算机名，在DNS服务器上进行的名称查询操作会失败，名称解析请求将被退回，使用NBT-NS和LLMBNR进行解析。</p>
+<p>在渗透测试过程中，使用Responder并启动回应请求功能，Responder会自动回应客户端的请求并声明自己就是被输入了错误计算机名的那台机器，然后尝试建立SMB连接。客户端会发送自己的Net-NTLMHash进行身份验证，此时将得到目标机器的Net-NTLMHash</p>
+<p>参考文章</p>
+<p><a href="http://hackergu.com/powerup-stealtoken-rottenpotato/" target="_blank" rel="noopener">http://hackergu.com/powerup-stealtoken-rottenpotato/</a></p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/cobaltstrike/" style="font-size: 12px;">cobaltstrike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/06/15/权限提升分析及防御二/">权限提升分析及防御二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/11/权限提升分析及防御一/">权限提升分析及防御一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/08/IntelliJ-IDEA修改cobaltstrike/">IntelliJ-IDEA修改cobaltstrike</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/09/利用msf自带的route模块穿透目标内网/">利用msf自带的route模块穿透目标内网</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/07/使用Venom搭建二级代理/">使用Venom搭建二级代理</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/26/隐藏通信隧道技术二/">隐藏通信隧道技术二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/22/隐藏通信隧道技术/">隐藏通信隧道技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/18/Mac配置PyQt5-pyCharm并使用/">Mac配置PyQt5+pyCharm并使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/14/Covenant/">Covenant</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/10/CVE-2020-10560-OSSN任意文件读取漏洞复现/">CVE-2020-10560-OSSN任意文件读取漏洞复现</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
