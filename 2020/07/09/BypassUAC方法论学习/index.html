@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>BypassUAC方法论学习 - Guko's Blog</title><meta name="description" content="之前看红队学院中关于BypassUAC的视频，跟着做了一遍，掌握了大体方法。但其中涉及到代码部分，自己还需要加强学习才行。0x01 前言等着别人做好后来投喂，不如我们自己去捕猎，去挖掘过UAC的方法。本文记录的是通过COM组件的方法BypassUAC过程，这是一个方法论修炼的记录，掌握其原理，我们就"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">BypassUAC方法论学习</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">BypassUAC方法论学习</h1><div class="post-meta">2020-07-09<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>之前看红队学院中关于<code>BypassUAC</code>的视频，跟着做了一遍，掌握了大体方法。但其中涉及到代码部分，自己还需要加强学习才行。</p>
+<a id="more"></a>
+
+
+<h4 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h4><p>等着别人做好后来投喂，不如我们自己去捕猎，去挖掘过UAC的方法。本文记录的是通过COM组件的方法BypassUAC过程，这是一个方法论修炼的记录，掌握其原理，我们就可以去创造属于我们自己的独家BypassUAC方法。</p>
+<h4 id="0x02-基础介绍"><a href="#0x02-基础介绍" class="headerlink" title="0x02 基础介绍"></a>0x02 基础介绍</h4><p>在正式开始之前，我们需要对<code>UAC</code>的工作原理有一些简单了解。</p>
+<p><code>UAC</code>是微软Microsoft Windows Vista以后版本引入的一种安全机制。其原理是通知用户是否对应用程序使用硬盘驱动器和系统文件授权，以达到帮助阻止恶意程序（有时也称为“恶意软件”）损坏系统的效果。<br>通过 UAC，应用程序和任务可始终在非管理员帐户的安全上下文中运行，除非管理员特别授予管理员级别的系统访问权限。UAC 可以阻止未经授权的应用程序自动进行安装，并防止无意中更改系统设置。<br>下图清晰描述了如何根据是否启用UAC以及应用程序是否具有UAC清单来运行应用</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/1.png" alt></p>
+<p>在开启了<code>UAC</code>之后，如果用户是标准用户， Windows 会给用户分配一个标准<code>Access Token</code>.<br>如果用户以管理员权限登陆，会生成两份访问令牌，一份是完整的管理员访问令牌（<code>Full Access Token</code>），一份是标准用户令牌<br>具体的表现形式是如下图，当我们需要其他特权的时候，会弹出窗口，询问你<code>是否要允许以下程序对此计算机更改？</code>如果你有完整的访问令牌（即，你以设备管理员的身份登录，或者你属于管理员组），则可以选择<code>是</code>，然后继续进行。但是，如果已为你分配了标准的用户访问令牌，则会提示你输入具有特权的管理员的凭据</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/2.png" alt></p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/12.png" alt></p>
+<p>这里梳理一下UAC需要授权的过程如下：</p>
+<ul>
+<li>1.配置Window Update</li>
+<li>2.增加或删除用户账户</li>
+<li>3.改变用户的账户类型</li>
+<li>4.改变UAC设置</li>
+<li>5.安装ActiveX</li>
+<li>6.安装或移除程序</li>
+<li>8.设置家长控制</li>
+<li>9.将文件移动或复制到Prigram Files或Windwos目录</li>
+<li>10.查看其他用户文件夹</li>
+</ul>
+<h4 id="0x03-BypassUAC"><a href="#0x03-BypassUAC" class="headerlink" title="0x03 BypassUAC"></a>0x03 BypassUAC</h4><p>本篇主要介绍如何以ICMLuaUtil方式BypassUAC，主要内容如下：</p>
+<ul>
+<li><p>过掉UAC提示框的方法总结</p>
+</li>
+<li><p>UACME项目</p>
+</li>
+<li><p>什么类型的<code>COM interface</code>可以利用？</p>
+</li>
+<li><p>如何快速找到系统中的所有可利用的COM组件？</p>
+</li>
+<li><p>定位<code>ICMLuaUtil</code>的虚函数表<code>vftable</code></p>
+</li>
+<li><p>如何调用<code>ICMLuaUtil.ShellExec</code>执行命令？</p>
+<p>C++ version</p>
+<p>CSharp version</p>
+</li>
+<li><p>两个注意点</p>
+</li>
+</ul>
+<h4 id="0x04-UACME项目"><a href="#0x04-UACME项目" class="headerlink" title="0x04 UACME项目"></a>0x04 UACME项目</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">项目地址：https://github.com/hfiref0x/UACME</span><br></pre></td></tr></table></figure>
+
+<p>项目总结了50多种绕过UAC的方式，并且列出具备auto-elevate能力的UAC白名单程序或接口。</p>
+<p>利用方式主要可以分为两大类：</p>
+<p>1、各类<code>UAC</code>白名单程序的DLL劫持（<code>Dll Hijack</code>）</p>
+<p>2、各类提升权限的<code>COM</code>接口利用（<code>Elevated COM interface</code>）</p>
+<p>项目的主程序为<code>Akagi</code>，其中包含了所有的<code>method</code>，使用vs2019本地编译后可以使用<code>akagi32 41</code>或者<code>akagi64 41</code>启动程序，41这个指的是README中描述的方法索引，运行后可以直接得到管理员权限的cmd窗口。</p>
+<p>项目的<code>Source</code>目录存储的是所有子项目的源码，其中<code>Source/Shared</code>存放的是被所有子项目共同引用的一些函数，本篇主要利用<code>Akagi</code>和<code>Yuubari</code>这两个项目来学习一下如何利用<code>COM</code>接口提升权限</p>
+<h4 id="0x05-可被利用的"><a href="#0x05-可被利用的" class="headerlink" title="0x05 可被利用的"></a>0x05 可被利用的</h4><p>以列表中的41为例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Author: Oddvar Moe</span><br><span class="line">Type: Elevated COM interface</span><br><span class="line">Method: ICMLuaUtil</span><br><span class="line">Target(s): Attacker defined</span><br><span class="line">Component(s): Attacker defined</span><br><span class="line">Implementation: ucmCMLuaUtilShellExecMethod</span><br><span class="line">Works from: Windows <span class="number">7</span> (<span class="number">7600</span>)</span><br><span class="line">Fixed in</span><br></pre></td></tr></table></figure>
+
+<p>这个方法的目标接口是，<code>ICMLuaUtil</code>，对应<code>Akagi</code>项目中具体实现函数为<code>ucmCMLuaUtilShellExecMethod</code>，在项目中的<code>methods/api0cradle.c</code>文件中可以找到该方法的定义：</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/22.png" alt></p>
+<p>观察发现这里利用的是<code>CMSTPLUA</code>组件的<code>ICMLuaUtil</code>接口<br>以管理员权限打开，在<code>Registry</code>中打开<code>CLSIDs</code>，然后输入<code>cmstplua</code>搜索，即可快速定位到该组件</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/3.png" alt></p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/4.png" alt></p>
+<p>右键可以查看<code>cmstplua</code>组件的<code>Elevation</code>的一个属性，这里的<code>Enabled</code>跟<code>Auto Approval</code>现实的都为<code>True</code>,表示这个组件可以用来绕过<code>UAC</code>认证，这是第一点</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/5.png" alt></p>
+<p>如果需要达到成功利用的条件，那么第二点，目标接口<code>ICMLuaUti</code>，需要一个可以<code>执行命令</code>的地方，我们可以把鼠标放在<code>ICMLuaUtil</code>上可以看到接口对应的二进制文件为<code>cmlua.dll</code></p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/6.png" alt></p>
+<p>虚函数偏移为<code>cmlua.dll+0x6360</code>，在这个时候我们通过IDA打开系统文件,<code>c:\windows\system32\cmlua.dll</code>,跳到虚函数表的位置，可以看到<code>ICMLuaUtil</code>接口的虚函数表</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/9.png" alt></p>
+<p>最后我们确定一下，通过双击看它的反汇编代码，就可以看到一个关键的<code>call</code>调用，在IDA中看到<code>ShellExec</code>这个函数调用了<code>ShellExecuteExW</code>这个<code>Windows API</code>实现了命令执行</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/8.png" alt></p>
+<p>通过上面的操作分析，要实现BypassUAC执行命令的COM组件，我们可以总结为两点</p>
+<ol>
+<li><code>Elevation</code>属性中的<code>Enabled</code>跟<code>Auto Approval</code>为<code>True</code></li>
+<li><code>COM</code>组件中的接口存在可以执行命令，如<code>ICMLuaUtil的ShellExec</code></li>
+</ol>
+<h4 id="0x06-寻找可利用的COM组件"><a href="#0x06-寻找可利用的COM组件" class="headerlink" title="0x06 寻找可利用的COM组件"></a>0x06 寻找可利用的COM组件</h4><p>接下来我们需要快读的寻找到具备这两点的COM组件，那么怎么去找呢？一种方法是使用上面的<code>oleviewdotnet</code>，一个一个的去看，非常麻烦和不高效。</p>
+<p>最好的方式其实是通过编程实现对你当前机器所有的COM组件进行搜索，然后去找这个相应属性，目前已经有这样的轮子了，我们可以直接用。</p>
+<p>这里可以通过<code>UACMe</code>项目提供的<code>Yuubari</code>工具快速查看系统UAC设定信息以及所有可以利用的程序和COM组件，使用方法如下：</p>
+<p>使用VS2019加载Yuubari，注意：一定要把<code>Debug</code>模式切换成<code>release</code>模式,生成后会得到二进制文件<code>UacInfo64.exe</code>，运行后在同目录生成一个<code>log</code>文件记录所有输出结果：</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/24.png" alt></p>
+<p>从这里面可以找到所有的<code>Autoelevated COM objects</code>，包括<code>CMSTPLUA</code>组件的信息：</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/25.png" alt></p>
+<p>这里使用之前提到的<code>cmstplua</code>进行搜索<code>3e5fc7f9-9a51-4367-9063-a120244fbec7</code>可以看到<code>Autoelevated COM objects</code> 组件<code>CMSTPLUA</code>的信息。通过这种方式，我们可以把当前系统所有支持<code>auto-elevate</code>的<code>COM</code>组件以及应用全部都列出来</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/26.png" alt></p>
+<h4 id="0x07-调用ICMLuaUtil-ShellExec执行命令"><a href="#0x07-调用ICMLuaUtil-ShellExec执行命令" class="headerlink" title="0x07 调用ICMLuaUtil.ShellExec执行命令"></a>0x07 调用ICMLuaUtil.ShellExec执行命令</h4><p>当我们找到合适的可以利用的COM组件后，下一步就是写代码。我们利用的关键点是创建这个COM组件的进程是需要被系统可信任的进程。</p>
+<p>利用系统的可信进程去进行调用，可以选择的有<code>rundll32.exe</code>、<code>explorer.exe</code>等，我们只需要把创建<code>COM</code>组件的代码以及执行你想执行的命令的代码，放到可信任进程里面去执行，这样就可以<code>BypassUAC</code>。</p>
+<p>放到可信任进程里面去执行有两种方式，第一种是我们把它做成一个<code>dll</code>,然后使用<code>rundll32.exe</code>去调用</p>
+<h4 id="0x08-DLL调用"><a href="#0x08-DLL调用" class="headerlink" title="0x08 DLL调用"></a>0x08 DLL调用</h4><p>直接使用<code>UACME</code>中的代码摘出来，然后在VC2019中新建一个工程，如下是定义接口的声明</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/13.png" alt></p>
+<p>就在这里面通过创建COM组件，然后调用这个COM组件的<code>ShellExec</code>方法执行你想执行的命令，通过这样的方式就可以了。</p>
+<p>在代码编写好后，首先在导出的函数为<code>BypassUAC</code>，新建一个<code>def</code>文件，内容如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">LIBRARY BypassUAC</span><br><span class="line">EXPORTS</span><br><span class="line">BypassUAC</span><br></pre></td></tr></table></figure>
+
+<p>这里重新生成一下，可以看到在 <code>C：\Users\admin\Desktop\BypassUAC\x64\Release\</code>目录下生成了一个<code>BypassUAC_Dll.dll</code></p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/14.png" alt></p>
+<p>最后我们使用<code>rundll32.exe</code>去运行一下，直接就弹出了管理员的<code>cmd</code>来，原因就是使用<code>rundll32.exe</code>运行的，<code>rundll32.exe</code>是被系统认可的可信进程，所以拿他去运行就可以直接执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rundll32.exe .\BypassUAC_Dll.dll,BypassUAC</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/07/09/BypassUAC方法论学习/15.png" alt></p>
+<p>这是一种利用方法，但是这种利用方式,在实际的渗透测试中用到的会比较少，首先这个<code>dll</code>会落地，然后再用<code>rundll32.exe</code>去调用实际效果不太好，所以我们需要把它编译成直接在内存加载的dll。</p>
+<p>直接在内存加载，有如下几种方式，第一种，如果是用c或C++类似这种编译型的语言编译出来的dll,这种编译出来的dll是属于native dllm,native dll在内存中加载执行通用的方法是 Reflective Dll Injection RDI 去执行它。类似的还有<code>dll to shellcode</code> <code>exe to shellcode</code>但是这类方法现在很多杀软跟EDR都被标注了。</p>
+<p>这个时候我们可以选择其他的方式，比如说脚本python、ironpython，现在有技术直接通过内存执行python脚本一个杰出的工程就是pupy</p>
+<h4 id="0x09-CSharp-version"><a href="#0x09-CSharp-version" class="headerlink" title="0x09 CSharp version"></a>0x09 CSharp version</h4><p>更好的方式直接做成<code>.net</code>版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">代码摘自Moriarty:https://github.com/cnsimo/BypassUAC/tree/master/BypassUAC_csharp</span><br></pre></td></tr></table></figure>
+
+<p><code>C#</code>版本的代码中要注意的是<code>ICMLuaUtil</code>接口的定义，其继承自<code>IUnKnown</code>，该接口的定义函数是</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">IUnknown::AddRef</span><br><span class="line">IUnknown::QueryInterface</span><br><span class="line">IUnknown::QueryInterface</span><br></pre></td></tr></table></figure>
+
+<p>在定义<code>ICMLuaUtil</code>的 时候，需要注意的有两点</p>
+<p>1、    指明继承<code>ICMLuaUtil</code>接口；</p>
+<p>2、    继承的前三个函数不需要加上，<code>C#</code>会自动添加；</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/10.png" alt></p>
+<p>其继承自<code>IUnKnown</code>，因此这里一定要写成<code>InterfaceIsIUnknown</code></p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/16.png" alt></p>
+<p>关键代码如下:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[ComImport, Guid(<span class="string">"6EDD6D74-C007-4E75-B76A-E5740995E24C"</span>), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]</span><br><span class="line">interface ILua</span><br><span class="line">&#123;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method1</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method2</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method3</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method4</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method5</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Method6</span><span class="params">()</span></span>;</span><br><span class="line">    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime), PreserveSig]</span><br><span class="line">    <span class="function">HRESULT <span class="title">ShellExec</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        [In, MarshalAs(UnmanagedType.LPWStr)] <span class="built_in">string</span> file,</span></span></span><br><span class="line"><span class="function"><span class="params">        [In, MarshalAs(UnmanagedType.LPWStr)] <span class="built_in">string</span> paramaters,</span></span></span><br><span class="line"><span class="function"><span class="params">        [In, MarshalAs(UnmanagedType.LPWStr)] <span class="built_in">string</span> directory,</span></span></span><br><span class="line"><span class="function"><span class="params">        [In] uint fMask,</span></span></span><br><span class="line"><span class="function"><span class="params">        [In] uint nShow)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有个这个接口声明之后，编程怎么实现，不可能再去创建一个<code>rundll32.exe</code>进程什么的去执行。这里就要引出另一个技术，叫<code>MasqueradePEB</code>，翻译过来就是伪装。<br>将自己的进程信息伪装成为<code>c:\windows\explorer.exe</code>这个系统的可信进程，这样才能绕过<code>UAC</code>认证窗口，因为UAC在判断系统进程是否可信，判断依据是<code>PEB</code>结构，所以在使用<code>COM</code>组件提权之前需要先伪装一下进程才可以。</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/17.png" alt></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">McfInitUnicodeString(procHandle, BaseDllNamePtr, <span class="string">"explorer.exe"</span>);</span><br><span class="line">                       McfInitUnicodeString(procHandle, FullDllNamePtr, $<span class="string">"&#123;System.Environment.GetEnvironmentVariable("</span>SystemRoot<span class="string">").ToLower()&#125;\\explorer.exe"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>接下来我们做一下演示，我们的关键代码是调用MasqueradePEB，第一次先注释掉，然后右键生成文件</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[STAThread]</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span><span class="params">(<span class="built_in">string</span>[] args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Guid classId = <span class="keyword">new</span> Guid(<span class="string">"3E5FC7F9-9A51-4367-9063-A120244FBEC7"</span>);</span><br><span class="line">    Guid interfaceId = <span class="keyword">new</span> Guid(<span class="string">"6EDD6D74-C007-4E75-B76A-E5740995E24C"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//MasqueradePEB();</span></span><br><span class="line"></span><br><span class="line">    object elvObject = LaunchElevatedCOMObject(classId, interfaceId);</span><br><span class="line">    <span class="keyword">if</span> (elvObject != null)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//MessageBox.Show("Got the Object");</span></span><br><span class="line">        ILua ihw = (ILua)elvObject;</span><br><span class="line">        ihw.ShellExec(<span class="string">"c:\\windows\\system32\\cmd.exe"</span>, null, null, <span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line">        Marshal.ReleaseComObject(elvObject);</span><br></pre></td></tr></table></figure>
+
+<p>运行生成的文件，这个时候会弹出<code>UAC</code>框，因为它不是可信进程，所以运行的时候UAC还是没有过掉，这就是没有<code>MasqueradePEB</code>效果是这样的</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/19.png" alt></p>
+<p>接下来先用<code>MasqueradePEB</code>进行伪装一下，再次右键生成文件</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/20.png" alt></p>
+<p>直接点击生成，就可以直接弹出管理员的<code>cmd</code>窗口，这就是直接<code>BypassUAC</code>的效果</p>
+<p><img src="/2020/07/09/BypassUAC方法论学习/21.png" alt></p>
+<p>其原因，第一，选择的这个<code>COM</code>组件对象它是一个正常的，系认可的COM组件，第二，修改PEB，相当于我修改自己的进程，杀软是不会阻止的。</p>
+<h4 id="0x10-总结"><a href="#0x10-总结" class="headerlink" title="0x10 总结"></a>0x10 总结</h4><p>过了一遍，由于没有c、c++编程基础，导致视频看了三四遍才理解了个大体。并且代码都是来自Moriarty，写的更详细更明白的是goto:REinject,其文章放在参考链接中了。算是一个学习记录，有很多的不足，希望自己努力学习。如果要做的深入，连这些基本的都不扎实，是不行的。</p>
+<p>参考链接</p>
+<p><a href="https://www.cnblogs.com/lxmwb/p/12732976.html" target="_blank" rel="noopener">https://www.cnblogs.com/lxmwb/p/12732976.html</a></p>
+<p>红队学院第一期第一个视频</p>
+</div><!--文章标签--><div class="tags"><a href="/tags/Bypass/">Bypass</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/漏洞复现/">漏洞复现</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/cobaltstrike/" style="font-size: 14px;">cobaltstrike</a> <a href="/tags/Cobalt-Strike/" style="font-size: 12px;">Cobalt Strike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/PowerShell/" style="font-size: 18px;">PowerShell</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/metasploit/" style="font-size: 16px;">metasploit</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/免杀/" style="font-size: 16px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Bypass/" style="font-size: 12px;">Bypass</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 14px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/07/09/BypassUAC方法论学习/">BypassUAC方法论学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/06/CVE-2020-5902-BIG-IP-RCE-复现/">CVE-2020-5902(BIG-IP RCE)复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/03/域控制器/">域控制器</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/30/域内横向移动二/">域内横向移动二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/15/权限提升分析及防御二/">权限提升分析及防御二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/11/权限提升分析及防御一/">权限提升分析及防御一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/08/IntelliJ-IDEA修改cobaltstrike/">IntelliJ-IDEA修改cobaltstrike</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/05/09/利用msf自带的route模块穿透目标内网/">利用msf自带的route模块穿透目标内网</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://www.vkxss.top/" title="VK" target="_blank">VK</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
