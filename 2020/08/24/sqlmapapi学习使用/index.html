@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>sqlmapapi学习使用 - Guko's Blog</title><meta name="description" content="关于sqlmapapi今天看见freebuf上师傅的分享的内容 自己跟着过了一遍0x01 为什么要使用SQLMAP API由于SLQMAP每检测一个站点都需要开启一个新的命令行窗口或者结束掉上一个检测任务。虽然-m参数可以批量扫描URL，但是模式也是一个结束扫描后才开始另一个扫描任务。通过api接"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">sqlmapapi学习使用</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">sqlmapapi学习使用</h1><div class="post-meta">2020-08-24<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>关于sqlmapapi今天看见freebuf上师傅的分享的内容 自己跟着过了一遍</p>
+<a id="more"></a>
+
+<h4 id="0x01-为什么要使用SQLMAP-API"><a href="#0x01-为什么要使用SQLMAP-API" class="headerlink" title="0x01 为什么要使用SQLMAP API"></a>0x01 为什么要使用SQLMAP API</h4><p>由于SLQMAP每检测一个站点都需要开启一个新的命令行窗口或者结束掉上一个检测任务。虽然-m参数可以批量扫描URL，但是模式也是一个结束扫描后</p>
+<p>才开始另一个扫描任务。通过api接口，下发扫描任务就就简单的多，无需开启一个新的命令行窗口</p>
+<h4 id="0x02-sqlmap-api"><a href="#0x02-sqlmap-api" class="headerlink" title="0x02 sqlmap api"></a>0x02 sqlmap api</h4><p>sqlmap下载安装后，会在安装目录中存在sqlmapapi.py的文件，sqlmapapi.py文件就是 sqlmapapi，sqlmapapi分为服务端和客户端。有两种模式，</p>
+<p>一种是基于HTTP协议的接口你模式，一种是基于命令行的接口模式。</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/1.png" alt></p>
+<p>获取sqlmapapi.py的使用帮助</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmapapi.py -h</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/24/sqlmapapi学习使用/2.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Options:</span><br><span class="line">  -h, --help            显示帮助信息并退出</span><br><span class="line">  -s, --server          做为api服务端运行</span><br><span class="line">  -c, --client          做为api客户端运行</span><br><span class="line">  -H HOST, --host=HOST  指定服务端IP地址 (默认IP是 &quot;127.0.0.1&quot;)</span><br><span class="line">  -p PORT, --port=PORT  指定服务端端口 (默认端口8775)</span><br><span class="line">  --adapter=ADAPTER     服务端标准接口 (默认是 &quot;wsgiref&quot;)</span><br><span class="line">  --username=USERNAME   可空，设置用户名</span><br><span class="line">  --password=PASSWORD   可空，设置密码</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-开启api服务端"><a href="#0x03-开启api服务端" class="headerlink" title="0x03 开启api服务端"></a>0x03 开启api服务端</h4><p>不管是基于HTTP协议的接口模式还是基于命令行的接口模式，都需要先开启api服务端。如下命令可开启api服务端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmapapi.py -s</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/24/sqlmapapi学习使用/3.png" alt></p>
+<p>命令成功后，会在命令行中返回一些信息。大致意思是api服务端在本地8775端口上云翔，admin token为4e5fee0907ab2d102646515d5c4d4003，IPC数据库的位置在/var/folders/f2/kz7bjnl54pd52lj2xnd6b3940000gn/T/sqlmapipc-_Fe7JX，api服务端已经和PIC数据库连接上了，正在使用bottle框架wsgiref标准接口</p>
+<p>通过上面的这种方式开启api服务端有一个缺陷，当服务端和客户端不是一台主机会连不上，要解决这个问题，可以用如下命令开启api服务端。命令成功后，远程好客户端就可以指定远程主机IP和端口来连接到API服务端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmapapi.py -s -H &quot;0.0.0.0&quot; -p 8775</span><br></pre></td></tr></table></figure>
+
+<p>固定admin tokebn</p>
+<p>在有特殊的需求需要固定admin token 可以修改怒文件api.py 在sqlmap目录下的/lib/utils/中，661行，这里我看到的每找对应的源代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataStore.admin_token = hexencode(os.urandom(16))</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/24/sqlmapapi学习使用/4.png" alt></p>
+<h4 id="0x04-sqlmap-api的两种模式"><a href="#0x04-sqlmap-api的两种模式" class="headerlink" title="0x04 sqlmap api的两种模式"></a>0x04 sqlmap api的两种模式</h4><p>命令行接口模式</p>
+<p>输入 以下命令，可连接api服务端，进行后期的指令发送操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python sqlmapapi.py -c</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2020/08/24/sqlmapapi学习使用/5.png" alt></p>
+<p>如果客户端和服务端不是同一台计算机，使用如下命令，执行之后就会进入交互模式</p>
+<p>python sqlmapapi.py -c -H “10.19.64.36” -p 8775</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/6.png" alt></p>
+<p>命令行接口模式相关命令，使用help查看该接口所有命令的使用方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">api&gt; help</span><br><span class="line">help           显示帮助信息</span><br><span class="line">new ARGS       开启一个新的扫描任务</span><br><span class="line">use TASKID     切换taskid</span><br><span class="line">data           获取当前任务返回的数据</span><br><span class="line">log            获取当前任务的扫描日志</span><br><span class="line">status         获取当前任务的扫描状态</span><br><span class="line">option OPTION  获取当前任务的选项</span><br><span class="line">options        获取当前任务的所有配置信息</span><br><span class="line">stop           停止当前任务</span><br><span class="line">kill           杀死当前任务</span><br><span class="line">list           显示所有任务列表</span><br><span class="line">flush          清空所有任务</span><br><span class="line">exit           退出客户端</span><br></pre></td></tr></table></figure>
+
+<p>了解命令行接口模式中的所有命令后，就可以通过一个sql注入来掩饰该模式接口下检测sql注入的流程</p>
+<p>检测GET型注入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">new -u &quot;url&quot;</span><br></pre></td></tr></table></figure>
+
+<p>指定了-u参数，从返回的信息中可以看到，输入new命令后，首先请求了/task/new,来创建一个新的taskid，后又发起了一个请求去开始任务，因此可以发现该模式是基于HTTP协议的</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/7.png" alt></p>
+<p>通过输入status命令，来获取该任务的扫描状态，若返回内容中华的status字段为terminated，说明扫描完成，若返回内容中的恶status字段为run，说明扫描还在进行中</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/8.png" alt></p>
+<p>通过输入data命令，来获取扫描完成后注入出来的信息，若返回的内容中data字段不为空就说明存在注入，如下为返回内容，可看到返回的内容有数据库类型、payload、注入的参数等</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/9.png" alt></p>
+<p>字段为空的时候</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/10.png" alt></p>
+<p>检测POST型，cookie UA等注入</p>
+<p>通过以下命令，在data.txt中加入星号，指定注入的位置，来达到检测POST、cookie、UA等注入的目的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">new -r data.txt</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x05-基于HTTP协议的接口模式"><a href="#0x05-基于HTTP协议的接口模式" class="headerlink" title="0x05 基于HTTP协议的接口模式"></a>0x05 基于HTTP协议的接口模式</h4><p>下列都是基于HTTP协议API交互的所有方法：提示“@get”就说明需通过GET请求，“@post”就说明需要通过POST请求的；POST请求需要修给HTTP头中的Content-Type字段为application/json</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#辅助</span></span><br><span class="line"><span class="meta">@get('/error/401')    </span></span><br><span class="line"><span class="meta">@get("/task/new")</span></span><br><span class="line"><span class="meta">@get("/task/&lt;taskid&gt;/delete")</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#Admin 命令</span></span><br><span class="line"><span class="meta">@get("/admin/list")</span></span><br><span class="line"><span class="meta">@get("/admin/&lt;token&gt;/list")</span></span><br><span class="line"><span class="meta">@get("/admin/flush")</span></span><br><span class="line"><span class="meta">@get("/admin/&lt;token&gt;/flush")</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#sqlmap 核心交互命令</span></span><br><span class="line"><span class="meta">@get("/option/&lt;taskid&gt;/list")</span></span><br><span class="line"><span class="meta">@post("/option/&lt;taskid&gt;/get")</span></span><br><span class="line"><span class="meta">@post("/option/&lt;taskid&gt;/set")</span></span><br><span class="line"><span class="meta">@post("/scan/&lt;taskid&gt;/start")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/stop")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/kill")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/status")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/data")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/log/&lt;start&gt;/&lt;end&gt;")</span></span><br><span class="line"><span class="meta">@get("/scan/&lt;taskid&gt;/log")</span></span><br><span class="line"><span class="meta">@get("/download/&lt;taskid&gt;/&lt;target&gt;/&lt;filename:path&gt;")</span></span><br></pre></td></tr></table></figure>
+
+<p>@get(‘/error/401’)</p>
+<p>该接口首先需要登录Admin token不然会返回状态码401，具体代码如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">response.status = <span class="number">401</span></span><br><span class="line"><span class="keyword">return</span> response</span><br></pre></td></tr></table></figure>
+
+<p>@get(“/task/new”)</p>
+<p>该接口用于创建一个新的任务，使用后会返回一个随机的taskid，具体代码如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">task_new</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Create a new task</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    taskid = hexencode(os.urandom(<span class="number">8</span>))</span><br><span class="line">    remote_addr = request.remote_addr</span><br><span class="line">    DataStore.tasks[taskid] = Task(taskid, remote_addr)</span><br><span class="line">    logger.debug(<span class="string">"Created new task: '%s'"</span> % taskid)</span><br><span class="line">    <span class="keyword">return</span> jsonize(&#123;<span class="string">"success"</span>: <span class="literal">True</span>, <span class="string">"taskid"</span>: taskid&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>下图是调用该接口的截图</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/11.png" alt></p>
+<p>@get(“/task//deldete”)</p>
+<p>该接口用户删除taskid</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/12.png" alt></p>
+<p>@get(“/admin/list”)/@get(“/admin//list”)</p>
+<p>该接口用于返回所有taskid，在调用时指定taskid</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/12.png" alt></p>
+<p>@get(“/admin/flush”)/@get(“/admin//flush”)</p>
+<p>该接口用于删除所有任务，在调用时指定admin token</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/13.png" alt></p>
+<p>@get(“/option//list”)</p>
+<p>该接口可获取特定任务ID的列表选项，调用时要指定taksid</p>
+<p><img src="/2020/08/24/sqlmapapi学习使用/14.png" alt></p>
+<p>@post(“/option//set”)</p>
+<p>该接口为特定任务ID设置选项值，调用时要指定taskid</p>
+<p>@post(“/scan//start”)</p>
+<p>该接口定义开始扫描特定任务，调用时请指定taskid</p>
+<p>@post(“/scan//stop”)</p>
+<p>该接口定义停止扫描特定任务，调用时要指定taskid</p>
+<p>@get(“/scan//kill”)</p>
+<p>该接口可杀死特定任务，需要指定taskid</p>
+<p>@get(“/scan//data”)</p>
+<p>该接口可获取到扫描结果，调用时要指定taskid</p>
+<h4 id="0x06总结"><a href="#0x06总结" class="headerlink" title="0x06总结"></a>0x06总结</h4><p>基于HTTP的接口模式用起来可能比较繁琐，但是对于程序调用接口还是很友善，该模式的流程时</p>
+<p>1、通过GET请求<a href="http://ip:port/task/new" target="_blank" rel="noopener">http://ip:port/task/new</a> 这个地址，创建一个新的扫描任务；</p>
+<p>2、通过POST请求<a href="http://ip:port/scan//start地址，并通过json格式提交参数，开启一个扫描；通过GET请求http://ip:port/scan//status地址，即可获取指定的taskid的扫描状态。这个返回值分为两种，一种是run状态（扫描未完成）一种是terminated状态（扫描完成）；" target="_blank" rel="noopener">http://ip:port/scan//start地址，并通过json格式提交参数，开启一个扫描；通过GET请求http://ip:port/scan//status地址，即可获取指定的taskid的扫描状态。这个返回值分为两种，一种是run状态（扫描未完成）一种是terminated状态（扫描完成）；</a></p>
+<p>3、扫描完成后获取扫描的结果</p>
+<h4 id="0x07使用python3编写sqlmapapi调用程序"><a href="#0x07使用python3编写sqlmapapi调用程序" class="headerlink" title="0x07使用python3编写sqlmapapi调用程序"></a>0x07使用python3编写sqlmapapi调用程序</h4><p>编写一个sqlmapapi调用程序，再次明确一下流程</p>
+<p>1、通过sqlmapapi.py -s -H “0.0.0.0”开启sqlmap api服务端。服务端启动后，在服务端命令行中会返回一个随机的admin token值，这个值用于管理taskid（获取、清空操作），在这个流程中不需要admin token这个值，可以忽略。之后，服务端会处于一个等待客户端的状态</p>
+<p>2、通过GET请求<a href="http://ip:port/task/new" target="_blank" rel="noopener">http://ip:port/task/new</a> 这个地址，创建一个新的扫描任务，在响应中会返回一个随机的taskid。这个taskid在这个流程中很重要，因此需要通过变量存储下来，方便后面程序调用</p>
+<p>3、通过POST请求<a href="http://ip:port/scan//start地址，并通过json格式提交参数（待扫描的HTTP数据包、若存在注入是否获取当前数据库用户名）即可开启一个扫描任务，该请求会返回一个enginedid" target="_blank" rel="noopener">http://ip:port/scan//start地址，并通过json格式提交参数（待扫描的HTTP数据包、若存在注入是否获取当前数据库用户名）即可开启一个扫描任务，该请求会返回一个enginedid</a></p>
+<p>4、通过GET请求<a href="http://ip:port/scan//status地址，即可获取指定的taskid的扫描状态。这个返回值分为两种，一种是run状态（扫描未完成）一种是terminated状态（扫描完成）" target="_blank" rel="noopener">http://ip:port/scan//status地址，即可获取指定的taskid的扫描状态。这个返回值分为两种，一种是run状态（扫描未完成）一种是terminated状态（扫描完成）</a></p>
+<p>5、判断扫描转台，如果扫描未完成，再次请求<a href="http://ip:port/scan//status地址，直到扫描完成。" target="_blank" rel="noopener">http://ip:port/scan//status地址，直到扫描完成。</a></p>
+<p>6、扫描完成后获取扫描的结果，是否是SQL注入，若不存在SQL注入，data字段为空，若存在SQL注入，则会返回数据库类型、payload等等</p>
+<p>参考链接：</p>
+<p><a href="https://www.freebuf.com/articles/web/204875.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/204875.html</a></p>
+</div><!--文章标签--><div class="tags"><a href="/tags/sqlmap/">sqlmap</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/漏洞复现/">漏洞复现</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/burpsuite/" style="font-size: 12px;">burpsuite</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/Cobalt-Strike/" style="font-size: 13.5px;">Cobalt Strike</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/cobaltstrike/" style="font-size: 13.5px;">cobaltstrike</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/PowerShell/" style="font-size: 16.5px;">PowerShell</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/metasploit/" style="font-size: 15px;">metasploit</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/免杀/" style="font-size: 15px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Bypass/" style="font-size: 12px;">Bypass</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/sqlmap/" style="font-size: 12px;">sqlmap</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/域信息收集/" style="font-size: 13.5px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/10/26/Cobalt-Strike添加UI/">Cobalt-Strike添加UI</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/24/sqlmapapi学习使用/">sqlmapapi学习使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/18/深信服EDR-RCE/">深信服EDR-RCE</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/09/BypassUAC方法论学习/">BypassUAC方法论学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/06/CVE-2020-5902-BIG-IP-RCE-复现/">CVE-2020-5902(BIG-IP RCE)复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/03/域控制器/">域控制器</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/30/域内横向移动二/">域内横向移动二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/15/权限提升分析及防御二/">权限提升分析及防御二</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://www.vkxss.top/" title="VK" target="_blank">VK</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+  if($(".highlight").length != 0){
+    var pc_width = $(".post-content").width();
+    $(".highlight .code").find("pre").width((pc_width-70)+"px");
+  }
+}
+window.onresize = function(){
+  auto_code_fit();
+}
+auto_code_fit();</script></div></body>
