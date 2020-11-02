@@ -747,7 +747,7 @@ figure.highlight figcaption a,
 
 figure.highlight .gutter,
   .codeblock .gutter {
-  background: rgb(105,105,105);
+  background: rgb(0,0,0);
 	padding: 0.8em 15px;
 }
 
