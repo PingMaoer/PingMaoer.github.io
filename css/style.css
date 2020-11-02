@@ -684,7 +684,7 @@ a.back_to_top:hover span {
 /* syntax highlight*/
 figure.highlight,
 .codeblock {
-	background: #F5F5F5;
+	background: #F5F5DC;
 	margin: 10px 0;
 	line-height: 1.1em;
 	color: #333;
@@ -747,7 +747,7 @@ figure.highlight figcaption a,
 
 figure.highlight .gutter,
   .codeblock .gutter {
-  background: rgb(236, 238, 237);
+  background: rgb(245, 245, 220);
 	padding: 0.8em 15px;
 }
 
